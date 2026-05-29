@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/geoserver-proxy/:path*",
+      "destination": "http://202.10.37.202:8080/geoserver/:path*"
+    }
+  ]
+}
