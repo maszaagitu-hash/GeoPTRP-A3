@@ -1666,7 +1666,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // 5. Inisialisasi Peta Spasial OpenLayers
     const initialCenter = ol.proj.fromLonLat([110.6750, -7.6750]); 
     const initialZoom = 13.5;
-    const url_geoserver = 'https://202.10.37.202:8080/geoserver/GeoPTRP_A3/wms';
+    const url_geoserver = window.location.origin + '/geoserver-proxy/GeoPTRP_A3/wms';
     const workspace = 'GeoPTRP_A3';
 
     let chosenLayers = ['jalanLn', 'sungaiLn', 'desa']; 
