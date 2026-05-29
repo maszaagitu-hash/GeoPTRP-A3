@@ -1,0 +1,2431 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WebGIS Pertanahan - Kecamatan Ceper</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.3.1/ol.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    
+   <style>
+/* ==========================================================================
+   1. RESET & ELEMENT DASAR (GLOBAL STYLES)
+   ========================================================================== */
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body { 
+    background-color: #f4f7f6; 
+    margin: 0; 
+    padding: 0; 
+    height: 100%; 
+    width: 100%; 
+    font-family: 'Montserrat', sans-serif; 
+    overflow: hidden; /* Dikunci agar WebGIS tidak bocor scrollbar-nya */
+    position: relative;
+}
+
+/* ==========================================================================
+   2. LANDING PAGE & OVERLAYS
+   ========================================================================== */
+#landing-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #ffffff;
+    z-index: 99999;
+    overflow-y: auto;
+}
+#landing-page.hidden { transform: translateX(-100%); }
+
+#disclaimer-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.7); display: none;
+    justify-content: center; align-items: center; z-index: 10000;
+    backdrop-filter: blur(5px);
+}
+.disclaimer-box {
+    background: white; width: 90%; max-width: 600px;
+    padding: 30px; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    position: relative; animation: slideUp 0.4s ease-out;
+}
+.disclaimer-title { font-weight: 700; color: #0a3d62; font-size: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+.disclaimer-text { font-size: 13px; line-height: 1.6; color: #444; max-height: 300px; overflow-y: auto; margin-bottom: 20px; background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee; text-align: justify; }
+.disclaimer-check { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #2d3436; cursor: pointer; user-select: none; }
+.disclaimer-footer { display: flex; justify-content: flex-end; margin-top: 20px; }
+
+#btn-continue {
+    padding: 12px 30px; border: none; border-radius: 8px; font-weight: bold; cursor: not-allowed;
+    background: #bdc3c7; color: white; transition: 0.3s; text-transform: uppercase;
+}
+#btn-continue.active { background: #0984e3; cursor: pointer; box-shadow: 0 4px 15px rgba(9, 132, 227, 0.3); }
+
+#mobile-warning-overlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(15, 25, 20, 0.99); z-index: 100000;
+    justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; overflow-y: auto;
+}
+.warning-card {
+    background: white; padding: 25px 20px; border-radius: 16px; text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4); max-width: 420px; width: 100%;
+}
+.warning-icon { font-size: 50px; color: #e74c3c; margin-bottom: 12px; animation: rotatePhone 2.5s infinite ease-in-out; }
+.warning-card h2 { margin: 0 0 10px 0; color: #2c3e50; font-size: 19px; font-weight: 700; }
+.warning-card p { color: #7f8c8d; font-size: 13px; line-height: 1.5; margin: 5px 0; }
+.highlight-text { background: #fdf2e9; padding: 10px 12px; border-radius: 8px; color: #d35400 !important; margin-top: 12px !important; border-left: 4px solid #e67e22; font-size: 12.5px; text-align: left; }
+#btn-warning-ok {
+    background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border: none; padding: 12px 25px;
+    font-weight: bold; font-size: 14px; border-radius: 8px; margin-top: 18px; cursor: pointer; width: 100%;
+    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3); transition: all 0.2s;
+}
+#btn-warning-ok:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(46, 204, 113, 0.4); }
+
+/* ==========================================================================
+   3. NAVIGATION BAR & HEADER AREA
+   ========================================================================== */
+.top-navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 50px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+.logo-side img { height: 50px; display: block; }
+.menu-side { display: flex; gap: 25px; }
+
+.menu-side a.nav-menu-item {
+    text-decoration: none;
+    color: #1e3799; 
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    padding: 5px 10px;
+    display: inline-block;
+}
+.menu-side a.nav-menu-item:hover { color: #0c2461; }
+.menu-side a.nav-menu-item.active { color: #f1c40f; border-bottom: 2px solid #f1c40f; }
+
+.hero-header { width: 100%; line-height: 0; }
+.hero-header img { width: 100%; height: auto; display: block; }
+
+.yellow-banner {
+    text-align: center;
+    padding: 10px 0;
+    font-size: 24px; 
+    background-color: #f1c40f; 
+    color: #1e3799; 
+}
+.yellow-banner i { animation: bounce 2s infinite; }
+
+#header { 
+    border-bottom: 4px solid #f1c40f; 
+    background: #ffffff; 
+    height: 90px; 
+    position: relative; 
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.logo-container { 
+    display: flex; 
+    align-items: center; 
+    width: 100%;
+    padding: 0 30px; 
+    justify-content: space-between;
+}
+.header-left, .header-right { display: flex; align-items: center; gap: 15px; }
+.logo-container img { height: 55px; width: auto; object-fit: contain; max-width: 100%; }
+
+.title-text { text-align: center; flex-grow: 1; }
+.title-text h1 { 
+    font-family: 'Playfair Display', serif;
+    font-size: 24px; margin: 0; font-weight: 900; color: #1e3799; text-transform: uppercase; letter-spacing: 1px;
+}
+.title-text h2 { 
+    font-size: 12px; margin: 5px 0 0 0; color: #636e72; font-weight: 600; letter-spacing: 2px;
+    border-top: 1px solid #eee; padding-top: 5px; display: inline-block;
+}
+
+/* ==========================================================================
+   4. MAP & FLOATING OVERLAY SIDEBAR
+   ========================================================================== */
+#map { width: 100%; height: calc(100vh - 90px); position: relative; } 
+
+.search-container-floating {
+    position: absolute; top: 20px; left: 20px;
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 12px; border: 1px solid #ddd; z-index: 1002;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1); width: 300px;
+    padding: 10px; display: flex; gap: 8px;
+    transition: transform 0.4s;
+}
+#search-input { flex-grow: 1; padding: 10px; border-radius: 6px; border: 1px solid #ddd; font-size: 12px; }
+#btn-search-coord, #btn-clear-search { padding: 10px 12px; color: white; border: none; border-radius: 6px; cursor: pointer; }
+#btn-search-coord { background: #1e3799; }
+#btn-clear-search { background: #95a5a6; }
+
+.map-overlay-left {
+    position: absolute; top: 90px; left: 20px;
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 12px; border: 1px solid #ddd; z-index: 1000;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1); width: 320px;
+    height: calc(100% - 110px);
+    display: flex; flex-direction: column; 
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.map-overlay-left.minimized { transform: translateX(-345px); }
+
+.sidebar-toggle-btn {
+    position: absolute; right: -40px; top: 20px; width: 40px; height: 40px;
+    background: #1e3799; color: white; border-radius: 0 8px 8px 0;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 5px 0 10px rgba(0,0,0,0.1); transition: 0.3s;
+}
+.sidebar-scroll-area { padding: 15px; overflow-y: auto; flex-grow: 1; }
+.sidebar-footer { padding: 15px; background: #f8f9fa; border-top: 1px solid #eee; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+
+.right-container { position: absolute; top: 20px; right: 20px; display: flex; flex-direction: column; gap: 15px; align-items: flex-end; z-index: 1001; }
+#side-panel-info { background: white; border-radius: 12px; border: 1px solid #ddd; box-shadow: -5px 8px 25px rgba(0,0,0,0.15); width: 320px; height: 450px; display: none; flex-direction: column; overflow: hidden; }
+.panel-header { background: #1e3799; color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+.panel-header h3 { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+.close-panel { cursor: pointer; font-size: 20px; }
+.panel-body { padding: 15px; overflow-y: auto; flex-grow: 1; background: #fff; }
+
+#btn-home {
+    background: white; border: 2px solid #1e3799; padding: 12px 25px;
+    border-radius: 50px; cursor: pointer; font-weight: bold; color: #1e3799;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px; transition: 0.3s;
+}
+#btn-home:hover { background: #1e3799; color: white; transform: translateY(-3px); }
+
+/* ==========================================================================
+   5. LAYERS COMPONENT & MEASUREMENT TOOLS
+   ========================================================================== */
+.attr-layer-header { background: #f1f2f6; color: #1e3799; padding: 8px; border-radius: 4px; margin-top: 10px; font-weight: bold; font-size: 12px; border-left: 4px solid #f1c40f; }
+.attr-item { padding: 8px 0; border-bottom: 1px solid #eee; font-size: 11px; display: flex; justify-content: space-between; gap: 10px; }
+.attr-label { font-weight: 700; color: #2d3436; flex-shrink: 0; }
+
+.layer-item-container { background: #fff; border-radius: 8px; border: 1px solid #eee; margin-bottom: 12px; transition: 0.2s; overflow: hidden; }
+.layer-item-main { display: flex; align-items: center; padding: 10px; gap: 10px; }
+.drag-handle { cursor: grab; color: #ccc; font-size: 14px; }
+.layer-title-text { flex-grow: 1; font-size: 12px; font-weight: 600; color: #333; }
+.layer-actions { display: flex; gap: 8px; align-items: center; }
+.action-btn { cursor: pointer; color: #666; font-size: 14px; transition: 0.2s; }
+.action-btn:hover { color: #1e3799; }
+.action-btn.active { color: #0984e3; }
+
+.layer-details { display: none; padding: 10px; background: #fdfdfd; border-top: 1px solid #f1f1f1; }
+.layer-details.show { display: block; }
+.transparency-ctrl { margin-bottom: 12px; display: flex; flex-direction: column; gap: 5px; }
+.transparency-ctrl label { font-size: 10px; font-weight: 700; color: #777; text-transform: uppercase; }
+
+.layer-legend-container { margin-top: 5px; padding: 5px; background: transparent; overflow: hidden; }
+.layer-legend-img { max-width: 100%; display: block; mix-blend-mode: multiply; }
+
+.btn-sidebar-action { 
+    width: 100%; padding: 12px; border: none; border-radius: 8px; 
+    cursor: pointer; font-weight: 700; font-size: 12px; 
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    transition: 0.2s; text-transform: uppercase;
+}
+.btn-katalog { background: #2ecc71; color: white; }
+.btn-zoom { background: #0984e3; color: white; }
+.btn-delete { background: #e74c3c; color: white; }
+
+.mouse-position { position: absolute; bottom: 10px; left: 10px; background: rgba(255,255,255,0.8); padding: 5px 12px; border-radius: 20px; font-size: 10px; font-weight: 600; color: #1e3799; z-index: 1000; border: 1px solid #ddd; }
+.floating-bottom-right { position: absolute; bottom: 30px; right: 20px; display: flex; flex-direction: column; align-items: flex-end; gap: 15px; z-index: 1002; }
+#btn-measure-tools { width: 55px; height: 55px; border-radius: 50%; background: #1e3799; color: white; border: none; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-size: 20px; display: flex; align-items: center; justify-content: center; }
+
+.measure-options { 
+    position: absolute; bottom: 65px; right: 0; background: white; 
+    border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+    display: none; flex-direction: column; width: 180px; 
+    overflow: hidden; border: 1px solid #eee; z-index: 1003;
+}
+.measure-options button { padding: 15px; border: none; background: none; text-align: left; cursor: pointer; font-size: 12px; font-weight: 600; border-bottom: 1px solid #f0f0f0; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
+.measure-options button:hover { background: #f9f9f9; color: #1e3799; }
+.measure-options button.active { background: #f1c40f; color: #1e3799; }
+
+/* ==========================================================================
+   6. MODAL & KATALOG LAYER
+   ========================================================================== */
+#modal-katalog {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(10, 61, 98, 0.7); z-index: 11000; display: none;
+    justify-content: center; align-items: center; backdrop-filter: blur(6px);
+}
+.katalog-box {
+    background: white; width: 600px; max-height: 80vh; border-radius: 20px;
+    display: flex; flex-direction: column; overflow: hidden;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.4); animation: zoomIn 0.3s ease;
+}
+.katalog-header { padding: 25px; background: #1e3799; color: white; display: flex; justify-content: space-between; align-items: center; }
+.katalog-header b { font-size: 20px; font-family: 'Playfair Display', serif; }
+.katalog-body { padding: 10px 25px; overflow-y: auto; background: #fff; }
+.katalog-item { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+.btn-add-layer { padding: 8px 20px; background: #f1c40f; color: #1e3799; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.btn-add-layer.added { background: #f1f2f6; color: #bdc3c7; cursor: default; }
+.status-added { color: #2ecc71; font-weight: 700; font-size: 12px; display: flex; align-items: center; gap: 5px; }
+.katalog-footer { padding: 20px 25px; border-top: 1px solid #eee; text-align: right; background: #fdfdfd; }
+#btn-apply-katalog { background: #1e3799; color: white; padding: 12px 35px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-size: 13px; box-shadow: 0 4px 10px rgba(30, 55, 153, 0.2); }
+
+/* ==========================================================================
+   7. JENDELA INTERAKTIF (INFORMASI DATA SPASIAL)
+   ========================================================================== */
+.spatial-flex-container {
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+    width: 100%;
+    padding: 0 5px;
+    margin: 15px 0;
+    box-sizing: border-box;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+#main-toggle-container {
+    flex: 1;
+    min-height: 100px;
+    background: #1e3799;
+    color: #ffffff;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-sizing: border-box;
+    user-select: none;
+}
+#main-toggle-container:hover { background: #0c2461; }
+
+.toggle-text-box {
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: center;
+}
+.toggle-text-box i { font-size: 20px; }
+
+#main-toggle-container.shrunk {
+    flex: 0 0 110px;
+    background: #f1c40f;
+    color: #1e3799;
+}
+#main-toggle-container.shrunk .toggle-text-box { font-size: 11px; }
+
+#interaction-right {
+    display: flex;
+    flex: 0;
+    width: 0;
+    opacity: 0;
+    visibility: hidden;
+    overflow: hidden;
+    gap: 10px;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-sizing: border-box;
+}
+#interaction-right.show {
+    flex: 3;
+    width: auto;
+    opacity: 1;
+    visibility: visible;
+}
+
+.logo-bar-horizontal {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    flex-shrink: 0;
+    align-items: center;
+}
+
+.info-logo-card {
+    background: #ffffff;
+    color: #2f3542;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    width: 62px;
+    height: 65px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-sizing: border-box;
+    padding: 5px;
+}
+.info-logo-card i {
+    font-size: 16px;
+    color: #1e3799;
+    margin-bottom: 4px;
+}
+.info-logo-card .logo-label {
+    font-size: 8.5px;
+    font-weight: 700;
+    color: #555;
+    text-align: center;
+    line-height: 1.1;
+}
+.info-logo-card:hover {
+    background: #f1f2f6;
+    transform: translateY(-2px);
+}
+
+.info-logo-card.active {
+    background: #e1b12c !important;
+    border-color: #e1b12c !important;
+    color: #ffffff !important;
+}
+.info-logo-card.active i, 
+.info-logo-card.active .logo-label {
+    color: #ffffff !important;
+}
+
+.info-display-box {
+    display: none;
+    flex: 1;
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-left: 4px solid #1e3799;
+    padding: 10px 12px;
+    border-radius: 8px;
+    box-sizing: border-box;
+    max-height: 100%;
+    overflow-y: auto;
+    animation: fadeInGlow 0.3s ease-out forwards;
+}
+.info-display-box.show { display: block; }
+
+#info-content-target h3 { margin: 0 0 4px 0; color: #1e3799; font-size: 13px; font-weight: 700; }
+#info-content-target p { margin: 0; color: #444; font-size: 11px; line-height: 1.4; text-align: justify; }
+
+/* ==========================================================================
+   7A-2. DEKORASI JUDUL HALAMAN INFORMASI (BIRU GEOPTRP)
+   ========================================================================== */
+.info-title-container {
+    margin-bottom: 30px;
+    border-bottom: 3px solid #f1c40f; /* Tambahan garis aksen kuning di bawah judul */
+    padding-bottom: 15px;
+}
+.info-main-title {
+    color: #1e3799 !important; /* Mengubah warna judul utama menjadi BIRU */
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0 0 5px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.info-sub-title {
+    color: #4b69bd !important; /* Mengubah warna sub-judul menjadi BIRU soft */
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* ==========================================================================
+   7B. PANEL SOROTAN WILAYAH (GOOGLE MAPS & STATISTIK CEPER)
+   ========================================================================== */
+.ceper-highlight-container {
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    margin-bottom: 40px;
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    align-items: stretch;
+}
+
+/* Kolom Peta Kiri - DIUBAH: Proporsi flex dikecilkan agar peta tidak terlalu mulur memanjang ke samping */
+.ceper-map-frame {
+    flex: 0.9; 
+    min-height: 300px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e9ecef;
+}
+.ceper-map-frame iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* Kolom Informasi Kanan - DIUBAH: Diberikan ruang lebih lega (flex 1.1) dan digeser rata kiri atas */
+.ceper-info-stats {
+    flex: 1.1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 10px;
+}
+.ceper-info-stats h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 32px; /* Diperbesar sedikit agar lebih tegas dan gagah */
+    color: #1e3799;
+    margin: 0 0 2px 0; /* Jarak margin bawah ditipiskan habis */
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    line-height: 1.1;
+}
+.ceper-info-stats .sub-district {
+    font-size: 13px;
+    color: #4b69bd; /* Diubah ke warna biru soft agar senada dengan tema */
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-top: 0;    /* Dipastikan menempel dengan teks atas */
+    margin-bottom: 25px; /* Memberi ruang jeda yang pas sebelum masuk ke panel kotak data */
+}
+
+/* MENYUNTIKKAN TEKS SUMBER DATA KECIL MIRING SECARA OTOMATIS DIBAWAH PANEL */
+.ceper-info-stats::after {
+    content: "*Sumber: Kabupaten Klaten Dalam Angka 2026";
+    display: block;
+    margin-top: 15px; /* Jarak pasca kotak panel data */
+    font-size: 11px;
+    font-style: italic;
+    color: #888888;
+    font-weight: 500;
+    text-align: left;
+}
+
+/* Desain Kotak Angka (Panel Luas & Penduduk) */
+.stat-panel-box {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+.stat-card {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    border-radius: 8px;
+    border-left: 4px solid #f1c40f; /* Aksen kuning */
+}
+.stat-card-title {
+    font-size: 12px;
+    color: #4b5563;
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+.stat-card-number {
+    font-size: 20px;
+    color: #1e3799;
+    font-weight: 700;
+}
+.stat-card-unit {
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: normal;
+}
+
+/* Responsif untuk HP */
+@media (max-width: 768px) {
+    .ceper-highlight-container {
+        flex-direction: column;
+    }
+    .ceper-map-frame {
+        min-height: 250px;
+    }
+    .stat-panel-box {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ==========================================================================
+   8. SUB PAGE & ADDITIONAL SECTIONS (SEKILAS GEOPTRP FIX)
+   ========================================================================== */
+.sub-page-content { display: none; padding: 50px 10%; background-color: #ffffff; min-height: 400px; }
+.sub-page-content h2 { font-family: 'Playfair Display', serif; color: #1e3799; font-size: 32px; margin-bottom: 20px; }
+
+/* FIX: Pastikan section ini adalah Flexbox Horizontal murni, Gamber di Kiri, Teks di Kanan */
+.info-section {
+    display: flex; 
+    flex-direction: row; /* Memaksa berjejer horizontal (Gambar kiri, Teks kanan) */
+    align-items: center; /* Rata tengah secara vertikal antara gambar dan teks */
+    gap: 50px; /* Jarak antara bingkai gambar dan teks */
+    padding: 60px 10%; 
+    background-color: #ffffff;
+    border-top: 1px solid #eee; 
+    margin-top: 30px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* FIX: Pengaturan Wadah Gambar Laptop (Di Sisi Kiri) */
+.info-image { 
+    flex: 0 0 45%; /* Ambil ruang tepat 45% lebar, tidak boleh mengecil atau membesar */
+    max-width: 500px; /* Batas lebar maksimal gambar agar tidak kegedean di layar ultra-lebar */
+}
+.info-image img { 
+    width: 100%; 
+    height: auto;
+    border-radius: 15px; 
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+    display: block;
+}
+
+/* FIX: Pengaturan Wadah Teks (Di Sisi Kanan Gambar) */
+.info-text { 
+    flex: 1; /* Ambil sisa ruang di sebelah kanan */
+    display: flex;
+    flex-direction: column; /* Biar isinya (H2, P, Wadah Tombol) menumpuk vertikal */
+    gap: 15px;
+}
+.info-text h2 { 
+    font-family: 'Playfair Display', serif; 
+    color: #1e3799; 
+    font-size: 28px; 
+    margin: 0 0 10px 0; 
+}
+.info-text p { 
+    margin: 0; 
+    color: #555; 
+    font-size: 14px; 
+    line-height: 1.6; 
+    text-align: justify; /* FIX: Membuat teks penjelasan menjadi rata kanan-kiri */
+}
+
+/* FIX: Wadah khusus untuk memaksa tombol kuning ke sisi kanan bawah teks */
+.btn-right-wrapper {
+    display: flex;
+    justify-content: flex-end; /* Memaksa tombol ke kanan */
+    width: 100%;
+    margin-top: 15px; /* Jarak dari paragraf terakhir */
+}
+
+/* Style Tombol Kuning Jelajahi (Presisi sesuai Poin Sebelumnya) */
+.btn-explore-yellow {
+    display: inline-flex; 
+    align-items: center;
+    gap: 10px;
+    padding: 12px 28px; 
+    background-color: #f1c40f; 
+    color: #2c3e50;
+    text-decoration: none; 
+    border-radius: 30px; 
+    font-weight: bold; 
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.btn-explore-yellow:hover { 
+    background-color: #f39c12; 
+    color: #fff;
+    transform: translateY(-3px) scale(1.03); 
+    box-shadow: 0 8px 15px rgba(241, 196, 15, 0.3);
+}
+.btn-explore-yellow:active { transform: translateY(-1px); }
+.btn-explore-yellow i { transition: transform 0.3s ease; }
+.btn-explore-yellow:hover i { transform: translateX(5px); }
+
+/* --- PERBAIKAN RESPONSIVE DI MEDIA QUERIES --- */
+@media (max-width: 900px) {
+    .info-section {
+        flex-direction: column-reverse; /* Di HP, Teks dulu baru Gambar di bawahnya biar natural */
+        text-align: center;
+        gap: 30px;
+    }
+    .info-image { flex: 0 0 100%; max-width: 350px; }
+    .info-text h2 { font-size: 24px; }
+    .info-text p { text-align: center; font-size: 13px; } /* Di HP hapus justify, pakai center */
+    .btn-right-wrapper { justify-content: center; } /* Di HP tombol ke tengah */
+}
+/* ==========================================================================
+   9. ANIMATION KEYFRAMES
+   ========================================================================== */
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-8px); }
+    60% { transform: translateY(-4px); }
+}
+@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes fadeInGlow { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: translateX(0); } }
+
+/* ==========================================================================
+   9A. FOOTER BANNER PENUTUP (FULL WIDTH)
+   ========================================================================== */
+.main-footer {
+    background-color: #1e3799; /* Warna biru khas GeoPTRP */
+    color: #ffffff;
+    text-align: center;
+    padding: 30px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.6;
+    border-top: 5px solid #f1c40f; /* Garis pembatas kuning elegan */
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 50px; /* Memberi jarak dari section syarat & ketentuan */
+}
+.footer-content b {
+    font-size: 14px;
+    letter-spacing: 0.5px;
+}
+
+/* ==========================================================================
+   9B. LAYOUT 2 KOLOM: KETENTUAN (KIRI) & KOTAK PANDUAN KUNING (KANAN)
+   ========================================================================== */
+.terms-and-guide-section {
+    background-color: #f8f9fa;
+    padding: 50px 10% 0 10%; /* Padding bawah dinolkan karena diganti oleh margin footer */
+    border-top: 1px solid #e9ecef;
+    width: 100%;
+    box-sizing: border-box; 
+    display: flex;
+    flex-direction: column;
+}
+
+/* MENYUNTIKKAN KOTAK FULL PENUTUP & TEKS OTOMATIS TANPA MERUBAH BODY */
+.terms-and-guide-section::after {
+    content: "PERENCANAAN TATA RUANG DAN PERTANAHAN - UNIVERSITAS DIPONEGORO";
+    display: block;
+    width: calc(100% + 25%); /* Memaksa kotak memanjang penuh ke kanan-kiri menembus padding seksi */
+    margin-left: -12.5%; /* Menyeimbangkan posisi kotak agar presisi di tengah layar */
+    margin-top: 50px; /* Memberikan jarak vertikal dari kotak syarat dan panduan */
+    background-color: #1e3799; /* Warna biru khas GeoPTRP */
+    color: #ffffff; /* Warna teks putih pekat */
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-align: center;
+    padding: 25px 20px;
+    border-top: 5px solid #f1c40f; /* Aksen garis kuning di atas kotak penutup */
+    box-sizing: border-box;
+}
+
+.tag-flex-container {
+    display: flex;
+    flex-direction: row; 
+    gap: 35px;
+    align-items: flex-start;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Kolom Kiri - Ketentuan */
+.tag-left-col { 
+    flex: 1.3; 
+}
+.tag-left-col h3 { 
+    color: #1e3799; 
+    font-size: 22px; 
+    margin: 0 0 20px 0; 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+}
+.terms-content {
+    background: #ffffff;
+    padding: 25px 30px;
+    border-radius: 10px;
+    border-left: 4px solid #1e3799;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.terms-content ul {
+    margin: 0;
+    padding-left: 20px;
+}
+.terms-content li {
+    font-size: 13.5px;
+    color: #4b5563;
+    line-height: 1.7;
+    margin-bottom: 12px;
+    text-align: justify;
+}
+.terms-content li:last-child {
+    margin-bottom: 0;
+}
+
+/* Kolom Kanan - Kotak Panduan Kuning */
+.tag-right-col { 
+    flex: 0.7; 
+    min-width: 300px; 
+}
+.guide-box-card { 
+    background: #ffffff; 
+    padding: 30px 25px; 
+    border-radius: 12px; 
+    border-top: 5px solid #f1c40f; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+    text-align: center; 
+}
+.gb-icon { 
+    width: 60px; 
+    height: 60px; 
+    background: #fff9db; 
+    border-radius: 50px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    margin: 0 auto 15px auto; 
+}
+.gb-icon i { 
+    color: #f1c40f; 
+    font-size: 26px; 
+}
+.guide-box-card h4 { 
+    color: #1e3799; 
+    font-size: 18px; 
+    margin: 0 0 10px 0; 
+}
+.guide-box-card p { 
+    font-size: 13px; 
+    color: #6b7280; 
+    line-height: 1.5; 
+    margin: 0 0 20px 0; 
+}
+.btn-goto-guide { 
+    width: 100%; 
+    background-color: #1e3799; 
+    color: #ffffff; 
+    padding: 12px; 
+    border: none; 
+    border-radius: 8px; 
+    font-weight: bold; 
+    font-size: 14px; 
+    cursor: pointer; 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 10px; 
+    transition: 0.3s; 
+}
+.btn-goto-guide:hover { 
+    background-color: #0c2461; 
+}
+
+/* Penyesuaian HP */
+@media (max-width: 850px) {
+    .tag-flex-container { flex-direction: column; gap: 30px; }
+    .tag-right-col { width: 100%; }
+}
+
+/* ==========================================================================
+   9C. HALAMAN PANDUAN (GRID LAYOUT)
+   ========================================================================== */
+#tab-panduan {
+    background: #fff;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    margin: 30px auto;
+    max-width: 1100px;
+    width: 90%; 
+    box-sizing: border-box;
+}
+
+.panduan-subtitle {
+    color: #666;
+    margin-bottom: 25px;
+    font-size: 15px;
+}
+
+.panduan-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 30px;
+    margin-top: 20px;
+    align-items: start; 
+}
+
+.panduan-menu-item {
+    display: block;
+    width: 100%;
+    padding: 16px 20px;
+    margin-bottom: 8px;
+    border: none;
+    border-radius: 0 8px 8px 0;
+    border-left: 4px solid #ddd;
+    background: #f8f9fa;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    color: #444;
+}
+
+.panduan-menu-item i {
+    width: 25px;
+    color: #888;
+    transition: 0.3s;
+}
+
+.panduan-menu-item.active, 
+.panduan-menu-item:hover {
+    border-left: 4px solid #1e3799;
+    background: #eef2ff;
+    color: #1e3799;
+    font-weight: 600;
+}
+
+.panduan-menu-item.active i, 
+.panduan-menu-item:hover i {
+    color: #1e3799;
+}
+
+.panduan-display {
+    background: #fdfdfd;
+    padding: 25px;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    min-height: 300px; 
+}
+
+.panduan-text-content h3 {
+    color: #1e3799;
+    margin-top: 0;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.panduan-text-content p {
+    color: #555;
+    line-height: 1.7;
+    font-size: 14.5px;
+    text-align: justify;
+}
+
+.back-to-beranda {
+    margin-bottom: 20px;
+}
+
+.back-to-beranda button {
+    background: none;
+    border: none;
+    color: #1e3799;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0;
+    font-size: 14px;
+}
+.back-to-beranda button:hover {
+    text-decoration: underline;
+}
+
+/* Responsif Panduan untuk HP */
+@media (max-width: 850px) {
+    .panduan-layout {
+        grid-template-columns: 1fr; 
+    }
+    .panduan-menu {
+        display: flex;
+        overflow-x: auto; 
+        padding-bottom: 10px;
+        gap: 10px;
+    }
+    .panduan-menu-item {
+        white-space: nowrap;
+        margin-bottom: 0;
+        border-radius: 8px;
+        border-left: none;
+        border-bottom: 4px solid #ddd;
+    }
+    .panduan-menu-item.active, 
+    .panduan-menu-item:hover {
+        border-left: none;
+        border-bottom: 4px solid #1e3799;
+    }
+}
+
+/* ==========================================================================
+   10. MEDIA QUERIES RESPONSIVE
+   ========================================================================== */
+@media (max-width: 850px) or (max-height: 550px) {
+    #header { height: 40px !important; }
+    .logo-container { padding: 0 10px !important; }
+    .logo-container img { height: 35px !important; width: auto !important; }
+    .title-text h1 { font-size: 10px !important; }
+    .title-text h2 { font-size: 7px !important; margin: 2px 0 0 0 !important; padding-top: 2px !important; }
+    #map { height: calc(100vh - 40px) !important; }
+    
+    .search-container-floating { top: 8px !important; left: 8px !important; width: 200px !important; padding: 4px !important; }
+    #search-input { font-size: 10px !important; padding: 4px !important; }
+    #btn-search-coord, #btn-clear-search { font-size: 10px !important; padding: 4px 6px !important; }
+    
+    .map-overlay-left { top: 55px !important; left: 8px !important; width: 230px !important; height: calc(100vh - 180px) !important; }
+    .map-overlay-left.minimized { transform: translateX(-245px) !important; }
+    
+    .sidebar-scroll-area { padding: 6px !important; max-height: calc(100% - 110px) !important; }
+    .layer-item-main { padding: 4px !important; }
+    .layer-title-text { font-size: 10px !important; }
+    .action-btn { font-size: 10px !important; }
+    .sidebar-footer .btn-sidebar-action { padding: 6px !important; font-size: 10px !important; }
+    
+    .btn-sidebar-toggle-right { bottom: 110px !important; right: 8px !important; width: 36px !important; height: 36px !important; font-size: 14px !important; }
+    .right-container { top: 8px !important; right: 8px !important; gap: 6px !important; }
+    #side-panel-info { width: 230px !important; max-height: 40vh !important; height: auto !important; }
+    .panel-header h3 { font-size: 10px !important; }
+    .attr-item { font-size: 9px !important; padding: 2px 0 !important; }
+    #btn-home { padding: 4px 10px !important; font-size: 10px !important; }
+    
+    .floating-bottom-right { bottom: 80px !important; right: 8px !important; }
+    #btn-measure-tools { width: 36px !important; height: 36px !important; font-size: 13px !important; }
+    .measure-options { bottom: 42px !important; width: 120px !important; }
+    .measure-options button { padding: 6px !important; font-size: 10px !important; }
+}
+
+/* MODIFIKASI: Kondisi HP Potrait murni (Layar Tegak) */
+@media (max-width: 768px) and (orientation: portrait) {
+    .info-section { flex-direction: column !important; text-align: center !important; }
+    .info-image { flex: 0 0 100% !important; max-width: 350px !important; margin: 0 auto !important; }
+    .info-text p { text-align: center !important; }
+    .btn-right-wrapper { justify-content: center !important; }
+
+    #landing-page { flex-direction: column; }
+    .landing-media { width: 100% !important; height: 35% !important; position: relative !important; }
+    .landing-content { width: 100% !important; height: 65% !important; padding: 25px !important; clip-path: none !important; box-shadow: none !important; justify-content: center !important; align-items: center !important; text-align: center !important; }
+    .landing-content h1 { font-size: 26px !important; }
+    .landing-content p { font-size: 14px !important; margin: 15px 0 20px 0 !important; }
+}
+
+/* ==========================================================================
+   FIX MUTLAK: OPTIMASI RESPONSIVE TOTAL UNTUK LAYAR HP LANDSCAPE
+   ========================================================================== */
+@media screen and (max-width: 950px) and (orientation: landscape) {
+    
+    /* 1. Mencegah Kebocoran Padding Halaman Utama */
+    #tab-info {
+        padding: 15px 3% !important; 
+    }
+
+    /* 2. OPTIMASI PANEL MAPS & STATISTIK (TETAP SEJAJAR KIRI-KANAN) */
+    .ceper-highlight-container {
+        display: flex !important;
+        flex-direction: row !important; 
+        gap: 15px !important; 
+        padding: 12px !important; 
+        margin-bottom: 20px !important;
+        align-items: stretch !important;
+    }
+    .ceper-map-frame {
+        flex: 1 !important; 
+        min-height: 150px !important; 
+        height: 150px !important;
+    }
+    .ceper-info-stats {
+        flex: 1 !important;
+        justify-content: center !important;
+        padding-top: 0 !important;
+    }
+    .ceper-info-stats h2 { font-size: 18px !important; margin-bottom: 1px !important; }
+    .ceper-info-stats .sub-district { font-size: 10px !important; margin-bottom: 8px !important; }
+    .stat-panel-box { gap: 8px !important; }
+    .stat-card { padding: 5px 10px !important; }
+    .stat-card-number { font-size: 13px !important; }
+    .stat-card-title, .stat-card-unit, .ceper-info-stats::after { font-size: 9px !important; }
+
+    /* ==========================================================================
+       3. SINKRONISASI 3 BOKS DIAGRAM (MENGUNCI STRUKTUR AGAR TIDAK MENYUSUT)
+       ========================================================================== */
+    
+    /* Induk Utama Rangkaian Diagram (Memaksa Urutan ke Bawah secara Makro) */
+    #tab-info div[style*="display: flex; flex-direction: column;"] {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 20px !important;
+        align-items: center !important;
+    }
+
+    /* GAMBAR 1: Memaksa Diagram Batang Tegak Mengisi 100% Lebar Layar Tanpa Menyusut */
+    #tab-info div[style*="width: 100%; background: #ffffff;"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        display: block !important;
+        box-sizing: border-box !important;
+        padding: 15px !important;
+    }
+    #chart_jumlah_bidang_vertikal { 
+        width: 100% !important;
+        height: 200px !important; /* Tinggi disesuaikan agar pas di layar landscape HP */
+    }
+
+    /* GAMBAR 2 & 3: MEMAKSA KEDUA DIAGRAM DI BAWAHNYA TETAP BERJEJER KE SAMPING */
+    #tab-info div[style*="display: flex; flex-direction: row;"] {
+        display: flex !important;
+        flex-direction: row !important; /* Kunci mutlak posisi horizontal */
+        justify-content: space-between !important;
+        align-items: stretch !important;
+        gap: 15px !important;
+        width: 100% !important;
+    }
+
+    /* Membagi Lebar Boks Gambar 2 & 3 secara Adil Jelas (Masing-masing 49% Lebar Layar) */
+    #tab-info div[style*="max-width: 520px;"] {
+        flex: 1 !important;
+        max-width: calc(50% - 8px) !important; /* Formula presisi agar tidak tumpah ke bawah */
+        width: calc(50% - 8px) !important;
+        padding: 15px !important;
+        border-radius: 12px !important;
+    }
+
+    /* Mengunci Skala Tinggi Google Charts di Dalamnya */
+    #chart_proporsi_tanah { 
+        width: 100% !important;
+        height: 170px !important; 
+    }
+    
+    #chart_persentase_hak { 
+        width: 100% !important;
+        height: 170px !important; 
+    }
+
+    /* Penyesuaian Komponen Teks Makro Informasi Grafis */
+    #tab-info h3 { font-size: 14px !important; margin-bottom: 12px !important; }
+    #tab-info h4 { font-size: 11px !important; margin-bottom: 2px !important; text-align: center !important; }
+    #tab-info p[style*="font-size: 11px;"] { font-size: 9px !important; margin-bottom: 5px !important; }
+    #tab-info p[style*="text-align: center; width: 100%;"] { margin-top: 10px !important; font-size: 9px !important; }
+
+    /* --- Tampilan Khas Sekilas GeoPTRP --- */
+    .info-section { display: flex !important; flex-direction: row !important; gap: 20px !important; padding: 15px 5% !important; align-items: center !important; }
+    .info-image { flex: 0 0 30% !important; max-width: 200px !important; }
+    .info-text { flex: 1 !important; gap: 4px !important; }
+    .info-text h2 { font-size: 18px !important; margin-bottom: 2px !important; }
+    .info-text p { font-size: 11px !important; line-height: 1.4 !important; }
+    .btn-right-wrapper { justify-content: flex-end !important; margin-top: 5px !important; }
+    .btn-explore-yellow { padding: 6px 15px !important; font-size: 11px !important; }
+}
+
+/* FIX: Sinkronisasi Nama Class untuk Jendela Interaktif */
+@media (max-width: 600px) {
+    .spatial-flex-container { flex-direction: column; align-items: stretch; gap: 12px; }
+    #main-toggle-container.shrunk { width: 100%; flex: initial; min-height: 60px; padding: 10px; }
+    #interaction-right.show { height: auto; flex-direction: column; align-items: stretch; }
+    .logo-bar-horizontal { flex-direction: row; width: 100%; justify-content: space-around; }
+    .info-logo-card.active { transform: scale(1.05) translateY(-2px); }
+    .info-display-box { height: 160px; }
+}
+
+@media (max-height: 500px) {
+    #landing-page { flex-direction: row !important; }
+    .landing-content { padding: 15px 30px !important; justify-content: center !important; }
+    .landing-content h1 { font-size: 22px !important; }
+    .landing-content p { margin: 10px 0 15px 0 !important; font-size: 13px !important; }
+    .landing-content button { padding: 8px 15px !important; font-size: 13px !important; }
+    #disclaimer-overlay { align-items: flex-start !important; padding-top: 10px !important; overflow-y: auto !important; }
+    .disclaimer-box { padding: 15px !important; margin-bottom: 10px !important; max-width: 550px !important; }
+    .disclaimer-title { font-size: 16px !important; margin-bottom: 8px !important; }
+    .disclaimer-text { max-height: 110px !important; padding: 10px !important; margin-bottom: 10px !important; font-size: 12px !important; }
+    .disclaimer-footer { margin-top: 10px !important; }
+    #btn-continue { padding: 8px 20px !important; }
+}
+
+@media (max-width: 1500px) and (orientation: portrait) {
+    .map-overlay-left { height: calc(100vh - 350px) !important; }
+    .sidebar-scroll-area { max-height: calc(100% - 120px) !important; }
+    .btn-sidebar-toggle-right { bottom: 150px !important; right: 15px !important; position: absolute !important; z-index: 1001 !important; }
+    .floating-bottom-right { bottom: 210px !important; right: 15px !important; position: absolute !important; z-index: 1001 !important; }
+}
+
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .logo-container img, .logo-side img { height: 25px !important; width: auto !important; max-height: 25px !important; }
+    #header { height: 35px !important; }
+    #btn-home, .btn-sidebar-action, .menu-side a { font-size: 8px !important; padding: 2px 6px !important; height: 20px !important; line-height: 20px !important; }
+    .title-text h1 { font-size: 9px !important; }
+    .title-text h2 { font-size: 6px !important; }
+    .info-display-box { font-size: 9px !important; padding: 5px !important; margin: 5px !important; }
+}
+
+@media screen and (orientation: landscape) {
+    .info-display-box { max-height: 70vh !important; }
+}
+</style>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+</head>
+<body>
+    <div id="mobile-warning-overlay">
+        <div class="warning-card">
+            <i class="fas fa-mobile-alt warning-icon"></i>
+            <h2>Optimalkan Layar Anda</h2>
+            <p>WebGIS Pertanahan Kecamatan Ceper membutuhkan ruang layar lebar agar peta dan tabel atribut dapat tampil optimal.</p>
+            <div class="highlight-text">
+                <b>Rekomendasi Akses HP:</b><br>
+                • Matikan Kunci Orientasi HP & <b>Miringkan menjadi Landscape</b> (Peringatan otomatis hilang).<br>
+                • If using <b>Situs Desktop</b>, Anda dapat mengklik tombol di bawah ini untuk masuk langsung.
+            </div>
+            <button id="btn-warning-ok">Saya Mengerti & Masuk WebGIS</button>
+        </div>
+    </div>
+
+    <div id="disclaimer-overlay">
+        <div class="disclaimer-box">
+            <div class="disclaimer-title">
+                <i class="fas fa-shield-halved"></i> Pernyataan Informasi Data
+            </div>
+            <div class="disclaimer-text">
+                <p>Setiap informasi yang disajikan dalam Sistem Informasi Pertanahan ini merupakan hasil pengelolaan, pengolahan, dan penyajian data oleh mahasiswa Program Studi Perencanaan Tata Ruang dan Pertanahan dalam rangka kegiatan akademik. Informasi ditampilkan sebagaimana adanya dengan tetap memperhatikan ketentuan perlindungan data dan informasi yang bersifat pribadi maupun rahasia.</p>
+                <p>Pengelola tidak memberikan jaminan terhadap ketepatan waktu, keakuratan, maupun kelengkapan data dan informasi yang tersedia. Seluruh informasi yang disajikan merupakan hasil kompilasi, interpretasi, dan analisis data spasial yang digunakan untuk kepentingan pembelajaran dan tidak dimaksudkan sebagai acuan resmi.</p>
+                <p>Apabila pengguna bermaksud menggunakan informasi yang tersedia sebagai dasar dalam pengambilan keputusan, pengguna disarankan untuk melakukan verifikasi dan konfirmasi lebih lanjut kepada instansi atau sumber data resmi yang berwenang.</p>
+                <p>Jika ditemukan ketidaksesuaian informasi, baik terkait letak, bentuk, posisi, maupun atribut lainnya pada peta, pengguna dapat menyampaikan masukan atau klarifikasi kepada pengelola sistem untuk dilakukan peninjauan dan perbaikan lebih lanjut.</p>
+            </div>
+            <label class="disclaimer-check">
+                <input type="checkbox" id="chk-understand"> Saya sudah membaca dan memahami pernyataan tersebut
+            </label>
+            <div class="disclaimer-footer">
+                <button id="btn-continue">Lanjutkan</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-katalog">
+        <div class="katalog-box">
+            <div class="katalog-header">
+                <b><i class="fas fa-database"></i> Katalog Data Spasial</b>
+                <span style="cursor:pointer; font-size: 24px;" id="btn-close-katalog">×</span>
+            </div>
+            <div class="katalog-body" id="katalog-list"></div>
+            <div class="katalog-footer">
+                <button id="btn-apply-katalog">Terapkan pada Peta</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="landing-page">
+        <nav class="top-navbar">
+            <div class="logo-side">
+                <img src="LOGO UNDIP PTRP.png" alt="Logo UNDIP PTRP" style="height: 80px; width: auto; max-height: none;">
+            </div>
+            <div class="menu-side">
+                <a id="btn-beranda" class="nav-menu-item active" onclick="bukaTab('beranda')">Beranda</a>
+                <a class="nav-menu-item" onclick="masukPeta()">Jelajahi GeoPTRP</a>
+                <a id="btn-info" class="nav-menu-item" onclick="bukaTab('info')">Informasi Pertanahan</a>
+                <a id="btn-alamat" class="nav-menu-item" onclick="bukaTab('alamat')">Alamat</a>
+            </div>
+        </nav>
+
+        <div id="tab-beranda" class="sub-page-content" style="display: block; padding: 0;">
+            <header class="hero-header">
+                <img src="HEADER WEBGIS.png" alt="Header WebGIS">
+            </header>
+
+            <div class="yellow-banner">
+                <i class="fas fa-angles-down"></i>
+            </div>
+                
+            <div id="spatial-interactive-row" class="spatial-flex-container">
+                <div id="main-toggle-container" onclick="handleMainToggle()">
+                    <div class="toggle-text-box">
+                        <i class="fas fa-database"></i>
+                        <span class="text-label">Informasi Data Spasial</span>
+                    </div>
+                </div>
+
+                <div class="interaction-area-right" id="interaction-right">
+                    <div id="logo-bar-container" class="logo-bar-horizontal">
+                        <div class="info-logo-card" id="logo-1" onclick="selectLogo(this, 'admin')">
+                            <i class="fas fa-map-location-dot"></i>
+                            <div class="logo-label">Batas Admin</div>
+                        </div>
+                        <div class="info-logo-card" id="logo-2" onclick="selectLogo(this, 'lahan')">
+                            <i class="fas fa-layer-group"></i>
+                            <div class="logo-label">Lahan</div>
+                        </div>
+                        <div class="info-logo-card" id="logo-3" onclick="selectLogo(this, 'bidang')">
+                            <i class="fas fa-vector-square"></i>
+                            <div class="logo-label">Bidang</div>
+                        </div>
+                        <div class="info-logo-card" id="logo-4" onclick="selectLogo(this, 'nilai')">
+                            <i class="fas fa-coins"></i>
+                            <div class="logo-label">Nilai Tanah</div>
+                        </div>
+                    </div>
+
+                    <div id="info-display-area" class="info-display-box">
+                        <div id="info-content-target" class="spatial-info-panel">
+                            
+                            <div id="spatial-info-text">
+                                <p style="color: #777; text-align: center; font-style: italic; margin: 0;">
+                                    Silakan klik salah satu logo kecil di samping untuk memunculkan informasi spasial wilayah Ceper dalam bentuk diagram.
+                                </p>
+                            </div>
+
+                            <div id="chart_proporsi_container" class="chart-holder">
+                                <h4 class="chart-main-title">Proporsi Bidang Tanah Terdaftar</h4>
+                                <div id="chart_proporsi" style="width: 100%; height: 200px;"></div>
+                            </div>
+
+                            <div id="chart_jumlah_container" class="chart-holder">
+                                <h4 class="chart-main-title">Jumlah Bidang Tanah Per Status Hak</h4>
+                                <div id="chart_jumlah" style="width: 100%; height: 200px;"></div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div> 
+            </div> 
+
+            <section class="info-section">
+                <div class="info-image">
+                    <img src="LAPTOP WEBGIS.png" alt="WebGIS GeoPTRP">
+                </div>
+                
+                <div class="info-text">
+                    <h2>Sekilas GeoPTRP</h2>
+                    <p>
+                        GeoPTRP (Geographic Information System Perencanaan Tata Ruang dan Pertanahan) adalah platform sistem informasi geografis interaktif yang dirancang khusus untuk menyajikan, memantau, dan mengelola data spasial serta administrasi pertanahan di wilayah Kecamatan Ceper secara akurat. Melalui integrasi teknologi WebGIS, platform ini menyederhanakan akses informasi tata guna lahan, batas administrasi, persebaran bidang tanah, hingga zona nilai tanah guna mendukung transparansi dan efektivitas perencanaan ruang wilayah.
+                    </p>
+                    <div class="btn-right-wrapper">
+                        <button class="btn-explore-yellow" onclick="masukPeta()" style="border: none; cursor: pointer;">
+                            Jelajahi GeoPTRP <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="terms-and-guide-section">
+                <div class="tag-flex-container">
+                    <div class="tag-left-col">
+                        <h3>
+                            <i class="fas fa-gavel"></i> Syarat & Ketentuan
+                        </h3>
+                        <div class="terms-content">
+                            <ul>
+                                <li><strong>Data Akademik:</strong> Informasi ini dikelola oleh mahasiswa untuk kegiatan pembelajaran, bukan acuan resmi.</li>
+                                <li><strong>Tanpa Jaminan:</strong> Pengelola tidak menjamin keakuratan, ketepatan waktu, maupun kelengkapan data.</li>
+                                <li><strong>Verifikasi Wajib:</strong> Pengguna disarankan konfirmasi ke instansi berwenang sebelum mengambil keputusan.</li>
+                                <li><strong>Masukan:</strong> Hubungi pengelola jika ditemukan ketidaksesuaian data pada peta.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="tag-right-col">
+                        <div class="guide-box-card">
+                            <div class="gb-icon">
+                                <i class="fas fa-book-open"></i>
+                            </div>
+                            <h4>Panduan Fitur</h4>
+                            <p>Butuh bantuan dalam mengoperasikan sistem peta interaktif? Silakan klik tombol di bawah untuk mempelajari panduan penggunaan instrumen WebGIS.</p>
+                            <button class="btn-goto-guide" onclick="bukaLayarPanduan()">
+                                <i class="fas fa-circle-info"></i> Buka Panduan Fitur
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div> <div id="tab-info" class="sub-page-content">
+        <div class="info-title-container">
+            <h1 class="info-main-title"><i class="fas fa-circle-info"></i> Informasi Pertanahan</h1>
+            <p class="info-sub-title">Kumpulan data tekstual dan statistik agraria wilayah Kecamatan Ceper</p>
+        </div>
+    
+        <div class="ceper-highlight-container">
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+        <iframe 
+            class="ceper-map-frame"
+            src="https://maps.google.com/maps?q=Kecamatan%20Ceper,%20Klaten&t=&z=13&ie=UTF8&iwloc=&output=embed" 
+            frameborder="0" 
+            scrolling="no" 
+            marginheight="0" 
+            marginwidth="0"
+            style="width: 100%; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px;">
+        </iframe>
+        
+        <a href="https://www.google.com/maps/dir/?api=1&destination=Kecamatan+Ceper,+Klaten" 
+           target="_blank" 
+           class="btn-rute-maps">
+        </a>
+    </div>
+
+            <div class="ceper-info-stats">
+                <h2>KECAMATAN CEPER</h2>
+                <div class="sub-district">Kabupaten Klaten, Jawa Tengah</div>
+                
+                <div class="stat-panel-box">
+                    <div class="stat-card">
+                        <div class="stat-card-title"><i class="fas fa-chart-area"></i> Luas Wilayah</div>
+                        <div class="stat-card-number">25,79 <span class="stat-card-unit">km²</span></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-title"><i class="fas fa-users"></i> Jumlah Penduduk</div>
+                        <div class="stat-card-number">66.256 <span class="stat-card-unit">Jiwa</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 30px; border-top: 2px dashed #ddd; padding-top: 25px; width: 100%;">
+            <h3 style="color: #1e3799; font-size: 18px; font-weight: 700; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 0.5px;">
+                <i class="fas fa-chart-bar"></i> Visualisasi Statistik Pertanahan Wilayah
+            </h3>
+            
+            <div style="display: flex; flex-direction: column; gap: 30px; width: 100%; align-items: center;">
+                
+                <div style="width: 100%; background: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e9ecef; box-sizing: border-box;">
+                    <h4 style="margin: 0 0 5px 0; font-size: 15px; color: #1e3799; font-weight: 700; text-align: center; text-transform: uppercase;">Jumlah Bidang Tanah Per Status Hak Kepemilikan</h4>
+                    <p style="margin: 0 0 20px 0; font-size: 11.5px; color: #7f8c8d; text-align: center; font-style: italic;">Menampilkan total persebaran sertifikasi bidang tanah di Kecamatan Ceper</p>
+                    <div id="chart_jumlah_bidang_vertikal" style="width: 100%; height: 380px; margin: 0 auto;"></div>
+                </div>
+
+                <div style="display: flex; flex-direction: row; gap: 25px; flex-wrap: wrap; width: 100%; justify-content: center; align-items: stretch;">
+                    
+                    <div style="flex: 1; min-width: 340px; max-width: 520px; background: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e9ecef; box-sizing: border-box;">
+                        <h4 style="margin: 0 0 5px 0; font-size: 14px; color: #1e3799; font-weight: 700; text-align: center; text-transform: uppercase; line-height: 1.4;">Proporsi Tanah Terdaftar dan Belum Terdaftar</h4>
+                        <p style="margin: 0 0 15px 0; font-size: 11px; color: #7f8c8d; text-align: center; font-style: italic;">Klik pada potongan diagram untuk memunculkan detail data</p>
+                        <div id="chart_proporsi_tanah" style="width: 100%; height: 300px; margin: 0 auto;"></div>
+                    </div>
+
+                    <div style="flex: 1; min-width: 340px; max-width: 520px; background: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e9ecef; box-sizing: border-box;">
+                        <h4 style="margin: 0 0 5px 0; font-size: 14px; color: #1e3799; font-weight: 700; text-align: center; text-transform: uppercase;">Persentase Luas Wilayah Hak Tanah</h4>
+                        <p style="margin: 0 0 15px 0; font-size: 11px; color: #7f8c8d; text-align: center; font-style: italic;">Kalkulasi kepemilikan ruang berdasarkan satuan Hektar (Ha)</p>
+                        <div id="chart_persentase_hak" style="width: 100%; height: 300px; margin: 0 auto;"></div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <p style="font-size: 11px; font-style: italic; color: #888; margin-top: 25px; text-align: center; width: 100%;">
+                *Sumber data: Konsolidasi Data Status Tanah & Legalitas Kepemilikan Kecamatan Ceper 2026
+            </p>
+        </div>
+    </div>
+
+        <div id="tab-alamat" class="sub-page-content">
+            <h2>Alamat</h2>
+            <p>Halaman ini masih kosong. Anda dapat menambahkan detail alamat atau peta lokasi di sini nanti...</p>
+        </div>
+
+        <div id="tab-panduan" class="sub-page-content">
+            <div class="back-to-beranda">
+                <button onclick="bukaTab('beranda')"><i class="fas fa-arrow-left"></i> Kembali ke Beranda</button>
+            </div>
+            
+            <h2>Panduan Fitur GeoPTRP</h2>
+            <p class="panduan-subtitle">Klik pada salah satu fitur di bawah ini untuk melihat penjelasan detail fungsinya.</p>
+
+            <div class="panduan-layout">
+                <div class="panduan-menu">
+                    <button class="panduan-menu-item active" onclick="tampilPanduan('peta-interaktif', this)">
+                        <i class="fas fa-map"></i> Peta Interaktif
+                    </button>
+                    <button class="panduan-menu-item" onclick="tampilPanduan('katalog-data', this)">
+                        <i class="fas fa-database"></i> Katalog Data Spasial
+                    </button>
+                    <button class="panduan-menu-item" onclick="tampilPanduan('alat-ukur', this)">
+                        <i class="fas fa-ruler-combined"></i> Alat Ukur Jarak & Luas
+                    </button>
+                    <button class="panduan-menu-item" onclick="tampilPanduan('pencarian-koordinat', this)">
+                        <i class="fas fa-search-location"></i> Pencarian Koordinat
+                    </button>
+                    <button class="panduan-menu-item" onclick="tampilPanduan('informasi-atribut', this)">
+                        <i class="fas fa-info-circle"></i> Informasi Atribut Bidang
+                    </button>
+                </div>
+
+                <div class="panduan-display">
+                    <div id="panduan-peta-interaktif" class="panduan-text-content" style="display: block;">
+                        <h3><i class="fas fa-map"></i> Peta Interaktif</h3>
+                        <p>Fitur utama GeoPTRP untuk melakukan visualisasi peta wilayah Kecamatan Ceper secara spasial. Anda bisa melakukan pergeseran (<strong>Pan</strong>), memperbesar (<strong>Zoom In</strong>), maupun memperkecil (<strong>Zoom Out</strong>) peta, serta mengganti pilihan <strong>Basemap</strong> (OpenStreetMap, Google Satellite, Esri Topo) melalui panel kontrol layer di sebelah kiri.</p>
+                    </div>
+                    <div id="panduan-katalog-data" class="panduan-text-content" style="display: none;">
+                        <h3><i class="fas fa-database"></i> Katalog Data Spasial</h3>
+                        <p>Menu ini digunakan untuk memanggil lapisan data (<strong>Layer</strong>) tematik yang tersedia di dalam sistem, seperti data Batas Administrasi, Penggunaan Lahan, Bidang Tanah, dan Zona Nilai Tanah (ZNT). Centang layer yang diinginkan pada katalog, lalu klik "<strong>Terapkan pada Peta</strong>".</p>
+                    </div>
+                    <div id="panduan-alat-ukur" class="panduan-text-content" style="display: none;">
+                        <h3><i class="fas fa-ruler-combined"></i> Alat Ukur Jarak & Luas</h3>
+                        <p>Terletak di sudut kanan bawah layar peta. Fitur ini memungkinkan Anda untuk mengukur jarak linier antara dua titik (misal: panjang jalan atau batas bidang) serta menghitung luasan area poligon tertentu secara langsung di atas peta.</p>
+                    </div>
+                    <div id="panduan-pencarian-koordinat" class="panduan-text-content" style="display: none;">
+                        <h3><i class="fas fa-search-location"></i> Pencarian Koordinat</h3>
+                        <p>Gunakan kolom pencarian melayang (<strong>Floating Search Bar</strong>) di bagian atas peta untuk melacak lokasi berdasarkan input koordinat geografis (Latitude, Longitude). Sistem akan otomatis mengarahkan kamera peta (<strong>Flying Zoom</strong>) ke lokasi koordinat tersebut.</p>
+                    </div>
+                    <div id="panduan-informasi-atribut" class="panduan-text-content" style="display: none;">
+                        <h3><i class="fas fa-info-circle"></i> Informasi Atribut Bidang</h3>
+                        <p>Saat peta aktif, Anda dapat melakukan klik kiri secara langsung pada objek bidang tanah atau wilayah tertentu. Panel informasi di sebelah kanan akan muncul dan menampilkan detail atribut tabular objek tersebut dari basis data Geoserver.</p>
+                    </div>
+                </div> </div> </div> </div> <div id="header">
+        <div class="logo-container">
+            <div class="header-left">
+                <img src="https://mm.feb.undip.ac.id/wp-content/uploads/2021/11/universitas-diponegoro-logo.png" alt="Logo Undip">
+            </div>
+            <div class="title-text">
+                <h1>GeoPTRP - KECAMATAN CEPER</h1>
+                <h2>PERENCANAAN TATA RUANG DAN PERTANAHAN | UNIVERSITAS DIPONEGORO</h2>
+            </div>
+            <div class="header-right">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRiJ_9a55GcQUm4HeKeqZy3Zwijn_Eeq96Cgg&s" alt="Logo CEPER">
+            </div>
+        </div>
+    </div>
+
+    <div id="map">
+        <div id="mouse-position" class="mouse-position"></div>
+
+        <div class="search-container-floating" id="floating-search">
+            <input type="text" id="search-input" placeholder="Latitude, Longitude...">
+            <button id="btn-search-coord"><i class="fas fa-search"></i></button>
+            <button id="btn-clear-search" title="Hapus"><i class="fas fa-times"></i></button>
+        </div>
+
+        <div class="map-overlay-left" id="sidebar">
+            <div class="sidebar-toggle-btn" id="btn-toggle-sidebar">
+                <i class="fas fa-chevron-left" id="toggle-icon"></i>
+            </div>
+            
+            <div class="sidebar-scroll-area">
+                <div id="layer-list">
+                    <div class="basemap-select" style="margin-bottom: 20px;">
+                        <label style="font-size: 11px; font-weight: 700; color: #1e3799; text-transform: uppercase; letter-spacing: 1px;">Basemap</label>
+                        <select id="select-basemap" style="width:100%; padding:8px; margin-top:5px; border-radius:6px; border:1px solid #ddd;">
+                            <option value="osm">OpenStreetMap</option>
+                            <option value="satellite">Google Satellite</option>
+                            <option value="topo">Esri Topo</option>
+                        </select>
+                    </div>
+
+                    <div style="padding: 10px 0; border-bottom: 3px solid #f1c40f; margin-bottom: 15px;">
+                        <b style="font-size: 13px; color: #1e3799;"><i class="fas fa-layer-group"></i> KONTROL LAYER</b>
+                    </div>
+                    
+                    <div id="active-layers-container"></div>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <button class="btn-sidebar-action btn-katalog" id="btn-katalog-data">
+                    <i class="fas fa-database"></i> Katalog Data
+                </button>
+                <button class="btn-sidebar-action btn-zoom" id="btn-zoom-ceper">
+                    <i class="fas fa-expand-arrows-alt"></i> Zoom to Ceper
+                </button>
+                <button class="btn-sidebar-action btn-delete" id="btn-clear-all">
+                    <i class="fas fa-trash-can"></i> Hapus Semua Data
+                </button>
+            </div>
+        </div>
+
+        <div class="right-container">
+            <div id="side-panel-info">
+                <div class="panel-header">
+                    <h3><i class="fas fa-database"></i> Informasi Data</h3>
+                    <span class="close-panel" id="close-panel">×</span>
+                </div>
+                <div class="panel-body" id="panel-content"></div>
+            </div>
+        </div>
+
+        <div class="floating-bottom-right">
+            <div class="measure-container" style="position: relative;">
+                <div class="measure-options" id="measure-menu">
+                    <button id="measure-length"><i class="fas fa-ruler-combined"></i> Ukur Jarak</button>
+                    <button id="measure-area"><i class="fas fa-draw-polygon"></i> Ukur Luas</button>
+                    <button id="clear-measure" style="color:#e74c3c;"><i class="fas fa-eraser"></i> Hapus Ukuran</button>
+                </div>
+                <button id="btn-measure-tools" title="Alat Ukur">
+                    <i class="fas fa-ruler"></i>
+                </button>
+            </div>
+            <button id="btn-home"><i class="fas fa-house"></i> Dashboard</button>
+        </div>
+    </div>
+</body>
+
+   <script src="https://cdn.jsdelivr.net/npm/ol@v10.3.1/dist/ol.js"></script>
+<script>
+/* ==========================================================================
+   SELURUH SCRIPT JALAN SETELAH DOM SIAP (Mencegah Error Null / Elemen Belum Muat)
+   ========================================================================== */
+document.addEventListener("DOMContentLoaded", function() {
+
+    // 1. Database Teks Penjelasan Popup Beranda
+    const infoDataSpasial = {
+        'admin': `<h3><i class="fas fa-map-location-dot"></i> Batas Administrasi</h3>
+                  <p>Menyajikan informasi mengenai batas wilayah pengelolaan dari tingkat kecamatan hingga batas desa di Kecamatan Ceper.</p>`,
+        'lahan': `<h3><i class="fas fa-layer-group"></i> Penggunaan Lahan</h3>
+                  <p>Menggambarkan klasifikasi pemanfaatan ruang permukaan bumi saat ini, seperti kawasan permukiman, sawah, dan industri.</p>`,
+        'bidang': `<h3><i class="fas fa-vector-square"></i> Bidang Tanah</h3>
+                   <p>Menampilkan visualisasi persebaran bidang tanah beserta penjelasan status hak atas tanah dan legalitas kepemilikannya.</p>`,
+        'nilai': `<h3><i class="fas fa-coins"></i> Zona Nilai Tanah</h3>
+                  <p>Menyediakan estimasi nilai pasar atau nilai indikatif rata-rata tanah sebagai acuan administrasi pertanahan.</p>`
+    };
+
+    // 2. Logika Sakelar (Toggle) Tombol Utama
+    window.handleMainToggle = function() {
+        const btnPemicu = document.getElementById('main-toggle-container');
+        const interactionRight = document.getElementById('interaction-right');
+        const displayArea = document.getElementById('info-display-area');
+        const logoCards = document.querySelectorAll('.info-logo-card');
+
+        if (btnPemicu.classList.contains('shrunk')) {
+            btnPemicu.classList.remove('shrunk');
+            if (interactionRight) interactionRight.classList.remove('show');
+            if (displayArea) displayArea.classList.remove('show');
+            logoCards.forEach(c => c.classList.remove('active'));
+        } else {
+            btnPemicu.classList.add('shrunk');
+            if (interactionRight) interactionRight.classList.add('show');
+        }
+    };
+
+    // 3. Logika Klik Logo Card
+    window.selectLogo = function(element, tipeData) {
+        const logoCards = document.querySelectorAll('.info-logo-card');
+        const displayArea = document.getElementById('info-display-area');
+        const contentTarget = document.getElementById('info-content-target');
+
+        const isAlreadyActive = element.classList.contains('active');
+        logoCards.forEach(c => c.classList.remove('active'));
+        
+        if (isAlreadyActive) {
+            if (displayArea) displayArea.classList.remove('show');
+        } else {
+            element.classList.add('active');
+            if (contentTarget) {
+                contentTarget.innerHTML = infoDataSpasial[tipeData] || '<p>Informasi tidak ditemukan.</p>';
+            }
+            if (displayArea) displayArea.classList.add('show');
+        }
+    };
+
+    // 4. Konfigurasi Navigasi & Tabulasi Halaman
+    window.masukPeta = function() {
+        document.getElementById('landing-page').style.display = 'none';
+        document.querySelectorAll('.nav-menu-item').forEach(item => item.classList.remove('active'));
+        
+        const chkBox = document.getElementById('chk-understand');
+        const btnCont = document.getElementById('btn-continue');
+        if (chkBox && btnCont) {
+            chkBox.checked = false;
+            btnCont.disabled = true;
+            btnCont.classList.remove('active');
+        }
+
+        document.getElementById('disclaimer-overlay').style.display = 'flex';
+        
+        if (typeof map !== 'undefined' && map.updateSize) {
+            setTimeout(function() { map.updateSize(); }, 200);
+        }
+    };
+
+    window.bukaTab = function(namaTab) {
+        document.getElementById('landing-page').style.display = 'block';
+        document.getElementById('tab-beranda').style.display = 'none';
+        document.getElementById('tab-info').style.display = 'none';
+        document.getElementById('tab-alamat').style.display = 'none';
+        document.getElementById('tab-panduan').style.display = 'none'; // MENYEMBUNYIKAN PANDUAN SAAT TAB LAIN DIKLIK
+        document.querySelectorAll('.menu-side a').forEach(item => item.classList.remove('active'));
+
+        if (namaTab === 'beranda') {
+            document.getElementById('tab-beranda').style.display = 'block';
+            const btnBeranda = document.getElementById('btn-beranda');
+            if(btnBeranda) btnBeranda.classList.add('active');
+        } else if (namaTab === 'info') {
+            // 1. Munculkan dahulu wadah halamannya ke layar agar memiliki nilai WIDTH asli
+            document.getElementById('tab-info').style.display = 'block';
+            
+            const btnInfo = document.getElementById('btn-info');
+            if(btnInfo) btnInfo.classList.add('active');
+
+            // 2. SUNTIKAN AMAN: Paksa Google Charts menggambar ulang diagram seketika setelah boks terbuka sempurna
+            if (typeof drawPertanahanCharts === 'function') {
+                // Diberi delay super tipis 80ms agar transisinya halus dan presisi
+                setTimeout(drawPertanahanCharts, 80);
+            }
+        } else if (namaTab === 'alamat') {
+            document.getElementById('tab-alamat').style.display = 'block';
+            const btnAlamat = document.getElementById('btn-alamat');
+            if(btnAlamat) btnAlamat.classList.add('active');
+        }
+        document.getElementById('landing-page').scrollTop = 0;
+    };
+
+    // 5. Inisialisasi Peta Spasial OpenLayers
+    const initialCenter = ol.proj.fromLonLat([110.6750, -7.6750]); 
+    const initialZoom = 13.5;
+    const url_geoserver = 'http://202.10.37.202:8080/geoserver/GeoPTRP_A3/wms';
+    const workspace = 'GeoPTRP_A3';
+
+    let chosenLayers = ['jalanLn', 'sungaiLn', 'desa']; 
+
+    const pinSource = new ol.source.Vector();
+    const pinLayer = new ol.layer.Vector({
+        source: pinSource,
+        style: new ol.style.Style({
+            image: new ol.style.Icon({ 
+                anchor: [0.5, 1], 
+                src: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', 
+                scale: 0.06 
+            })
+        }),
+        zIndex: 1000
+    });
+
+    const highlightSource = new ol.source.Vector();
+    const highlightLayer = new ol.layer.Vector({
+        source: highlightSource,
+        style: new ol.style.Style({
+            stroke: new ol.style.Stroke({ color: '#ff0000', width: 3, lineDash: [10, 10] }),
+            fill: new ol.style.Fill({ color: 'rgba(255, 0, 0, 0.1)' })
+        }),
+        zIndex: 999 
+    });
+
+    const osmLayer = new ol.layer.Tile({ source: new ol.source.OSM(), visible: true });
+    const satelliteLayer = new ol.layer.Tile({ source: new ol.source.XYZ({ url: 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}' }), visible: false });
+    const topoLayer = new ol.layer.Tile({ source: new ol.source.XYZ({ url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}' }), visible: false });
+
+    function createWMS(layerName, isVisible = false, title) {
+        return new ol.layer.Image({
+            source: new ol.source.ImageWMS({
+                url: url_geoserver,
+                params: {'LAYERS': workspace + ':' + layerName},
+                serverType: 'geoserver'
+            }),
+            visible: isVisible,
+            properties: { 'name': layerName, 'title': title }
+        });
+    }
+
+    const layers = {
+        dukuh: createWMS('Batas Dukuh', false, 'Batas Dukuh'),
+        desa: createWMS('Batas Kelurahan/Desa', true, 'Batas Kelurahan/Desa'),
+        pl: createWMS('Penggunaan Lahan', false, 'Penggunaan Lahan'),
+        bidang: createWMS('Bidang Tanah', false, 'Bidang Tanah'),
+        sungaiAr: createWMS('Jaringan Sungai (AR)', false, 'Sungai (AR)'),
+        jalanAr: createWMS('Jaringan Jalan (AR)', false, 'Jalan (AR)'),
+        sungaiLn: createWMS('Jaringan Sungai (LN)', true, 'Sungai (LN)'),
+        jalanLn: createWMS('Jaringan Jalan (LN)', true, 'Jalan (LN)')
+    };
+
+    const layerMapping = [
+        { id: 'jalanLn', layer: layers.jalanLn, title: 'Jaringan Jalan (LN)' },
+        { id: 'sungaiLn', layer: layers.sungaiLn, title: 'Jaringan Sungai (LN)' },
+        { id: 'desa', layer: layers.desa, title: 'Batas Kelurahan/Desa' },
+        { id: 'jalanAr', layer: layers.jalanAr, title: 'Jaringan Jalan (AR)' },
+        { id: 'sungaiAr', layer: layers.sungaiAr, title: 'Jaringan Sungai (AR)' },
+        { id: 'bidang', layer: layers.bidang, title: 'Bidang Tanah' },
+        { id: 'pl', layer: layers.pl, title: 'Penggunaan Lahan' },
+        { id: 'dukuh', layer: layers.dukuh, title: 'Batas Dukuh' }
+    ];
+
+    const map = new ol.Map({
+        target: 'map',
+        controls: ol.control.defaults.defaults({ zoom: false }), 
+        layers: [osmLayer, satelliteLayer, topoLayer, highlightLayer, pinLayer],
+        view: new ol.View({ center: initialCenter, zoom: initialZoom })
+    });
+
+    function syncLayerZIndex() {
+        layerMapping.forEach(m => map.removeLayer(m.layer));
+        const reversed = [...chosenLayers].reverse();
+        reversed.forEach((id, index) => {
+            const item = layerMapping.find(l => l.id === id);
+            if(item) {
+                item.layer.setZIndex(index + 1);
+                map.addLayer(item.layer);
+            }
+        });
+    }
+
+    syncLayerZIndex();
+
+    // 6. Manajemen Sidebar & Pencarian Koordinat
+    const sidebar = document.getElementById('sidebar');
+    const toggleIcon = document.getElementById('toggle-icon');
+    const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
+    if (btnToggleSidebar) {
+        btnToggleSidebar.onclick = () => {
+            sidebar.classList.toggle('minimized');
+            toggleIcon.className = sidebar.classList.contains('minimized') ? "fas fa-chevron-right" : "fas fa-chevron-left";
+        };
+    }
+
+    const btnSearchCoord = document.getElementById('btn-search-coord');
+    if (btnSearchCoord) {
+        btnSearchCoord.onclick = function() {
+            const input = document.getElementById('search-input').value;
+            const parts = input.split(',').map(v => parseFloat(v.trim()));
+            if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+                const coord = ol.proj.fromLonLat([parts[1], parts[0]]);
+                pinSource.clear();
+                pinSource.addFeature(new ol.Feature({ geometry: new ol.geom.Point(coord) }));
+                map.getView().animate({ center: coord, zoom: 18, duration: 1000 });
+            } else { 
+                alert("Gunakan format koordinat Geografis murni. Contoh: -7.6750, 110.6750"); 
+            }
+        };
+    }
+
+    const btnClearSearch = document.getElementById('btn-clear-search');
+    if (btnClearSearch) {
+        btnClearSearch.onclick = function() {
+            document.getElementById('search-input').value = "";
+            pinSource.clear();
+        };
+    }
+
+    // 7. Sistem Katalog Data Spasial Modals
+    let tempQueue = [];
+    const btnKatalogData = document.getElementById('btn-katalog-data');
+    if (btnKatalogData) {
+        btnKatalogData.onclick = () => {
+            tempQueue = [];
+            renderKatalog();
+            document.getElementById('modal-katalog').style.display = 'flex';
+        };
+    }
+
+    function renderKatalog() {
+        const list = document.getElementById('katalog-list');
+        if (!list) return;
+        list.innerHTML = "";
+        layerMapping.forEach(item => {
+            const alreadyChosen = chosenLayers.includes(item.id);
+            const div = document.createElement('div');
+            div.className = "katalog-item";
+            div.innerHTML = `
+                <span><b>${item.title}</b></span>
+                ${alreadyChosen ? 
+                    '<span class="status-added"><i class="fas fa-check-circle"></i> Data Ditambahkan</span>' : 
+                    `<button class="btn-add-layer" onclick="addToQueue('${item.id}', this)">TAMBAH DATA</button>`}
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    window.addToQueue = (id, btn) => {
+        if(!tempQueue.includes(id)) tempQueue.push(id);
+        btn.innerText = "DITAMBAHKAN";
+        btn.classList.add('added');
+        btn.disabled = true;
+    };
+    
+    const btnApplyKatalog = document.getElementById('btn-apply-katalog');
+    if (btnApplyKatalog) {
+        btnApplyKatalog.onclick = () => {
+            tempQueue.forEach(id => {
+                if(!chosenLayers.includes(id)) chosenLayers.unshift(id); 
+                const target = layerMapping.find(l => l.id === id);
+                if(target) target.layer.setVisible(true);
+            });
+            
+            document.getElementById('modal-katalog').style.display = 'none';
+            
+            updateLayerControlUI();
+            syncLayerZIndex();
+        };
+    }
+
+    const btnCloseKatalog = document.getElementById('btn-close-katalog');
+    if (btnCloseKatalog) {
+        btnCloseKatalog.addEventListener('click', function() {
+            document.getElementById('modal-katalog').style.display = 'none';
+        });
+    }
+
+    // 8. Layer Management Antarmuka UI Control
+    function updateLayerControlUI() {
+        const container = document.getElementById('active-layers-container');
+        if (!container) return; 
+        
+        container.innerHTML = "";
+        
+        if(chosenLayers.length === 0) {
+            const btnKatalog = document.getElementById('btn-katalog-data');
+            if (btnKatalog) {
+                container.innerHTML = `
+                    <div style='padding:20px; border:2px dashed #ddd; border-radius:12px; font-size:12px; color:#666; text-align:center; font-weight:600; line-height:1.6;'>
+                        Silahkan menambahkan data melalui <br>
+                        <span style="color: #e74c3c; font-weight: 800; cursor: pointer;" onclick="document.getElementById('btn-katalog-data').click()">
+                            <i class="fas fa-database"></i> KATALOG DATA
+                        </span>
+                    </div>`;
+            } else {
+                container.innerHTML = `
+                    <div style='padding:20px; border:2px dashed #ddd; border-radius:12px; font-size:12px; color:#666; text-align:center; font-weight:600; line-height:1.6;'>
+                        Silahkan menambahkan data melalui menu Katalog Data di halaman peta.
+                    </div>`;
+            }
+            return;
+        }
+
+        chosenLayers.forEach((id, index) => {
+            const item = layerMapping.find(l => l.id === id);
+            if(!item) return;
+
+            const isVisible = item.layer.getVisible();
+            const opacity = Math.round(item.layer.getOpacity() * 100);
+            const lyrName = item.layer.get('name');
+            const legendUrl = `${url_geoserver}?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=${workspace}:${lyrName}&SCALE=1000&TRANSPARENT=true`;
+
+            const div = document.createElement('div');
+            div.className = "layer-item-container";
+            div.dataset.index = index;
+            
+            div.innerHTML = `
+                <div class="layer-item-main">
+                    <div class="drag-handle" draggable="true" ondragstart="handleDragStart(event, ${index})">
+                        <i class="fas fa-bars"></i>
+                    </div>
+                    <div class="layer-title-text">${item.title}</div>
+                    <div class="layer-actions">
+                        <i class="action-btn fas ${isVisible ? 'fa-eye' : 'fa-eye-slash'} active" onclick="toggleVisibility('${id}', this)" title="Muncul/Sembunyi"></i>
+                        <i class="action-btn fas fa-chevron-down" onclick="toggleDetails(this)" title="Opsi & Legenda"></i>
+                        <i class="action-btn fas fa-trash-alt" onclick="removeLayer('${id}')" title="Hapus"></i>
+                    </div>
+                </div>
+                <div class="layer-details">
+                    <div class="transparency-ctrl">
+                        <label>Transparansi (${opacity}%)</label>
+                        <input type="range" min="0" max="100" value="${opacity}" 
+                               oninput="updateOpacity('${id}', this.value, this)" 
+                               style="cursor:pointer;">
+                    </div>
+                    <div class="transparency-ctrl">
+                        <label>Legenda</label>
+                        <div class="layer-legend-container">
+                            <img src="${legendUrl}" class="layer-legend-img" onerror="this.style.display='none'">
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            div.addEventListener('dragover', (e) => e.preventDefault());
+            div.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const fromIdx = e.dataTransfer.getData('text/plain');
+                const toIdx = index;
+                if(fromIdx !== "") reorderLayer(parseInt(fromIdx), parseInt(toIdx));
+            });
+
+            container.appendChild(div);
+        });
+    }
+
+    window.handleDragStart = (e, index) => {
+        e.dataTransfer.setData('text/plain', index);
+        const itemContainer = e.target.closest('.layer-item-container');
+        if(itemContainer) {
+            setTimeout(() => itemContainer.style.opacity = '0.5', 0);
+            e.target.ondragend = () => itemContainer.style.opacity = '1';
+        }
+    };
+
+    window.toggleVisibility = (id, btn) => {
+        const item = layerMapping.find(l => l.id === id);
+        if(item) {
+            const isVisible = !item.layer.getVisible();
+            item.layer.setVisible(isVisible);
+            btn.className = `action-btn fas ${isVisible ? 'fa-eye' : 'fa-eye-slash'} active`;
+        }
+    };
+
+    window.toggleDetails = (btn) => {
+        const details = btn.closest('.layer-item-container').querySelector('.layer-details');
+        details.classList.toggle('show');
+        btn.classList.toggle('fa-chevron-up');
+        btn.classList.toggle('fa-chevron-down');
+    };
+
+    window.updateOpacity = (id, val, el) => {
+        const item = layerMapping.find(l => l.id === id);
+        if(item) {
+            item.layer.setOpacity(val / 100);
+            el.previousElementSibling.innerText = `Transparansi (${val}%)`;
+        }
+    };
+
+    window.removeLayer = (id) => {
+        chosenLayers = chosenLayers.filter(l => l !== id);
+        const item = layerMapping.find(l => l.id === id);
+        if(item) item.layer.setVisible(false);
+        updateLayerControlUI();
+        syncLayerZIndex();
+    };
+
+    function reorderLayer(from, to) {
+        const element = chosenLayers.splice(from, 1)[0];
+        chosenLayers.splice(to, 0, element);
+        updateLayerControlUI();
+        syncLayerZIndex();
+    }
+
+    const btnClearAll = document.getElementById('btn-clear-all');
+    if (btnClearAll) {
+        btnClearAll.onclick = () => {
+            layerMapping.forEach(i => i.layer.setVisible(false));
+            chosenLayers = [];
+            highlightSource.clear();
+            pinSource.clear();
+            updateLayerControlUI(); 
+            syncLayerZIndex();
+        };
+    }
+
+    // 9. Alat Ukur Luas & Jarak Spasial
+    let draw; 
+    window.isMeasuring = false;
+    const measureSource = new ol.source.Vector();
+    const measureLayer = new ol.layer.Vector({ 
+        source: measureSource, 
+        style: new ol.style.Style({ 
+            stroke: new ol.style.Stroke({ color: '#f1c40f', width: 3 }), 
+            fill: new ol.style.Fill({ color: 'rgba(241, 196, 15, 0.2)' }),
+            image: new ol.style.Circle({ radius: 5, fill: new ol.style.Fill({ color: '#f1c40f' }) })
+        }),
+        zIndex: 1005
+    });
+    map.addLayer(measureLayer);
+
+    const btnMeasureTools = document.getElementById('btn-measure-tools');
+    if (btnMeasureTools) {
+        btnMeasureTools.onclick = () => {
+            const m = document.getElementById('measure-menu');
+            m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
+        };
+    }
+
+    function toggleInteraction(type, btnId) {
+        const btn = document.getElementById(btnId);
+        if(btn.classList.contains('active')) {
+            map.removeInteraction(draw);
+            btn.classList.remove('active');
+            window.isMeasuring = false;
+        } else {
+            map.removeInteraction(draw);
+            document.querySelectorAll('.measure-options button').forEach(b => b.classList.remove('active'));
+            draw = new ol.interaction.Draw({ source: measureSource, type: type });
+            window.isMeasuring = true;
+
+            draw.on('drawend', (e) => {
+                const geom = e.feature.getGeometry();
+                let output;
+                if (type === 'Polygon') {
+                    output = (geom.getArea().toFixed(2)) + ' m²';
+                } else {
+                    output = (geom.getLength().toFixed(2)) + ' m';
+                }
+                alert("Hasil Pengukuran Lapangan: " + output);
+            });
+            map.addInteraction(draw);
+            btn.classList.add('active');
+        }
+    }
+
+    const btnMeasureLength = document.getElementById('measure-length');
+    if (btnMeasureLength) btnMeasureLength.onclick = () => toggleInteraction('LineString', 'measure-length');
+
+    const btnMeasureArea = document.getElementById('measure-area');
+    if (btnMeasureArea) btnMeasureArea.onclick = () => toggleInteraction('Polygon', 'measure-area');
+
+    const btnClearMeasure = document.getElementById('clear-measure');
+    if (btnClearMeasure) {
+        btnClearMeasure.onclick = () => { 
+            measureSource.clear(); 
+            map.removeInteraction(draw); 
+            window.isMeasuring = false;
+            document.querySelectorAll('.measure-options button').forEach(b => b.classList.remove('active'));
+        };
+    }
+
+// 10. Identifikasi Atribut Objek Spasial (GetFeatureInfo)
+    map.on('singleclick', function(evt) {
+        if (window.isMeasuring === true) return;
+
+        highlightSource.clear();
+        const viewRes = map.getView().getResolution();
+        const viewProj = map.getView().getProjection().getCode();
+
+        // Mengambil data berdasarkan urutan 'chosenLayers' (urut dari atas ke bawah)
+        let promises = chosenLayers.map(id => {
+            const item = layerMapping.find(l => l.id === id);
+            if(item && item.layer.getVisible()) {
+                const url = item.layer.getSource().getFeatureInfoUrl(
+                    evt.coordinate, 
+                    viewRes, 
+                    viewProj, 
+                    {'INFO_FORMAT': 'application/json', 'FEATURE_COUNT': '1'}
+                );
+                if (url) {
+                    return fetch(url)
+                        .then(response => response.ok ? response.json() : null)
+                        .then(data => ({ item, j: data }))
+                        .catch(() => null);
+                }
+            }
+            return null;
+        });
+
+        Promise.all(promises).then(results => {
+            let finalHtml = "";
+            let hasZoomed = false; // Penanda agar animasi zoom hanya jalan 1x untuk layer teratas
+            
+            // Loop secara berurutan dari layer paling atas ke bawah
+            for (const res of results) {
+                if (res && res.j && res.j.features && res.j.features.length > 0) {
+                    const featData = res.j.features[0];
+                    
+                    // 1. Gambar Batas Merah & Auto-Zoom (HANYA untuk layer teratas)
+                    if (!hasZoomed) {
+                        const format = new ol.format.GeoJSON();
+                        const feat = format.readFeature(featData, {
+                            dataProjection: viewProj,
+                            featureProjection: viewProj
+                        });
+                        
+                        highlightSource.addFeature(feat); 
+                        const geom = feat.getGeometry();
+                        if (geom) {
+                            map.getView().fit(geom.getExtent(), { 
+                                padding: [100, 100, 100, 100], 
+                                duration: 800,
+                                maxZoom: 20 
+                            });
+                        }
+                        hasZoomed = true; // Kunci animasi agar layer di bawahnya tidak ikut me-reset zoom
+                    }
+
+                    // 2. Buat Teks HTML untuk Tabel Atribut (TAMPILKAN SEMUA LAYER)
+                    finalHtml += `<div class="attr-layer-header" style="background:#1e3799; color:#fff; padding:6px 10px; font-weight:700; margin-top:10px; border-radius:4px;">${res.item.title}</div>`;
+                    const p = featData.properties;
+                    Object.keys(p).forEach(k => { 
+                        if(p[k] !== null && typeof p[k] !== 'object' && !['bbox','geom','geometry'].includes(k.toLowerCase())) {
+                            finalHtml += `<div class="attr-item" style="display:flex; justify-content:space-between; padding:5px; border-bottom:1px solid #eee; font-size:12px;"><span class="attr-label" style="font-weight:600; color:#555;">${k}</span><span style="text-align:right;">${p[k]}</span></div>`;
+                        }
+                    });
+
+                    // Logika 'break' dihapus di sini, sehingga loop akan terus 
+                    // menggali data dari layer ke-2, ke-3, dst untuk dimasukkan ke tabel.
+                }
+            }
+
+            // Tampilkan Panel Jika Ada Data
+            if(finalHtml !== "") { 
+                document.getElementById('panel-content').innerHTML = finalHtml;
+                document.getElementById('side-panel-info').style.display = 'flex'; 
+            } else { 
+                document.getElementById('side-panel-info').style.display = 'none';
+            }
+        });
+    });
+
+
+    // 11. Kontrol Basemap Switcher
+    const selectBasemap = document.getElementById('select-basemap');
+    if (selectBasemap) {
+        selectBasemap.onchange = function() {
+            osmLayer.setVisible(this.value === 'osm');
+            satelliteLayer.setVisible(this.value === 'satellite');
+            topoLayer.setVisible(this.value === 'topo');
+        };
+    }
+
+    // 12. Alur Overlay & Event Disclaimer Persetujuan Akademik
+    const btnContinue = document.getElementById('btn-continue');
+    if (btnContinue) {
+        btnContinue.onclick = () => {
+            document.getElementById('disclaimer-overlay').style.display = 'none';
+            if (typeof map !== 'undefined' && map.updateSize) {
+                setTimeout(() => { map.updateSize(); }, 200);
+            }
+        };
+    }
+
+    const chkUnderstand = document.getElementById('chk-understand');
+    if (chkUnderstand) {
+        chkUnderstand.onchange = (e) => {
+            const b = document.getElementById('btn-continue');
+            if (e.target.checked) {
+                b.classList.add('active');
+                b.disabled = false;
+            } else {
+                b.classList.remove('active');
+                b.disabled = true;
+            }
+        };
+    }
+    
+    const btnHome = document.getElementById('btn-home');
+    if (btnHome) {
+        btnHome.onclick = () => { location.reload(); };
+    }
+    
+    const btnZoomCeper = document.getElementById('btn-zoom-ceper');
+    if (btnZoomCeper) {
+        btnZoomCeper.onclick = () => {
+            map.getView().animate({ center: initialCenter, zoom: 13.5, duration: 1000 });
+        };
+    }
+
+    // 13. Deteksi Orientasi HP Dinamis (Mobile Optimization)
+    let isOverlayBypassed = false;
+    function checkDeviceOrientation() {
+        if (isOverlayBypassed) return;
+        const isMobileDevice = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+        const isPortrait = window.innerHeight > window.innerWidth;
+        const overlay = document.getElementById('mobile-warning-overlay');
+        
+        if (overlay) {
+            if (!isPortrait) {
+                overlay.style.display = 'none';
+                if (typeof map !== 'undefined' && map.updateSize) {
+                    setTimeout(() => { map.updateSize(); }, 100);
+                }
+            } else {
+                if (isMobileDevice || window.innerWidth < 1024) {
+                    overlay.style.display = 'flex';
+                } else {
+                    overlay.style.display = 'none';
+                }
+            }
+        }
+    }
+
+    const btnWarningOk = document.getElementById('btn-warning-ok');
+    if (btnWarningOk) {
+        btnWarningOk.onclick = function() {
+            const isPortrait = window.innerHeight > window.innerWidth;
+            if (isPortrait) {
+                if (window.innerWidth < 900) {
+                    alert("⚠️ Layar Anda masih terlalu tegak! Mohon miringkan HP Anda menjadi posisi tidur (Landscape) terlebih dadaulu agar data spasial tampil optimal.");
+                } else {
+                    isOverlayBypassed = true;
+                    document.getElementById('mobile-warning-overlay').style.display = 'none';
+                    if (typeof map !== 'undefined' && map.updateSize) {
+                        setTimeout(() => { map.updateSize(); }, 200);
+                    }
+                }
+            } else {
+                isOverlayBypassed = true;
+                document.getElementById('mobile-warning-overlay').style.display = 'none';
+            }
+        };
+    }
+
+    window.addEventListener('resize', checkDeviceOrientation);
+    window.addEventListener('orientationchange', checkDeviceOrientation);
+    window.addEventListener('load', checkDeviceOrientation);
+    checkDeviceOrientation();
+
+    const closePanel = document.getElementById('close-panel');
+    if (closePanel) {
+        closePanel.onclick = () => { 
+            document.getElementById('side-panel-info').style.display = 'none'; 
+            highlightSource.clear(); 
+        };
+    }
+
+    // Fungsi Khusus untuk Membuka Layar Panduan Tanpa Intervensi Tab Lain
+    window.bukaLayarPanduan = function() {
+        const semuaTab = document.querySelectorAll('.sub-page-content');
+        semuaTab.forEach(tab => {
+            tab.style.display = 'none';
+        });
+
+        const semuaMenuNav = document.querySelectorAll('.nav-menu-item');
+        semuaMenuNav.forEach(menu => {
+            menu.classList.remove('active');
+        });
+
+        const layarPanduan = document.getElementById('tab-panduan');
+        if (layarPanduan) {
+            layarPanduan.style.display = 'block';
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // Fungsi interaktif untuk berpindah sub-penjelasan di halaman Panduan Fitur
+    window.tampilPanduan = function(fiturId, elemenMenu) {
+        const semuaKonten = document.querySelectorAll('.panduan-text-content');
+        semuaKonten.forEach(konten => {
+            konten.style.display = 'none';
+        });
+
+        const kontenTarget = document.getElementById('panduan-' + fiturId);
+        if (kontenTarget) {
+            kontenTarget.style.display = 'block';
+        }
+
+        const semuaMenu = document.querySelectorAll('.panduan-menu-item');
+        semuaMenu.forEach(menu => {
+            menu.classList.remove('active');
+        });
+
+        elemenMenu.classList.add('active');
+    };
+
+// =========================================================================
+    // VISUALISASI DIAGRAM GOOGLE CHARTS INTERAKTIF (REVISI LAYOUT & TEKS)
+    // =========================================================================
+    google.charts.load('current', {'packages':['corechart', 'bar']});
+    
+    // PERBAIKAN: Menggunakan window load untuk memastikan CSS & elemen HTML selesai dirender sempurna sebelum digambar
+    // =========================================================================
+    // VISUALISASI DIAGRAM GOOGLE CHARTS INTERAKTIF (KUNCI TIMING AKSES TOMBOL)
+    // =========================================================================
+    // Memuat library Google Charts di awal secara pasif
+    google.charts.load('current', {'packages':['corechart', 'bar']});
+
+    function drawPertanahanCharts() {
+        
+        // -------------------------------------------------------------------------
+        // GAMBAR 1: DIAGRAM BATANG TEGAK (COLUMN CHART) - INTERAKSI DIKUNCI
+        // -------------------------------------------------------------------------
+        var dataJumlahVertikal = google.visualization.arrayToDataTable([
+            ['Status Hak', 'Jumlah Bidang', { role: 'style' }, { role: 'annotation' }],
+            ['Hak Milik', 22843, 'color: #1e3799; stroke-color: #0c2461; stroke-width: 1', '22.843 Bidang'],
+            ['Kosong', 2602, 'color: #fab1a0; stroke-color: #e67e22; stroke-width: 1', '2.602'],
+            ['Hak Pakai', 749, 'color: #f1c40f; stroke-color: #f39c12; stroke-width: 1', '749'],
+            ['Hak Guna Bangunan', 94, 'color: #38ada9; stroke-color: #079992; stroke-width: 1', '94'],
+            ['Hak Wakaf', 22, 'color: #a29bfe; stroke-color: #786fa6; stroke-width: 1', '22']
+        ]);
+
+        var optionsJumlahVertikal = {
+            chartArea: { width: '92%', height: '70%', top: 30, bottom: 40 },
+            legend: { position: 'none' }, 
+            vAxis: {
+                title: 'Kuantitas / Jumlah Elemen Bidang',
+                titleTextStyle: { fontSize: 11, color: '#555', fontName: 'Montserrat', italic: false },
+                gridlines: { color: '#f5f5f5' },
+                textStyle: { fontSize: 10, fontName: 'Montserrat' }
+            },
+            hAxis: {
+                textStyle: { fontSize: 11, fontWeight: 'bold', fontName: 'Montserrat', color: '#2c3e50' }
+            },
+            annotations: {
+                alwaysOutside: true, 
+                textStyle: { fontSize: 11, fontWeight: 'bold', fontName: 'Montserrat', color: '#1e3799' }
+            },
+            bar: { groupWidth: '50%' },
+            // SUNTIKAN BARU: Mematikan animasi seleksi/klik pada batang
+            tooltip: { trigger: 'focus' }, 
+            enableInteractions: true
+        };
+
+        var chartJumlah = new google.visualization.ColumnChart(document.getElementById('chart_jumlah_bidang_vertikal'));
+        chartJumlah.draw(dataJumlahVertikal, optionsJumlahVertikal);
+
+
+        // -------------------------------------------------------------------------
+        // GAMBAR 2: PIE CHART (HAPUS EFEK PANAH KELUAR SAAT DIKLIK)
+        // -------------------------------------------------------------------------
+        var dataProporsi = google.visualization.arrayToDataTable([
+            ['Status Registrasi', 'Jumlah Bidang'],
+            ['Terdaftar (Sertifikat Hak)', 23708],
+            ['Belum Terdaftar (Data Kosong)', 2602]
+        ]);
+
+        var optionsProporsi = {
+            chartArea: { width: '90%', height: '70%', top: 10, bottom: 40 },
+            colors: ['#0984e3', '#d63031'], 
+            legend: { 
+                position: 'bottom', 
+                alignment: 'center',
+                textStyle: { fontSize: 11, fontName: 'Montserrat', color: '#2c3e50' } 
+            },
+            pieHole: 0.4, 
+            pieSliceTextStyle: { fontSize: 12, fontWeight: '700', fontName: 'Montserrat' },
+            // PERBAIKAN: Set offset tetap 0 agar potongan TIDAK BISA meluncur keluar saat diklik
+            slices: {
+                0: { offset: 0.0 },
+                1: { offset: 0.0 }
+            },
+            // Tetap memunculkan pop-up angka/persentase data biasa saat disentuh
+            tooltip: { showColorCode: true, text: 'both', trigger: 'focus', textStyle: { fontSize: 11, fontName: 'Montserrat' } }
+        };
+
+        var chartPie = new google.visualization.PieChart(document.getElementById('chart_proporsi_tanah'));
+        
+        /* PERBAIKAN UTAMA: 
+           Seluruh baris kode 'google.visualization.events.addListener(chartPie, 'select', ...)' 
+           yang kemarin bertugas menggerakkan potongan diagram keluar sekarang TELAH DIHAPUS TOTAL.
+        */
+        chartPie.draw(dataProporsi, optionsProporsi);
+
+
+       // -------------------------------------------------------------------------
+        // GAMBAR 3: DIAGRAM MENYAMPING (BAR CHART) - UPDATE DATA PERSENTASE (%)
+        // -------------------------------------------------------------------------
+        // Mengubah judul kolom menjadi 'Persentase (%)' dan memasukkan data tabel Anda
+        var dataHakLuas = google.visualization.arrayToDataTable([
+            ['Status Hak', 'Persentase (%)', { role: 'style' }, { role: 'annotation' }],
+            ['Hak Milik', 74.08, 'color: #1e3799', '74.08%'],
+            ['Kosong', 15.19, 'color: #bdc3c7', '15.19%'],
+            ['Hak Pakai', 8.95, 'color: #f1c40f', '8.95%'],
+            ['Hak Guna Bangunan', 1.70, 'color: #38ada9', '1.70%'],
+            ['Hak Wakaf', 0.07, 'color: #a29bfe', '0.07%']
+        ]);
+
+        var optionsHakLuas = {
+            // Tetap mempertahankan setelan left: 130 agar nama hak di kiri tidak terpotong
+            chartArea: { width: '60%', height: '80%', left: 130, top: 15, right: 40 },
+            legend: { position: 'none' },
+            hAxis: {
+                // Diubah judul sumbunya menjadi Persentase
+                title: 'Persentase Luas Wilayah (%)',
+                titleTextStyle: { fontSize: 10, color: '#7f8c8d', fontName: 'Montserrat', italic: false },
+                textStyle: { fontSize: 9, fontName: 'Montserrat' },
+                gridlines: { color: '#f5f5f5' },
+                // Mengunci batas maksimal sumbu X di angka 100% agar skala diagram proporsional
+                minValue: 0,
+                maxValue: 100
+            },
+            vAxis: {
+                textStyle: { fontSize: 10, fontWeight: 'bold', fontName: 'Montserrat', color: '#2c3e50' }
+            },
+            annotations: {
+                alwaysOutside: true, 
+                textStyle: { fontSize: 10, fontWeight: 'bold', fontName: 'Montserrat', color: '#2c3e50' }
+            },
+            bar: { groupWidth: '60%' },
+            tooltip: { trigger: 'focus' }
+        };
+
+        var chartBarHorizontal = new google.visualization.BarChart(document.getElementById('chart_persentase_hak'));
+        chartBarHorizontal.draw(dataHakLuas, optionsHakLuas);
+    }
+
+    // =========================================================================
+    // SUNTIKAN BARU: LOGIKA AUTO-RESIZE DIAGRAM UNTUK HP LANDSCAPE & DESKTOP
+    // =========================================================================
+    // Fungsi ini memaksa Google Charts menggambar ulang dirinya mengikuti ukuran boks baru
+    window.addEventListener('resize', function() {
+        // Cek apakah fungsi drawPertanahanCharts tersedia, lalu panggil ulang secara berkala
+        if (typeof drawPertanahanCharts === 'function') {
+            // Berikan jeda waktu 100ms agar CSS media queries landscape selesai merender layout boks terlebih dahulu
+            setTimeout(drawPertanahanCharts, 100); 
+        }
+    });
+
+    // Jalankan render antarmuka management layer utama
+    updateLayerControlUI();
+});
+
+</script>
+</body>
+</html>
