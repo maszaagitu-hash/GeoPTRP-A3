@@ -3337,8 +3337,6 @@ html, body {
 }
 </style>
 
-</body>
-
     <script src="https://cdn.jsdelivr.net/npm/ol@v10.3.1/dist/ol.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -3349,10 +3347,14 @@ html, body {
    ========================================================================== */
 document.addEventListener("DOMContentLoaded", function() {
 
-    // Inisialisasi EmailJS (Ganti 'YOUR_PUBLIC_KEY' dengan Public Key Anda dari dashboard EmailJS)
-    (function() {
-        emailjs.init({ publicKey: "0vM8oYIi-LdqEmYW0" });
-    })();
+    // Inisialisasi EmailJS dengan pengaman Try-Catch
+    try {
+        if (typeof emailjs !== 'undefined') {
+            emailjs.init({ publicKey: "0vM8oYIi-LdqEmYW0" });
+        }
+    } catch (error) {
+        console.warn("EmailJS gagal dimuat, sistem tetap dilanjutkan.", error);
+    }
 
     // =========================================================================
     // SYSTEM CUSTOM TOAST NOTIFICATION (PENGGANTI POP-UP SYSTEM KAKU)
@@ -3392,7 +3394,15 @@ document.addEventListener("DOMContentLoaded", function() {
         { email: 'dosen1@lecturer.undip.ac.id', pass: 'undip123', role: 'instansi' },
         { email: 'mhs1@students.undip.ac.id', pass: 'undip123', role: 'instansi' }
     ];
-    let savedAccounts = JSON.parse(localStorage.getItem('geo_accounts'));
+    
+    let savedAccounts = null;
+    try {
+        savedAccounts = JSON.parse(localStorage.getItem('geo_accounts'));
+    } catch(e) {
+        console.warn("Database akun lokal di-reset.");
+        localStorage.removeItem('geo_accounts');
+    }
+    
     let akunDatabaseLokal = savedAccounts ? savedAccounts : defaultAccounts;
     let userAktifSistem = { email: "", role: "tamu" };
     let dataEmailAdminMenungguOtp = "";
@@ -3729,7 +3739,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // 5. Inisialisasi Peta Spasial OpenLayers
     const initialCenter = ol.proj.fromLonLat([110.6750, -7.6750]); 
     const initialZoom = 13.5;
-    const url_geoserver = 'window.location.origin + '/geoserver-proxy/GeoPTRP_A3/wms';
+    const url_geoserver = window.location.origin + '/geoserver-proxy/GeoPTRP_A3/wms';
     const workspace = 'GeoPTRP_A3';
 
     let chosenLayers = ['jalanLn', 'sungaiLn', 'desa']; 
