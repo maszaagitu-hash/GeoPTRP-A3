@@ -1,0 +1,22 @@
+{
+  "name": "GeoPTRP Kecamatan Ceper",
+  "short_name": "GeoPTRP",
+  "description": "Sistem Informasi Geografis dan Tata Ruang Pertanahan Kecamatan Ceper",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0c2461",
+  "theme_color": "#1e3799",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "LOGO WEBGIS.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "LOGO WEBGIS.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
