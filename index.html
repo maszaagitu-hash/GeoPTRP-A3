@@ -2252,7 +2252,18 @@ html, body {
 
 /* FIX: Sinkronisasi Nama Class untuk Jendela Interaktif */
 @media (max-width: 600px) {
-    .spatial-flex-container { flex-direction: column; align-items: stretch; gap: 12px; }
+    .spatial-flex-container { 
+        flex-direction: column; 
+        align-items: stretch; 
+        gap: 12px; 
+        height: auto !important; /* Tambahkan ini */
+    }
+
+    .center-interactive-wrapper {
+        height: auto !important; /* Tambahkan ini */
+        margin: 0 !important;    /* Tambahkan ini */
+    }
+    
     #main-toggle-container.shrunk { width: 100%; flex: initial; min-height: 60px; padding: 10px; }
     #interaction-right.show { height: auto; flex-direction: column; align-items: stretch; }
     .logo-bar-horizontal { flex-direction: row; width: 100%; justify-content: space-around; }
@@ -2293,6 +2304,24 @@ html, body {
 @media screen and (orientation: landscape) {
     .info-display-box { max-height: 70vh !important; }
 }
+
+@media (max-width: 768px) {
+    .top-navbar {
+        padding: 10px 15px !important;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .menu-side {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px !important;
+    }
+    .terms-and-guide-section::after {
+        width: 100% !important;
+        margin-left: 0 !important;
+    }
+}
+
 </style>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
