@@ -2048,6 +2048,39 @@ html, body {
     }
 }
 
+#pwa-install-modal {
+    position: fixed !important;
+    top: auto !important;     /* Membatalkan penempatan dari atas */
+    right: auto !important;   /* Membatalkan penempatan dari kanan */
+    bottom: 20px !important;  /* Jarak dari bawah layar */
+    left: 20px !important;    /* Jarak dari kiri layar */
+    transform: none !important; /* Membatalkan efek translate tengah (X/Y) */
+    margin: 0 !important;
+    /* Tambahkan lebar maksimal agar tidak kepanjangan di HP */
+    max-width: 320px;
+}
+
+/* Memastikan gambar dosen fleksibel merespons ukuran layar */
+#modal-target-img {
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+    margin: 0 auto; /* Memaksa gambar berada di tengah secara horizontal */
+    display: block;
+}
+
+/* Penyesuaian khusus ketika diakses di layar yang sempit (HP) */
+@media screen and (max-width: 768px) {
+    /* Sesuaikan selector ini dengan nama class div pembungkus utama isi popup bio Anda */
+    #bio-popup-modal .popup-content { 
+        display: flex;
+        flex-direction: column; /* Memaksa gambar dan teks menyusun dari atas ke bawah, bukan menyamping */
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+}
+
 /* ==========================================================================
    10. MEDIA QUERIES RESPONSIVE
    ========================================================================== */
@@ -3696,7 +3729,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // 5. Inisialisasi Peta Spasial OpenLayers
     const initialCenter = ol.proj.fromLonLat([110.6750, -7.6750]); 
     const initialZoom = 13.5;
-    const url_geoserver = window.location.origin + '/geoserver-proxy/GeoPTRP_A3/wms';
+    const url_geoserver = 'window.location.origin + '/geoserver-proxy/GeoPTRP_A3/wms';
     const workspace = 'GeoPTRP_A3';
 
     let chosenLayers = ['jalanLn', 'sungaiLn', 'desa']; 
@@ -4375,7 +4408,7 @@ document.addEventListener("DOMContentLoaded", function() {
 window.isPetaAktif = false; // Flag penanda sedang di dalam peta
 
 function checkDeviceOrientation() {
-    if (isOverlayBypassed && !window.isPetaAktif) return;
+    if (isOverlayBypassed) return; // Menyederhanakan bypass agar tidak menumpuk status
     
     const isMobileDevice = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
     const isPortrait = window.innerHeight > window.innerWidth;
@@ -4390,25 +4423,16 @@ function checkDeviceOrientation() {
                 setTimeout(() => { map.updateSize(); }, 100);
             }
         } else {
-            if (isMobileDevice || window.innerWidth < 1024) {
-                overlay.style.display = 'flex';
-                
-                if (window.isPetaAktif) {
-                    // KONDISI PETA AKTIF: Kunci mati, tombol OK disembunyikan
-                    if(btnOk) btnOk.style.display = 'none';
-                    if(txtBypass) txtBypass.innerHTML = "<b>PERINGATAN WAJIB:</b><br>Interaksi Peta Spasial membutuhkan layar luas. Posisi layar tegak (Portrait) <b>tidak diizinkan</b>. Silakan miringkan HP Anda (Landscape).";
-                    isOverlayBypassed = false;
-                } else {
-                    // KONDISI BERANDA: Munculkan peringatan ringan
-                    if (!isOverlayBypassed) {
-                        if(btnOk) btnOk.style.display = 'block';
-                        if(txtBypass) txtBypass.innerHTML = "<b>Rekomendasi Akses HP:</b><br>• Matikan Kunci Orientasi HP & <b>Miringkan menjadi Landscape</b>.<br>• Anda dapat menekan tombol di bawah ini untuk tetap masuk (mode terbatas).";
-                    } else {
-                        overlay.style.display = 'none';
-                    }
-                }
+            // Mode Potrait Aktif
+            overlay.style.display = 'flex';
+            if (isMobileDevice || window.innerWidth < 900) {
+                // KONDISI HP: Kunci Mati (Wajib Landscape)
+                if(btnOk) btnOk.style.display = 'none';
+                if(txtBypass) txtBypass.innerHTML = "<b>PERINGATAN WAJIB:</b><br>Sistem hanya mendukung posisi layar tidur (Landscape) untuk HP. Silakan putar HP Anda.";
             } else {
-                overlay.style.display = 'none';
+                // KONDISI DESKTOP/LAPTOP: Boleh potrait (layar dibelah misal), tapi diberi tombol paham
+                if(btnOk) btnOk.style.display = 'block';
+                if(txtBypass) txtBypass.innerHTML = "<b>Peringatan Resolusi:</b><br>Jendela browser Anda terlalu sempit (Portrait). Tampilan mungkin kurang optimal, klik tombol di bawah jika ingin melanjutkan.";
             }
         }
     }
@@ -4459,25 +4483,23 @@ function checkDeviceOrientation() {
     };
 
     const btnWarningOk = document.getElementById('btn-warning-ok');
-    if (btnWarningOk) {
-        btnWarningOk.onclick = function() {
-            const isPortrait = window.innerHeight > window.innerWidth;
-            if (isPortrait) {
-                if (window.innerWidth < 900) {
-                    window.tampilkanNotifikasiGeo("⚠️ Posisi layar salah! Mohon miringkan HP Anda menjadi posisi tidur (Landscape) terlebih dahulu.", "warning");
-                } else {
-                    isOverlayBypassed = true;
-                    document.getElementById('mobile-warning-overlay').style.display = 'none';
-                    if (typeof map !== 'undefined' && map.updateSize) {
-                        setTimeout(() => { map.updateSize(); }, 200);
-                    }
-                }
-            } else {
-                isOverlayBypassed = true;
-                document.getElementById('mobile-warning-overlay').style.display = 'none';
+if (btnWarningOk) {
+    btnWarningOk.onclick = function() {
+        const isMobileDevice = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+        const isPortrait = window.innerHeight > window.innerWidth;
+        
+        // Cek kembali saat tombol diklik, pastikan HP tidak bisa tembus
+        if (isPortrait && (isMobileDevice || window.innerWidth < 900)) {
+            window.tampilkanNotifikasiGeo("⚠️ Sistem mendeteksi ini adalah perangkat Mobile. Anda Wajib Landscape!", "warning");
+        } else {
+            isOverlayBypassed = true;
+            document.getElementById('mobile-warning-overlay').style.display = 'none';
+            if (typeof map !== 'undefined' && map.updateSize) {
+                setTimeout(() => { map.updateSize(); }, 200);
             }
-        };
-    }
+        }
+    };
+}
 
     window.addEventListener('resize', checkDeviceOrientation);
     window.addEventListener('orientationchange', checkDeviceOrientation);
