@@ -70,6 +70,9 @@ html, body {
 }
 #btn-continue.active { background: #0984e3; cursor: pointer; box-shadow: 0 4px 15px rgba(9, 132, 227, 0.3); }
 
+/* ==========================================================================
+   CSS OVERLAY PERINGATAN MOBILE & ANIMASI
+   ========================================================================== */
 #mobile-warning-overlay {
     display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background-color: rgba(15, 25, 20, 0.99); z-index: 100000;
@@ -89,6 +92,13 @@ html, body {
     box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3); transition: all 0.2s;
 }
 #btn-warning-ok:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(46, 204, 113, 0.4); }
+
+/* Keyframe animasi HP gerak */
+@keyframes rotatePhone {
+    0%, 100% { transform: rotate(0deg); }
+    25%, 50% { transform: rotate(-90deg); }
+    75% { transform: rotate(0deg); }
+}
 
 /* ==========================================================================
    3. NAVIGATION BAR & HEADER AREA
@@ -2295,7 +2305,7 @@ html, body {
             <div class="highlight-text">
                 <b>Rekomendasi Akses HP:</b><br>
                 • Matikan Kunci Orientasi HP & <b>Miringkan menjadi Landscape</b> (Peringatan otomatis hilang).<br>
-                • If using <b>Situs Desktop</b>, Anda dapat mengklik tombol di bawah ini untuk masuk langsung.
+                • Apabila mode <b>Situs Desktop</b>, Anda dapat mengklik tombol di bawah ini untuk masuk langsung.
             </div>
             <button id="btn-warning-ok">Saya Mengerti & Masuk WebGIS</button>
         </div>
@@ -4413,40 +4423,57 @@ document.addEventListener("DOMContentLoaded", function() {
         };
     }
 
-    // 13. Deteksi Orientasi HP Dinamis (Mobile Optimization)
+    // ==========================================================================
+    // DETEKSI ORIENTASI HP DINAMIS (MOBILE OPTIMIZATION)
+    // ==========================================================================
     let isOverlayBypassed = false;
-window.isPetaAktif = false; // Flag penanda sedang di dalam peta
-
-function checkDeviceOrientation() {
-    if (isOverlayBypassed) return; // Menyederhanakan bypass agar tidak menumpuk status
-    
-    const isMobileDevice = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-    const isPortrait = window.innerHeight > window.innerWidth;
-    const overlay = document.getElementById('mobile-warning-overlay');
-    const btnOk = document.getElementById('btn-warning-ok');
-    const txtBypass = document.getElementById('warning-bypass-text');
-    
-    if (overlay) {
-        if (!isPortrait) {
-            overlay.style.display = 'none';
-            if (typeof map !== 'undefined' && map.updateSize) {
-                setTimeout(() => { map.updateSize(); }, 100);
-            }
-        } else {
-            // Mode Potrait Aktif
-            overlay.style.display = 'flex';
-            if (isMobileDevice || window.innerWidth < 900) {
-                // KONDISI HP: Kunci Mati (Wajib Landscape)
-                if(btnOk) btnOk.style.display = 'none';
-                if(txtBypass) txtBypass.innerHTML = "<b>PERINGATAN WAJIB:</b><br>Sistem hanya mendukung posisi layar tidur (Landscape) untuk HP. Silakan putar HP Anda.";
+    function checkDeviceOrientation() {
+        if (isOverlayBypassed) return;
+        const isMobileDevice = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+        const isPortrait = window.innerHeight > window.innerWidth;
+        const overlay = document.getElementById('mobile-warning-overlay');
+        
+        if (overlay) {
+            if (!isPortrait) {
+                overlay.style.display = 'none';
+                if (typeof map !== 'undefined' && map.updateSize) {
+                    setTimeout(() => { map.updateSize(); }, 100);
+                }
             } else {
-                // KONDISI DESKTOP/LAPTOP: Boleh potrait (layar dibelah misal), tapi diberi tombol paham
-                if(btnOk) btnOk.style.display = 'block';
-                if(txtBypass) txtBypass.innerHTML = "<b>Peringatan Resolusi:</b><br>Jendela browser Anda terlalu sempit (Portrait). Tampilan mungkin kurang optimal, klik tombol di bawah jika ingin melanjutkan.";
+                if (isMobileDevice || window.innerWidth < 1024) {
+                    overlay.style.display = 'flex';
+                } else {
+                    overlay.style.display = 'none';
+                }
             }
         }
     }
-}
+
+    const btnWarningOk = document.getElementById('btn-warning-ok');
+    if (btnWarningOk) {
+        btnWarningOk.onclick = function() {
+            const isPortrait = window.innerHeight > window.innerWidth;
+            if (isPortrait) {
+                if (window.innerWidth < 900) {
+                    alert("⚠️ Layar Anda masih terlalu tegak! Mohon miringkan HP Anda menjadi posisi tidur (Landscape) terlebih dahulu agar data spasial tampil optimal.");
+                } else {
+                    isOverlayBypassed = true;
+                    document.getElementById('mobile-warning-overlay').style.display = 'none';
+                    if (typeof map !== 'undefined' && map.updateSize) {
+                        setTimeout(() => { map.updateSize(); }, 200);
+                    }
+                }
+            } else {
+                isOverlayBypassed = true;
+                document.getElementById('mobile-warning-overlay').style.display = 'none';
+            }
+        };
+    }
+
+    window.addEventListener('resize', checkDeviceOrientation);
+    window.addEventListener('orientationchange', checkDeviceOrientation);
+    window.addEventListener('load', checkDeviceOrientation);
+    checkDeviceOrientation();
 
     window.bukaPopupBio = function(nama, role, nim, ttl, asal, ig, email, jobdesk, imgUrl) {
         const modal = document.getElementById('bio-popup-modal');
