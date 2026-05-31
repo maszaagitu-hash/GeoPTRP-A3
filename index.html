@@ -70,9 +70,6 @@ html, body {
 }
 #btn-continue.active { background: #0984e3; cursor: pointer; box-shadow: 0 4px 15px rgba(9, 132, 227, 0.3); }
 
-/* ==========================================================================
-   CSS OVERLAY PERINGATAN MOBILE & ANIMASI
-   ========================================================================== */
 #mobile-warning-overlay {
     display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background-color: rgba(15, 25, 20, 0.99); z-index: 100000;
@@ -92,13 +89,6 @@ html, body {
     box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3); transition: all 0.2s;
 }
 #btn-warning-ok:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(46, 204, 113, 0.4); }
-
-/* Keyframe animasi HP gerak */
-@keyframes rotatePhone {
-    0%, 100% { transform: rotate(0deg); }
-    25%, 50% { transform: rotate(-90deg); }
-    75% { transform: rotate(0deg); }
-}
 
 /* ==========================================================================
    3. NAVIGATION BAR & HEADER AREA
@@ -2058,39 +2048,6 @@ html, body {
     }
 }
 
-#pwa-install-modal {
-    position: fixed !important;
-    top: auto !important;     /* Membatalkan penempatan dari atas */
-    right: auto !important;   /* Membatalkan penempatan dari kanan */
-    bottom: 20px !important;  /* Jarak dari bawah layar */
-    left: 20px !important;    /* Jarak dari kiri layar */
-    transform: none !important; /* Membatalkan efek translate tengah (X/Y) */
-    margin: 0 !important;
-    /* Tambahkan lebar maksimal agar tidak kepanjangan di HP */
-    max-width: 320px;
-}
-
-/* Memastikan gambar dosen fleksibel merespons ukuran layar */
-#modal-target-img {
-    max-width: 100%;
-    height: auto;
-    object-fit: cover;
-    margin: 0 auto; /* Memaksa gambar berada di tengah secara horizontal */
-    display: block;
-}
-
-/* Penyesuaian khusus ketika diakses di layar yang sempit (HP) */
-@media screen and (max-width: 768px) {
-    /* Sesuaikan selector ini dengan nama class div pembungkus utama isi popup bio Anda */
-    #bio-popup-modal .popup-content { 
-        display: flex;
-        flex-direction: column; /* Memaksa gambar dan teks menyusun dari atas ke bawah, bukan menyamping */
-        align-items: center;
-        text-align: center;
-        padding: 15px;
-    }
-}
-
 /* ==========================================================================
    10. MEDIA QUERIES RESPONSIVE
    ========================================================================== */
@@ -2252,18 +2209,7 @@ html, body {
 
 /* FIX: Sinkronisasi Nama Class untuk Jendela Interaktif */
 @media (max-width: 600px) {
-    .spatial-flex-container { 
-        flex-direction: column; 
-        align-items: stretch; 
-        gap: 12px; 
-        height: auto !important; /* Tambahkan ini */
-    }
-
-    .center-interactive-wrapper {
-        height: auto !important; /* Tambahkan ini */
-        margin: 0 !important;    /* Tambahkan ini */
-    }
-    
+    .spatial-flex-container { flex-direction: column; align-items: stretch; gap: 12px; }
     #main-toggle-container.shrunk { width: 100%; flex: initial; min-height: 60px; padding: 10px; }
     #interaction-right.show { height: auto; flex-direction: column; align-items: stretch; }
     .logo-bar-horizontal { flex-direction: row; width: 100%; justify-content: space-around; }
@@ -2304,24 +2250,6 @@ html, body {
 @media screen and (orientation: landscape) {
     .info-display-box { max-height: 70vh !important; }
 }
-
-@media (max-width: 768px) {
-    .top-navbar {
-        padding: 10px 15px !important;
-        flex-direction: column;
-        gap: 10px;
-    }
-    .menu-side {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 10px !important;
-    }
-    .terms-and-guide-section::after {
-        width: 100% !important;
-        margin-left: 0 !important;
-    }
-}
-
 </style>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
@@ -2334,7 +2262,7 @@ html, body {
             <div class="highlight-text">
                 <b>Rekomendasi Akses HP:</b><br>
                 • Matikan Kunci Orientasi HP & <b>Miringkan menjadi Landscape</b> (Peringatan otomatis hilang).<br>
-                • Apabila mode <b>Situs Desktop</b>, Anda dapat mengklik tombol di bawah ini untuk masuk langsung.
+                • If using <b>Situs Desktop</b>, Anda dapat mengklik tombol di bawah ini untuk masuk langsung.
             </div>
             <button id="btn-warning-ok">Saya Mengerti & Masuk WebGIS</button>
         </div>
@@ -3376,6 +3304,8 @@ html, body {
 }
 </style>
 
+</body>
+
     <script src="https://cdn.jsdelivr.net/npm/ol@v10.3.1/dist/ol.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -3386,14 +3316,10 @@ html, body {
    ========================================================================== */
 document.addEventListener("DOMContentLoaded", function() {
 
-    // Inisialisasi EmailJS dengan pengaman Try-Catch
-    try {
-        if (typeof emailjs !== 'undefined') {
-            emailjs.init({ publicKey: "0vM8oYIi-LdqEmYW0" });
-        }
-    } catch (error) {
-        console.warn("EmailJS gagal dimuat, sistem tetap dilanjutkan.", error);
-    }
+    // Inisialisasi EmailJS (Ganti 'YOUR_PUBLIC_KEY' dengan Public Key Anda dari dashboard EmailJS)
+    (function() {
+        emailjs.init({ publicKey: "0vM8oYIi-LdqEmYW0" });
+    })();
 
     // =========================================================================
     // SYSTEM CUSTOM TOAST NOTIFICATION (PENGGANTI POP-UP SYSTEM KAKU)
@@ -3433,15 +3359,7 @@ document.addEventListener("DOMContentLoaded", function() {
         { email: 'dosen1@lecturer.undip.ac.id', pass: 'undip123', role: 'instansi' },
         { email: 'mhs1@students.undip.ac.id', pass: 'undip123', role: 'instansi' }
     ];
-    
-    let savedAccounts = null;
-    try {
-        savedAccounts = JSON.parse(localStorage.getItem('geo_accounts'));
-    } catch(e) {
-        console.warn("Database akun lokal di-reset.");
-        localStorage.removeItem('geo_accounts');
-    }
-    
+    let savedAccounts = JSON.parse(localStorage.getItem('geo_accounts'));
     let akunDatabaseLokal = savedAccounts ? savedAccounts : defaultAccounts;
     let userAktifSistem = { email: "", role: "tamu" };
     let dataEmailAdminMenungguOtp = "";
@@ -4452,57 +4370,49 @@ document.addEventListener("DOMContentLoaded", function() {
         };
     }
 
-    // ==========================================================================
-    // DETEKSI ORIENTASI HP DINAMIS (MOBILE OPTIMIZATION)
-    // ==========================================================================
+    // 13. Deteksi Orientasi HP Dinamis (Mobile Optimization)
     let isOverlayBypassed = false;
-    function checkDeviceOrientation() {
-        if (isOverlayBypassed) return;
-        const isMobileDevice = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-        const isPortrait = window.innerHeight > window.innerWidth;
-        const overlay = document.getElementById('mobile-warning-overlay');
-        
-        if (overlay) {
-            if (!isPortrait) {
-                overlay.style.display = 'none';
-                if (typeof map !== 'undefined' && map.updateSize) {
-                    setTimeout(() => { map.updateSize(); }, 100);
-                }
-            } else {
-                if (isMobileDevice || window.innerWidth < 1024) {
-                    overlay.style.display = 'flex';
-                } else {
-                    overlay.style.display = 'none';
-                }
-            }
-        }
-    }
+window.isPetaAktif = false; // Flag penanda sedang di dalam peta
 
-    const btnWarningOk = document.getElementById('btn-warning-ok');
-    if (btnWarningOk) {
-        btnWarningOk.onclick = function() {
-            const isPortrait = window.innerHeight > window.innerWidth;
-            if (isPortrait) {
-                if (window.innerWidth < 900) {
-                    alert("⚠️ Layar Anda masih terlalu tegak! Mohon miringkan HP Anda menjadi posisi tidur (Landscape) terlebih dahulu agar data spasial tampil optimal.");
+function checkDeviceOrientation() {
+    if (isOverlayBypassed && !window.isPetaAktif) return;
+    
+    const isMobileDevice = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+    const isPortrait = window.innerHeight > window.innerWidth;
+    const overlay = document.getElementById('mobile-warning-overlay');
+    const btnOk = document.getElementById('btn-warning-ok');
+    const txtBypass = document.getElementById('warning-bypass-text');
+    
+    if (overlay) {
+        if (!isPortrait) {
+            overlay.style.display = 'none';
+            if (typeof map !== 'undefined' && map.updateSize) {
+                setTimeout(() => { map.updateSize(); }, 100);
+            }
+        } else {
+            if (isMobileDevice || window.innerWidth < 1024) {
+                overlay.style.display = 'flex';
+                
+                if (window.isPetaAktif) {
+                    // KONDISI PETA AKTIF: Kunci mati, tombol OK disembunyikan
+                    if(btnOk) btnOk.style.display = 'none';
+                    if(txtBypass) txtBypass.innerHTML = "<b>PERINGATAN WAJIB:</b><br>Interaksi Peta Spasial membutuhkan layar luas. Posisi layar tegak (Portrait) <b>tidak diizinkan</b>. Silakan miringkan HP Anda (Landscape).";
+                    isOverlayBypassed = false;
                 } else {
-                    isOverlayBypassed = true;
-                    document.getElementById('mobile-warning-overlay').style.display = 'none';
-                    if (typeof map !== 'undefined' && map.updateSize) {
-                        setTimeout(() => { map.updateSize(); }, 200);
+                    // KONDISI BERANDA: Munculkan peringatan ringan
+                    if (!isOverlayBypassed) {
+                        if(btnOk) btnOk.style.display = 'block';
+                        if(txtBypass) txtBypass.innerHTML = "<b>Rekomendasi Akses HP:</b><br>• Matikan Kunci Orientasi HP & <b>Miringkan menjadi Landscape</b>.<br>• Anda dapat menekan tombol di bawah ini untuk tetap masuk (mode terbatas).";
+                    } else {
+                        overlay.style.display = 'none';
                     }
                 }
             } else {
-                isOverlayBypassed = true;
-                document.getElementById('mobile-warning-overlay').style.display = 'none';
+                overlay.style.display = 'none';
             }
-        };
+        }
     }
-
-    window.addEventListener('resize', checkDeviceOrientation);
-    window.addEventListener('orientationchange', checkDeviceOrientation);
-    window.addEventListener('load', checkDeviceOrientation);
-    checkDeviceOrientation();
+}
 
     window.bukaPopupBio = function(nama, role, nim, ttl, asal, ig, email, jobdesk, imgUrl) {
         const modal = document.getElementById('bio-popup-modal');
@@ -4549,23 +4459,25 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     const btnWarningOk = document.getElementById('btn-warning-ok');
-if (btnWarningOk) {
-    btnWarningOk.onclick = function() {
-        const isMobileDevice = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-        const isPortrait = window.innerHeight > window.innerWidth;
-        
-        // Cek kembali saat tombol diklik, pastikan HP tidak bisa tembus
-        if (isPortrait && (isMobileDevice || window.innerWidth < 900)) {
-            window.tampilkanNotifikasiGeo("⚠️ Sistem mendeteksi ini adalah perangkat Mobile. Anda Wajib Landscape!", "warning");
-        } else {
-            isOverlayBypassed = true;
-            document.getElementById('mobile-warning-overlay').style.display = 'none';
-            if (typeof map !== 'undefined' && map.updateSize) {
-                setTimeout(() => { map.updateSize(); }, 200);
+    if (btnWarningOk) {
+        btnWarningOk.onclick = function() {
+            const isPortrait = window.innerHeight > window.innerWidth;
+            if (isPortrait) {
+                if (window.innerWidth < 900) {
+                    window.tampilkanNotifikasiGeo("⚠️ Posisi layar salah! Mohon miringkan HP Anda menjadi posisi tidur (Landscape) terlebih dahulu.", "warning");
+                } else {
+                    isOverlayBypassed = true;
+                    document.getElementById('mobile-warning-overlay').style.display = 'none';
+                    if (typeof map !== 'undefined' && map.updateSize) {
+                        setTimeout(() => { map.updateSize(); }, 200);
+                    }
+                }
+            } else {
+                isOverlayBypassed = true;
+                document.getElementById('mobile-warning-overlay').style.display = 'none';
             }
-        }
-    };
-}
+        };
+    }
 
     window.addEventListener('resize', checkDeviceOrientation);
     window.addEventListener('orientationchange', checkDeviceOrientation);
