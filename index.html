@@ -5,6 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>WebGIS Pertanahan - Kecamatan Ceper</title>
+
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1e3799">
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.3.1/ol.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -245,10 +248,107 @@ html, body {
 .btn-zoom { background: #0984e3; color: white; }
 .btn-delete { background: #e74c3c; color: white; }
 
-.mouse-position { position: absolute; bottom: 10px; left: 10px; background: rgba(255,255,255,0.8); padding: 5px 12px; border-radius: 20px; font-size: 10px; font-weight: 600; color: #1e3799; z-index: 1000; border: 1px solid #ddd; }
+/* ==========================================================================
+   WIDGET KOORDINAT DINAMIS (VERSI MULTI-ROW / BERTUMPUK VERTIKAL)
+   ========================================================================== */
+.mouse-position {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(30, 55, 153, 0.95) !important;
+    backdrop-filter: blur(4px);
+    padding: 10px 22px !important;
+    border-radius: 15px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    z-index: 1002 !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-bottom: 4px solid #f1c40f !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    pointer-events: auto;
+    letter-spacing: 0.5px;
+    
+    display: flex !important;
+    flex-direction: column !important; 
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px;
+    
+    min-width: 280px !important;                    
+    height: auto !important;
+    white-space: nowrap !important;
+}
+
 .floating-bottom-right { position: absolute; bottom: 30px; right: 20px; display: flex; flex-direction: column; align-items: flex-end; gap: 15px; z-index: 1002; }
 #btn-measure-tools { width: 55px; height: 55px; border-radius: 50%; background: #1e3799; color: white; border: none; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-size: 20px; display: flex; align-items: center; justify-content: center; }
 
+/* Boks Hasil Pengukuran Melayang (Muncul di Sebelah Kiri Tombol Fitur) */
+.measure-result-banner {
+    position: absolute;
+    bottom: 65px;               /* Sejajar dengan boks opsi menu ukur */
+    right: 70px;                /* Digeser ke kiri agar berada tepat di samping tombol bulat */
+    background: rgba(30, 55, 153, 0.95) !important; /* Biru Navy Khas GeoPTRP */
+    backdrop-filter: blur(4px);
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #ffffff;
+    z-index: 1003;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-left: 4px solid #f1c40f; /* Aksen garis kuning khas di sisi kiri */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+    white-space: nowrap;
+    display: none;              /* Tersembunyi default, muncul via JS saat mengukur */
+    align-items: center;
+    gap: 8px;
+    animation: zoomIn 0.2s ease-out;
+}
+
+/* ==========================================================================
+   SUNTIKAN BARU: TOOLTIP HITUNG & DAFTAR RIWAYAT UKUR HAPUS SATU-SATU
+   ========================================================================== */
+/* Balon Balon Teks Hasil Ukur Melayang Tepat di Atas Objek Peta */
+.ol-tooltip-measure {
+    background: rgba(30, 55, 153, 0.95) !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    font-size: 11.5px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border-bottom: 3px solid #f1c40f;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    pointer-events: auto !important; /* Mengizinkan klik kursor masuk ke dalam elemen */
+    user-select: none;
+}
+
+/* Tombol Tong Sampah Kecil yang Muncul di Samping Angka Hasil saat Diklik */
+.measure-delete-btn {
+    color: #ff7675;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 4px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+}
+.measure-delete-btn:hover {
+    color: #ffffff;
+    background: #e74c3c;
+    transform: scale(1.1);
+}
+
+/* KODE INI WAJIB TETAP ADA AGAR MENU ALAT UKUR TETAP BERFUNGSI: */
 .measure-options { 
     position: absolute; bottom: 65px; right: 0; background: white; 
     border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
@@ -283,143 +383,190 @@ html, body {
 #btn-apply-katalog { background: #1e3799; color: white; padding: 12px 35px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-size: 13px; box-shadow: 0 4px 10px rgba(30, 55, 153, 0.2); }
 
 /* ==========================================================================
-   7. JENDELA INTERAKTIF (INFORMASI DATA SPASIAL)
+   7. JENDELA INTERAKTIF DATA SPASIAL (VERSI LOCK HEIGHT & ANTI-MENTAL)
    ========================================================================== */
 .spatial-flex-container {
     display: flex;
     align-items: stretch;
-    gap: 12px;
+    justify-content: space-between;
     width: 100%;
-    padding: 0 5px;
-    margin: 15px 0;
+    height: 180px; /* KUNCI UTAMA: Tinggi total dikunci paten agar konten bawah tidak geser */
+    margin: 35px 0;
+    padding: 0 15px;
     box-sizing: border-box;
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-#main-toggle-container {
+/* Banner Kanan-Kiri Kuning Polos Paten Ga Ikut Nyusut */
+.side-banner-line-decor {
+    width: 15px;
+    background-color: #f1c40f; /* Kuning polos pilihan Anda */
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+/* Area Konten Tengah */
+.center-interactive-wrapper {
     flex: 1;
-    min-height: 100px;
-    background: #1e3799;
+    margin: 0 20px;
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Mengikuti tinggi kontainer luar (180px) */
+    justify-content: flex-start;
+    box-sizing: border-box;
+}
+
+/* Tombol Utama (Default Tinggi Lebih Besar) */
+#main-toggle-container {
+    width: 100%;
+    height: 100%; /* Lebar ke bawah awal sesuai konsep */
+    background: linear-gradient(135deg, #1e3799, #0c2461);
     color: #ffffff;
     border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 15px;
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 12px rgba(30, 55, 153, 0.15);
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     box-sizing: border-box;
-    user-select: none;
 }
-#main-toggle-container:hover { background: #0c2461; }
+
+/* Saat Menu Dibuka: Tombol Utama Menyusut ke Atas */
+#main-toggle-container.shrunk {
+    height: 50px; /* Menyusut tipis ke atas */
+    background: #2c3e50;
+    border-radius: 10px 10px 0 0;
+    box-shadow: none;
+}
 
 .toggle-text-box {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 700;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    text-align: center;
+    letter-spacing: 1px;
 }
-.toggle-text-box i { font-size: 20px; }
-
-#main-toggle-container.shrunk {
-    flex: 0 0 110px;
-    background: #f1c40f;
-    color: #1e3799;
+#main-toggle-container.shrunk .toggle-text-box {
+    font-size: 13px;
 }
-#main-toggle-container.shrunk .toggle-text-box { font-size: 11px; }
 
-#interaction-right {
-    display: flex;
-    flex: 0;
-    width: 0;
-    opacity: 0;
-    visibility: hidden;
-    overflow: hidden;
-    gap: 10px;
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+/* Area 4 Tombol Grid di Bawah */
+.interaction-area-right {
+    display: none;
+    width: 100%;
     box-sizing: border-box;
 }
-#interaction-right.show {
-    flex: 3;
-    width: auto;
-    opacity: 1;
-    visibility: visible;
+.interaction-area-right.show {
+    display: block;
 }
 
 .logo-bar-horizontal {
-    display: flex;
-    flex-direction: row;
-    gap: 8px;
-    flex-shrink: 0;
-    align-items: center;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    width: 100%;
+    background: #ffffff;
+    border: 2px solid #2c3e50;
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    overflow: hidden;
 }
 
 .info-logo-card {
     background: #ffffff;
-    color: #2f3542;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    width: 62px;
-    height: 65px;
+    color: #2c3e50;
+    border: none;
+    border-right: 1px solid #e2e8f0;
+    height: 60px; /* Ukuran menu pasca menyusut */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 5px;
+    box-sizing: border-box;
+}
+.info-logo-card:last-child {
+    border-right: none;
+}
+.info-logo-card i {
+    font-size: 14px;
+    color: #1e3799;
+}
+.info-logo-card .logo-label {
+    font-size: 11px;
+    font-weight: 700;
+}
+.info-logo-card:hover {
+    background: #f8fafc;
+}
+.info-logo-card.active {
+    background: #f1c40f !important; /* Background Kuning khas GeoPTRP */
+    color: #1e3799 !important;      /* Warna Font tulisan menjadi Biru */
+}
+.info-logo-card.active i, 
+.info-logo-card.active .logo-label {
+    color: #1e3799 !important;     /* Memaksa Ikon dan Label teks ikut menjadi Biru */
+}
+
+/* Area Teks Petunjuk / Penjelasan di Paling Bawah */
+.info-display-box {
+    display: none;
+    width: 100%;
+    height: 55px; /* Sesuai konsep: tinggi awal area teks */
+    background: #ffffff;
+    border: 1.3px dashed #e74c3c;
+    border-radius: 6px;
+    margin-top: 10px;
+    box-sizing: border-box;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+.info-display-box.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Saat Salah Satu Tombol Klik Aktif: Area Teks Membesar Sedikit Mengambil Sisa Ruang */
+.info-display-box.expanded {
+    height: 65px; /* Bertambah tinggi untuk menampung penjelasan data */
+    border: 1px solid #e2e8f0;       /* Mengembalikan border putus-putus merah jadi solid abu-abu tipis */
+    border-left: 5px solid #f1c40f;
+}
+
+.spatial-info-panel {
+    padding: 5px 15px;
+    width: 100%;
+    box-sizing: border-box;
+
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    box-sizing: border-box;
-    padding: 5px;
-}
-.info-logo-card i {
-    font-size: 16px;
-    color: #1e3799;
-    margin-bottom: 4px;
-}
-.info-logo-card .logo-label {
-    font-size: 8.5px;
-    font-weight: 700;
-    color: #555;
     text-align: center;
-    line-height: 1.1;
-}
-.info-logo-card:hover {
-    background: #f1f2f6;
-    transform: translateY(-2px);
 }
 
-.info-logo-card.active {
-    background: #e1b12c !important;
-    border-color: #e1b12c !important;
-    color: #ffffff !important;
-}
-.info-logo-card.active i, 
-.info-logo-card.active .logo-label {
-    color: #ffffff !important;
-}
+/* Reset layout internal grafik bawaan beranda agar tidak tabrakan */
+.spatial-info-panel h3 {
+    margin: 0 0 2px 0;
+    font-size: 13px;
+    color: #1e3799;
+    font-weight: 700;
 
-.info-display-box {
-    display: none;
-    flex: 1;
-    background: #ffffff;
-    border: 1px solid #ddd;
-    border-left: 4px solid #1e3799;
-    padding: 10px 12px;
-    border-radius: 8px;
-    box-sizing: border-box;
-    max-height: 100%;
-    overflow-y: auto;
-    animation: fadeInGlow 0.3s ease-out forwards;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
 }
-.info-display-box.show { display: block; }
-
-#info-content-target h3 { margin: 0 0 4px 0; color: #1e3799; font-size: 13px; font-weight: 700; }
-#info-content-target p { margin: 0; color: #444; font-size: 11px; line-height: 1.4; text-align: justify; }
+.spatial-info-panel p {
+    margin: 0;
+    font-size: 11.5px;
+    color: #4b5563;
+    line-height: 1.3;
+}
 
 /* ==========================================================================
    7A-2. DEKORASI JUDUL HALAMAN INFORMASI (BIRU GEOPTRP)
@@ -703,24 +850,6 @@ html, body {
     flex-direction: column;
 }
 
-/* MENYUNTIKKAN KOTAK FULL PENUTUP & TEKS OTOMATIS TANPA MERUBAH BODY */
-.terms-and-guide-section::after {
-    content: "PERENCANAAN TATA RUANG DAN PERTANAHAN - UNIVERSITAS DIPONEGORO";
-    display: block;
-    width: calc(100% + 25%); /* Memaksa kotak memanjang penuh ke kanan-kiri menembus padding seksi */
-    margin-left: -12.5%; /* Menyeimbangkan posisi kotak agar presisi di tengah layar */
-    margin-top: 50px; /* Memberikan jarak vertikal dari kotak syarat dan panduan */
-    background-color: #1e3799; /* Warna biru khas GeoPTRP */
-    color: #ffffff; /* Warna teks putih pekat */
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-align: center;
-    padding: 25px 20px;
-    border-top: 5px solid #f1c40f; /* Aksen garis kuning di atas kotak penutup */
-    box-sizing: border-box;
-}
-
 .tag-flex-container {
     display: flex;
     flex-direction: row; 
@@ -937,6 +1066,606 @@ html, body {
     text-decoration: underline;
 }
 
+/* ==========================================================================
+   1. FOOTER KHUSUS BERANDA (Tetap Mempertahankan Trik Lebar Penuh Anda)
+   ========================================================================== */
+.terms-and-guide-section::after {
+    content: "PERENCANAAN TATA RUANG DAN PERTANAHAN - UNIVERSITAS DIPONEGORO";
+    display: block;
+    width: calc(100% + 25%); /* Memaksa memanjang penuh di beranda */
+    margin-left: -12.5%; 
+    margin-top: 50px; 
+    background-color: #1e3799; 
+    color: #ffffff; 
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-align: center;
+    padding: 25px 20px;
+    border-top: 5px solid #f1c40f; 
+    box-sizing: border-box;
+}
+
+/* ==========================================================================
+   ABOUT US INTERAKTIF: SUB-DASHBOARD PREMIUM WIDE LAYOUT
+   ========================================================================== */
+.about-main-wrapper {
+    padding: 30px 4%; /* DILEBARKAN: Mengurangi space kosong kanan-kiri dari 8% menjadi 4% */
+    max-width: 1400px; /* DILEBARKAN: Batas maksimal diperluas agar lebih megah di layar lebar */
+    margin: 0 auto;
+    font-family: 'Montserrat', sans-serif;
+}
+
+/* Gambar Utama Besar Membulat */
+.about-hero-rounded-img {
+    width: 100%;
+    height: auto;
+    max-height: 420px;
+    object-fit: cover;
+    border-radius: 20px; /* Diperhalus kelengkungannya */
+    box-shadow: 0 10px 30px rgba(30, 55, 153, 0.08); /* Efek bayangan dengan tint biru soft */
+    margin-bottom: 40px;
+    display: block;
+}
+
+/* Grid 3 Kolom Premium */
+.about-cards-3-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px; /* Jarak antar kartu agak diperlebar agar seimbang */
+    margin-top: 20px;
+}
+
+/* Desain Kartu Baru: Lebih Interaktif dan Tidak Membosankan */
+.about-card-item {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 22px 18px;
+    text-align: center;
+    border: 1px solid #eef2f6;
+    border-top: 6px solid #1e3799; /* Aksen garis tebal vertikal di atas kartu (Biru GeoPTRP) */
+    box-shadow: 0 6px 20px rgba(0,0,0,0.02);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Efek transisi smooth */
+    position: relative;
+}
+
+/* Efek Hover Cantik agar Kartu Hidup & Tidak Monoton */
+.about-card-item:hover {
+    transform: translateY(-8px); /* Kartu sedikit terangkat saat didekati kursor */
+    box-shadow: 0 15px 35px rgba(30, 55, 153, 0.1); /* Efek glow biru tipis di bawah kartu */
+    border-top-color: #f1c40f; /* Garis atas berubah menjadi Kuning Aksentuasi saat di-hover */
+}
+
+/* Wadah Pengganti Logo/Gambar */
+.about-card-image-box {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa; /* Background dasar boks gambar */
+    padding: 5px;
+    border: 1px solid #f0f0f0;
+    transition: transform 0.3s ease;
+}
+.about-card-item:hover .about-card-image-box {
+    transform: scale(1.08); /* Gambar sedikit membesar secara elegan saat kartu di-hover */
+}
+
+.about-card-image-box img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* Memastikan file gambar proporsional */
+}
+
+.about-card-item h3 {
+    font-size: 14px;
+    color: #1e3799;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.about-card-item p {
+    font-size: 12px;
+    color: #57606f;
+    line-height: 1.5;
+    margin: 0;
+    text-align: justify;
+}
+
+/* Wadah Tombol Utama di Bawah Panel */
+.about-action-area {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 35px;
+}
+
+/* Tombol Utama Visi Misi */
+.btn-about-visimisi {
+    background-color: #1e3799;
+    color: #ffffff;
+    border: none;
+    padding: 14px 30px; /* Sedikit ditebalkan atas-bawahnya agar proporsional */
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 8px; /* Mengubah kelengkungan sudut menjadi boks modern agar serasi saat memanjang */
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(30, 55, 153, 0.2);
+
+    display: flex; /* Mengubah dari inline-flex ke flex murni */
+    width: 100%; /* PENTING: Membuat tombol memanjang penuh ke kanan dan kiri */
+    justify-content: center; /* PENTING: Memaksa teks dan ikon di dalam tombol tetap presisi di tengah */
+
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+.btn-about-visimisi:hover {
+    background-color: #f1c40f;
+    color: #1e3799;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(241, 196, 15, 0.3);
+}
+
+/* KONDISI POP-UP MODAL (LATAR BELAKANG) */
+#modal-about-visimisi {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 61, 98, 0.7);
+    z-index: 12000; /* Dibuat sangat tinggi agar menimpa map dan menu nav */
+    display: none; /* Default sembunyi */
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+}
+
+/* BOKS UTAMA DI DALAM POP-UP */
+.about-popup-box {
+    background: #ffffff;
+    width: 90%;
+    max-width: 550px;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+    overflow: hidden;
+    animation: zoomIn 0.3s ease;
+}
+
+/* Header Pop-up */
+.about-popup-header {
+    background: #1e3799;
+    color: #ffffff;
+    padding: 18px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.about-popup-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+.about-popup-close {
+    font-size: 26px;
+    cursor: pointer;
+    font-weight: 300;
+    line-height: 1;
+}
+
+/* Area Konten di Dalam Pop-up */
+.about-popup-body {
+    padding: 25px;
+    background: #ffffff;
+}
+
+/* Baris Dua Tombol di Dalam Pop-up */
+.about-popup-nav-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #eef2f6;
+    padding-bottom: 12px;
+}
+.popup-tab-btn {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    background: #f8f9fa;
+    color: #4b5563;
+    font-weight: 700;
+    font-size: 11px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+}
+.popup-tab-btn.active, .popup-tab-btn:hover {
+    background: #f1c40f !important; /* Latar belakang kuning saat aktif/di-hover */
+    color: #1e3799 !important;      /* Font warna biru pekat */
+    border-color: #f1c40f !important;/* Bingkai mengikuti warna kuning */
+}
+
+/* Kotak Teks Penjelasan */
+.popup-text-content-pane {
+    display: none; /* Dikunci sembunyi, dikontrol lewat JavaScript */
+    font-size: 13px;
+    color: #2c3e50;
+    line-height: 1.6;
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+.popup-text-content-pane strong {
+    color: #1e3799;
+}
+
+/* Judul Seksi Tim Pengembang */
+.team-section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e3799;
+    margin: 45px 0 20px 0;
+    border-bottom: 2px solid #f1c40f;
+    padding-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Grid Layout untuk 8 Anggota Kelompok */
+.about-profile-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 Kolom sejajar di desktop */
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+/* Desain Kartu Ringkas Anggota Kelompok */
+.simple-profile-card {
+    background: #ffffff;
+    border: 1px solid #eef2f6;
+    border-radius: 12px;
+    padding: 20px 15px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+.simple-profile-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(30, 55, 153, 0.08);
+    border-color: #1e3799;
+}
+
+/* ==========================================================================
+   EFEK POP-OUT AVATAR (VERSI FOTO JUMBO & BANNER PENUTUP BAWAH)
+   ========================================================================== */
+
+/* Wadah Utama Frame Avatar (Diperbesar) */
+.avatar-container {
+    position: relative;
+    width: 130px;
+    height: 140px; /* Ditambahkan tinggi ekstra agar kepala tidak terpotong */
+    margin-bottom: 15px;
+    display: flex;
+    align-items: flex-end; 
+    justify-content: center;
+}
+
+/* Shape Lingkaran Kuning Dasar di Belakang Foto (Diperbesar) */
+.shape-background {
+    position: absolute;
+    bottom: 0;
+    width: 115px;
+    height: 115px;
+    background-color: #f1c40f; /* Kuning khas GeoPTRP */
+    border-radius: 50%;
+    border: 4px solid transparent; /* Standby border */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    z-index: 1; 
+    overflow: hidden; /* Mengunci wilayah bawah lingkaran */
+}
+
+/* Efek Garis Biru Mengelilingi Shape Lingkaran Saat Hover */
+.simple-profile-card:hover .shape-background {
+    border-color: #1e3799; /* Garis biru melingkar tebal */
+    box-shadow: 0 8px 25px rgba(30, 55, 153, 0.25);
+}
+
+/* Pengaturan Foto Transparan Pop-Out JUMBO */
+.popout-img {
+    width: 120px;
+    height: 135px; /* Foto sengaja melebihi tinggi shape background */
+    object-fit: contain;
+    position: relative;
+    z-index: 2; /* Di atas bulatan kuning, di bawah banner nama tag */
+    transform-origin: bottom center;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Efek Kepala Keluar Zoom-In Lebih Signifikan */
+.simple-profile-card:hover .popout-img {
+    transform: scale(1.1); /* Efek melompat keluar lingkaran */
+}
+
+/* --- BANNER TAG KECIL PENUTUP POTONGAN BAWAH FOTO --- */
+.avatar-banner-tag {
+    position: absolute;
+    bottom: 6px; /* Letak presisi menutupi kurva bawah lingkaran */
+    background: #1e3799; /* Warna Biru GeoPTRP Tebal */
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 20px; /* Melengkung kapsul rapi */
+    letter-spacing: 0.5px;
+    z-index: 3; /* Wajib di layer paling atas agar menutupi potongan baju/tubuh foto */
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    pointer-events: none; /* Klik tembus ke kartu background */
+}
+
+/* Efek Banner Tag Ikut Responsif Saat Hover */
+.simple-profile-card:hover .avatar-banner-tag {
+    background: #f1c40f; /* Tukar warna menjadi kuning saat di-hover */
+    color: #1e3799; /* Teks berubah menjadi biru */
+    box-shadow: 0 4px 12px rgba(30, 55, 153, 0.3);
+}
+
+/* ==========================================================================
+   INTERAKSI POP-UP BIODATA (VERSI PREMIUM BANNER & AUTO-WRAP TEXT)
+   ========================================================================== */
+
+/* --- OVERLAY DASAR POP-UP --- */
+.bio-modal-overlay {
+    display: none; 
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: rgba(10, 61, 98, 0.75) !important;
+    z-index: 999999 !important;
+    justify-content: center !important;
+    align-items: center !important;
+    backdrop-filter: blur(5px);
+}
+
+/* --- KOTAK UTAMA POP-UP --- */
+.bio-modal-box {
+    background: #ffffff;
+    width: 90%;
+    max-width: 680px; 
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+    animation: zoomIn 0.25s ease-out;
+    overflow: hidden; 
+}
+
+/* --- BANNER KUNING DI BAGIAN ATAS --- */
+.bio-banner {
+    width: 100%;
+    height: 50px; 
+    background: #f1c40f !important; 
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* --- TOMBOL CLOSE (X) MERAH --- */
+.bio-close {
+    position: absolute;
+    top: 50%;
+    right: 25px;
+    transform: translateY(-50%); 
+    font-size: 30px;
+    color: #e74c3c !important; 
+    font-weight: bold !important; 
+    cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+.bio-close:hover {
+    color: #c0392b !important; 
+    transform: translateY(-50%) scale(1.15);
+}
+
+/* --- WADAH KONTEN TENGAH --- */
+.bio-body-wrapper {
+    display: flex;
+    width: 100%;
+    align-items: stretch; 
+}
+
+/* --- SISI KIRI: FOTO KOTAK --- */
+.bio-modal-left {
+    flex: 0 0 38%; 
+    background: #f8f9fa;
+    display: flex;
+}
+.bio-modal-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+    display: block;
+}
+
+/* --- SISI KANAN: IDENTITAS --- */
+.bio-modal-right {
+    flex: 1; 
+    padding: 25px 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+    background: #ffffff;
+}
+
+#modal-target-name {
+    margin: 0 0 5px 0;
+    font-size: 22px;
+    color: #1e3799;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+/* Tampilan Tulisan Jabatan/Role di Bawah Nama */
+.bio-role-badge {
+    color: #f39c12;
+    font-size: 13.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #f1c40f;
+    padding-bottom: 6px;
+}
+
+/* Row Data Identitas */
+.bio-row {
+    font-size: 13px;
+    margin-bottom: 8px;
+    line-height: 1.5;
+    display: flex;
+    align-items: flex-start; 
+}
+.bio-row:last-child {
+    margin-bottom: 0;
+}
+
+.bio-label {
+    width: 60px; 
+    font-weight: 700;
+    color: #1e3799;
+    flex-shrink: 0;
+}
+.bio-separator {
+    width: 15px;
+    font-weight: 700;
+    color: #1e3799;
+    flex-shrink: 0;
+}
+.bio-value {
+    flex: 1;
+    color: #2c3e50;
+    font-weight: 500;
+    word-break: break-word;
+}
+
+/* --- BANNER BAWAH BIRU FULL (JOBDESK) --- */
+.bio-footer-banner {
+    width: 100%;
+    background: linear-gradient(135deg, #1e3799, #0a2366); /* Gradasi biru khas GeoPTRP */
+    color: #ffffff;
+    padding: 18px 25px;
+    font-size: 12.5px;
+    line-height: 1.6;
+    text-align: justify; /* Rata kanan-kiri agar rapi */
+    font-weight: 400;
+    border-top: 4px solid #f1c40f; /* Pembatas garis kuning kecil dengan bagian atas */
+    box-sizing: border-box;
+}
+
+/* --- OPTIMASI RESPONSIF HP --- */
+@media (max-width: 580px) {
+    .bio-body-wrapper {
+        flex-direction: column; 
+    }
+    .bio-modal-left {
+        flex: none;
+        width: 100%;
+        height: 220px; 
+    }
+    .bio-modal-right {
+        padding: 20px;
+    }
+    #modal-target-name {
+        font-size: 19px;
+    }
+    .bio-footer-banner {
+        font-size: 12px;
+        padding: 15px;
+    }
+}
+
+/* Penyesuaian Responsif Grid Anggota di HP */
+@media (max-width: 950px) {
+    .about-profile-grid {
+        grid-template-columns: repeat(2, 1fr); /* Menjadi 2 kolom di tablet/HP landscape */
+    }
+}
+@media (max-width: 500px) {
+    .about-profile-grid {
+        grid-template-columns: repeat(4, 1fr) !important; /* Dikunci 4 kolom menyamping */
+        gap: 5px; /* Jarak antar kartu dirapatkan */
+    }
+    .simple-profile-card {
+        padding: 8px 4px;
+        border-radius: 6px;
+    }
+    .avatar-container {
+        width: 45px;
+        height: 50px;
+        margin-bottom: 5px;
+    }
+    .shape-background {
+        width: 40px;
+        height: 40px;
+    }
+    .popout-img {
+        width: 42px;
+        height: 48px;
+    }
+    .avatar-banner-tag {
+        font-size: 5px;
+        padding: 2px 4px;
+        bottom: 1px;
+    }
+    .simple-profile-card strong.simple-profile-name {
+        font-size: 6.5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
+    }
+    .simple-profile-card span.simple-profile-role {
+        font-size: 5px;
+    }
+}
+
+/* Penyesuaian Responsif Layar HP */
+@media (max-width: 950px) {
+    .about-cards-3-grid {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+    .about-main-wrapper {
+        padding: 20px 4%;
+    }
+}
+
 /* Responsif Panduan untuk HP */
 @media (max-width: 850px) {
     .panduan-layout {
@@ -959,6 +1688,363 @@ html, body {
     .panduan-menu-item:hover {
         border-left: none;
         border-bottom: 4px solid #1e3799;
+    }
+}
+
+/* ==========================================================================
+   SEKSI GRID & KARTU KOMPONEN DOSEN (FORMAL & STATIS)
+   ========================================================================== */
+
+.lecturer-profile-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 20px; /* Sedikit dirapatkan agar memberikan ruang text menyamping lebih luas */
+    max-width: 1400px;
+    margin: 0 auto 50px auto;
+    padding: 0 4%;
+}
+
+.lecturer-card {
+    background: #ffffff;
+    border: 1px solid #eef2f6;
+    border-radius: 12px;
+    padding: 25px 15px; /* Padding kanan kiri disesuaikan */
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.lecturer-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(30, 55, 153, 0.05);
+    border-color: #f1c40f; 
+}
+
+.lecturer-avatar-box {
+    width: 120px;
+    height: 150px; 
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f8f9fa;
+    margin-bottom: 15px;
+    border: 2px solid #e9ecef;
+}
+
+.lecturer-avatar-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+}
+
+/* KUNCI PERBAIKAN: Nama dibuat agak kecil, rapat, dan mengunci 1 baris */
+.lecturer-name {
+    font-size: 11.5px; /* Ukuran font diperkecil agar pas 1 baris */
+    color: #1e3799; 
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 4px;
+    white-space: nowrap; /* Memaksa teks tidak turun ke bawah */
+    overflow: hidden; /* Mengamankan jika ada layar device yang terlalu ekstrem */
+    text-overflow: ellipsis; /* Memberikan titik tiga otomatis jika space benar-benar habis di HP */
+    width: 100%;
+    display: block;
+}
+
+/* BARU: Style Khusus untuk NIP Berwarna Kuning */
+.lecturer-nip {
+    font-size: 10.5px;
+    color: #f39c12; /* Warna kuning tua/gold agar terbaca jelas di background putih */
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: block;
+    width: 100%;
+}
+
+.lecturer-title {
+    font-size: 10.5px;
+    color: #7f8c8d;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+}
+
+/* --- OPTIMASI RESPONSIVE GRID DOSEN PADA LAYAR HP --- */
+@media (max-width: 950px) {
+    .lecturer-profile-grid {
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 20px;
+    }
+}
+@media (max-width: 580px) {
+    .lecturer-profile-grid {
+        grid-template-columns: 1fr; 
+    }
+    .lecturer-name {
+        white-space: normal; /* Di HP tegak dibiarkan normal karena space menyamping sangat sempit */
+        font-size: 13px; /* Ukuran font dinaikkan sedikit khusus tampilan HP agar terbaca */
+    }
+}
+
+/* ==========================================================================
+   SEKSI GRID LAYOUT KONTAK KAMI & SYSTEM INTERAKTIF DUA MAPS
+   ========================================================================== */
+
+.contact-section-container {
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+    max-width: 1400px;
+    margin: 0 auto 60px auto;
+    padding: 0 4%;
+    align-items: stretch;
+}
+
+/* Kolom Kiri - Detail Kontak */
+.contact-info-left {
+    flex: 1;
+    background: #ffffff;
+    padding: 35px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+    border: 1px solid #eef2f6;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.contact-sub-title {
+    color: #1e3799;
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 25px 0;
+    font-family: 'Playfair Display', serif;
+}
+
+.contact-item {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 25px;
+    align-items: flex-start;
+}
+.contact-item:last-child {
+    margin-bottom: 0;
+}
+
+.contact-icon-box {
+    width: 45px;
+    height: 45px;
+    background: #eef2ff;
+    color: #1e3799;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    border: 1px solid #dcdde1;
+}
+
+.contact-text-box h4 {
+    margin: 0 0 5px 0;
+    color: #2c3e50;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.contact-text-box p {
+    margin: 0;
+    color: #57606f;
+    font-size: 13px;
+    line-height: 1.6;
+    text-align: justify;
+}
+
+/* Kolom Kanan - Dua Panel Maps */
+.contact-maps-right {
+    flex: 1.2;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Rangkaian 2 Tombol Tab */
+.contact-map-tabs {
+    display: flex;
+    gap: 10px;
+}
+
+.contact-tab-btn {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #ddd;
+    background: #ffffff;
+    color: #4b5563;
+    font-weight: 700;
+    font-size: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* SINKRONISASI REQ: Tombol Peta yang terpilih otomatis Kuning Font Biru Tebal */
+.contact-tab-btn.active, .contact-tab-btn:hover {
+    background: #f1c40f !important; /* Warna kuning khas GeoPTRP */
+    color: #1e3799 !important;      /* Teks warna biru pekat */
+    border-color: #f1c40f !important;
+    box-shadow: 0 4px 12px rgba(241, 196, 15, 0.2);
+}
+
+/* Bingkai Pembungkus Iframe */
+.contact-map-frame-wrapper {
+    flex: 1;
+    min-height: 320px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+    position: relative;
+}
+
+.contact-iframe-map {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: none; /* Menyembunyikan peta secara default */
+}
+
+.contact-iframe-map.active {
+    display: block !important; /* Memaksa peta aktif tampil di layar */
+    animation: zoomIn 0.3s ease-out; /* Menggunakan animasi zoomIn bawaan WebGIS Anda agar mulus */
+}
+
+/* --- OPTIMASI RESPONSIVE TOTAL UNTUK LAYAR HP --- */
+@media (max-width: 850px) {
+    .contact-section-container {
+        flex-direction: column;
+        gap: 25px;
+    }
+    .contact-map-frame-wrapper {
+        min-height: 250px;
+        height: 250px;
+    }
+    .contact-tab-btn {
+        font-size: 11px;
+        padding: 10px;
+    }
+}
+
+/* ==========================================================================
+   WIDGET BANNER KECIL MELAYANG (FLOATING) DI ATAS MAPS POJOK KANAN BAWAH
+   ========================================================================== */
+.map-floating-banner {
+    position: absolute;
+    bottom: 30px; /* Jarak aman di atas logo Term of Use Google Maps */
+    right: 15px;
+    background: rgba(30, 55, 153, 0.95); /* Biru Navy Pekat Transparan */
+    backdrop-filter: blur(4px);
+    color: #ffffff;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    z-index: 999; /* Memaksa banner berada di layer paling atas menimpa iframe peta */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border-left: 3px solid #f1c40f; /* Aksen garis kuning vertikal */
+    pointer-events: none; /* Mouse bisa klik tembus melewati boks banner ini */
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Responsif Mode untuk HP: Banner mengecil secara otomatis */
+@media (max-width: 550px) {
+    .map-floating-banner {
+        bottom: 20px;
+        right: 10px;
+        font-size: 9.5px;
+        padding: 6px 10px;
+    }
+}
+
+/* Warna kuning ketika alat ukur aktif */
+.measure-options button.active {
+    background: #f1c40f !important;
+    color: #1e3799 !important;
+}
+
+/* ==========================================================================
+   SUNTIKAN BARU: TOMBOL INFO & BOKS PANDUAN PADA POP-UP LOGIN
+   ========================================================================== */
+.login-info-btn {
+    position: absolute;
+    top: 15px;
+    left: 20px;
+    font-size: 18px;
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0.8;
+}
+.login-info-btn:hover {
+    color: #f1c40f;
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Container Panduan Internal Jalur Cepat */
+.login-guide-box {
+    display: none;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-left: 4px solid #f1c40f;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    animation: slideUp 0.3s ease-out;
+}
+.login-guide-box h4 {
+    margin: 0 0 8px 0;
+    color: #1e3799;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.login-guide-box ul {
+    margin: 0;
+    padding-left: 18px;
+}
+.login-guide-box li {
+    font-size: 11.5px;
+    color: #475569;
+    line-height: 1.6;
+    margin-bottom: 6px;
+    text-align: justify;
+}
+.login-guide-box li:last-child {
+    margin-bottom: 0;
+}
+
+.login-guide-box table td, .login-guide-box table th {
+    white-space: nowrap;
+}
+@media (max-width: 400px) {
+    .login-guide-box table {
+        font-size: 10px !important;
     }
 }
 
@@ -1182,6 +2268,128 @@ html, body {
         </div>
     </div>
 
+    <div id="modal-geo-login" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 61, 98, 0.75); z-index: 160000; justify-content: center; align-items: center; backdrop-filter: blur(5px); font-family: 'Montserrat', sans-serif;">
+    <div style="background: #ffffff; width: 90%; max-width: 450px; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.3); animation: zoomIn 0.3s ease; position: relative;">
+        
+        <div style="background: linear-gradient(135deg, #1e3799, #0c2461); color: white; padding: 20px; font-weight: 700; position: relative; text-align: center;">
+            <i class="fas fa-circle-question login-info-btn" id="btn-login-info" onclick="window.togglePanduanLogin()" title="Panduan Pengguna"></i>
+            
+            <h3 style="margin: 0; font-size: 18px; color: #f1c40f; font-family: 'Playfair Display', serif;">Mulai Jelajah GeoPTRP</h3>
+            <p style="margin: 5px 0 0 0; font-size: 11px; opacity: 0.8; font-weight: 300;">Otentikasi Multi-User Kecamatan Ceper</p>
+            <span onclick="document.getElementById('modal-geo-login').style.display='none'" style="cursor: pointer; position: absolute; top: 15px; right: 20px; font-size: 24px;">×</span>
+        </div>
+        
+        <div style="padding: 30px; box-sizing: border-box; max-height: calc(100vh - 120px); overflow-y: auto;">
+            
+            <!-- BOKS PANDUAN BARU (Informasi Format Email & User Level) -->
+            <div id="box-login-guide" class="login-guide-box">
+                <h4><i class="fas fa-book-open"></i> Panduan Akses & Tingkat Pengguna</h4>
+                <p style="font-size: 11.5px; color: #475569; margin: 0 0 10px 0; text-align: justify; line-height: 1.5;">
+                    Sistem Otentikasi GeoPTRP membatasi registrasi menggunakan email institusi. Berikut adalah 4 format email resmi yang didukung beserta pembagian tingkat aksesnya:
+                </p>
+                
+                <!-- Tabel Mini Informasi Akun -->
+                <div style="overflow-x: auto; margin-bottom: 12px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; text-align: left; background: #fff;">
+                        <thead>
+                            <tr style="background: #edf2f7; color: #2d3748; border-bottom: 1px solid #e2e8f0;">
+                                <th style="padding: 6px 10px; font-weight: 700;">Format Akhiran Email</th>
+                                <th style="padding: 6px 10px; font-weight: 700;">Level Pengguna</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid #edf2f7;">
+                                <td style="padding: 6px 10px; font-family: monospace; color: #e74c3c;">@students.undip.ac.id</td>
+                                <td style="padding: 6px 10px; font-weight: 600; color: #2e86de;">INSTANSI (Mahasiswa)</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #edf2f7;">
+                                <td style="padding: 6px 10px; font-family: monospace; color: #e74c3c;">@lecturer.undip.ac.id</td>
+                                <td style="padding: 6px 10px; font-weight: 600; color: #2e86de;">INSTANSI (Dosen)</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #edf2f7;">
+                                <td style="padding: 6px 10px; font-family: monospace; color: #e74c3c;">@students.admin.undip.ac.id</td>
+                                <td style="padding: 6px 10px; font-weight: 600; color: #27ae60;">ADMINISTRATOR (Tim Spasial)</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #edf2f7;">
+                                <td style="padding: 6px 10px; font-family: monospace; color: #e74c3c;">@lecturer.admin.undip.ac.id</td>
+                                <td style="padding: 6px 10px; font-weight: 600; color: #27ae60;">ADMINISTRATOR (Super User)</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 10px; color: #7f8c8d; font-style: italic;">Tanpa Login (Tombol Tamu)</td>
+                                <td style="padding: 6px 10px; font-weight: 600; color: #7f8c8d;">TAMU / PUBLIK</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <ul style="margin: 0; padding-left: 15px;">
+                    <li style="font-size: 11px; color: #475569; margin-bottom: 4px; text-align: justify;">
+                        <strong style="color: #27ae60;">Level Administrator:</strong> Memiliki wewenang penuh untuk memanipulasi basis data, mengedit deliniasi batas, dan mengunggah dokumen tata ruang spasial (RTRW/RDTR).
+                    </li>
+                    <li style="font-size: 11px; color: #475569; margin-bottom: 4px; text-align: justify;">
+                        <strong style="color: #2e86de;">Level Instansi:</strong> Diberikan hak akses peninjauan produk peta digital tingkat lanjut serta instrumen analisis spasial tanpa fitur penyuntingan langsung.
+                    </li>
+                    <li style="font-size: 11px; color: #475569; text-align: justify;">
+                        <strong style="color: #7f8c8d;">Level Tamu:</strong> Hanya dapat membaca dan melihat (<strong>View-Only</strong>) visualisasi peta yang telah dipublikasikan secara umum.
+                    </li>
+                </ul>
+            </div>
+
+            <div id="box-login-view">
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 10px; font-weight: 700; color: #2c3e50; text-transform: uppercase;">Email Universitas Diponegoro</label>
+                    <input type="email" id="login-email" placeholder="nama@students.undip.ac.id" style="width:100%; padding: 11px; border: 1px solid #ddd; border-radius: 8px; font-size: 12.5px; margin-top: 5px; font-family: inherit; box-sizing: border-box;">
+                </div>
+                <div style="margin-bottom: 20px; position: relative;">
+                    <label style="font-size: 10px; font-weight: 700; color: #2c3e50; text-transform: uppercase;">Kata Sandi GeoPTRP</label>
+                    <div style="position: relative; display: flex; align-items: center; margin-top: 5px;">
+                        <input type="password" id="login-pass" placeholder="••••••••" style="width:100%; padding: 11px; border: 1px solid #ddd; border-radius: 8px; font-size: 12.5px; font-family: inherit; box-sizing: border-box;">
+                        <i class="fas fa-eye" id="toggle-login-pass" onclick="window.togglePassword('login-pass', 'toggle-login-pass')" style="position: absolute; right: 15px; cursor: pointer; color: #7f8c8d;"></i>
+                    </div>
+                </div>
+                <button onclick="window.prosesLoginSistem()" style="width: 100%; padding: 12px; background: #1e3799; color:#fff; border:none; border-radius:8px; font-weight:700; font-size:12px; text-transform:uppercase; cursor:pointer; box-shadow:0 4px 12px rgba(30,55,153,0.2);">Masuk Sistem</button>
+                
+                <div style="text-align: center; margin: 15px 0; font-size: 11px; color: #b2bec3; position: relative;">
+                    <span style="background: #fff; padding: 0 10px; position: relative; z-index: 2;">Atau</span>
+                    <hr style="position: absolute; top: 50%; left: 0; width: 100%; border: none; border-top: 1px solid #eee; margin: 0; z-index: 1;">
+                </div>
+                <button onclick="window.masukSebagaiTamu()" style="width: 100%; padding: 10px; background: #fff; color:#1e3799; border: 2px solid #1e3799; border-radius:8px; font-weight:700; font-size:12px; text-transform:uppercase; cursor:pointer; margin-bottom: 15px;"><i class="fas fa-user-clock"></i> Masuk Sebagai Tamu</button>
+                <p style="font-size: 12px; text-align: center; color: #555; margin: 0;">Belum punya akun? <a href="#" onclick="window.pindahKeView('signup')" style="color:#f39c12; font-weight:700; text-decoration:none;">Daftar Baru</a></p>
+            </div>
+
+            <div id="box-signup-view" style="display: none;">
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 10px; font-weight: 700; color: #2c3e50; text-transform: uppercase;">Email Undip / Admin</label>
+                    <input type="email" id="reg-email" placeholder="nama@students.undip.ac.id" style="width:100%; padding: 11px; border: 1px solid #ddd; border-radius: 8px; font-size: 12.5px; margin-top: 5px; font-family: inherit; box-sizing: border-box;">
+                </div>
+                <div style="margin-bottom: 20px; position: relative;">
+                    <label style="font-size: 10px; font-weight: 700; color: #2c3e50; text-transform: uppercase;">Buat Password Baru</label>
+                    <div style="position: relative; display: flex; align-items: center; margin-top: 5px;">
+                        <input type="password" id="reg-pass" placeholder="Minimal 6 karakter" style="width:100%; padding: 11px; border: 1px solid #ddd; border-radius: 8px; font-size: 12.5px; font-family: inherit; box-sizing: border-box;">
+                        <i class="fas fa-eye" id="toggle-reg-pass" onclick="window.togglePassword('reg-pass', 'toggle-reg-pass')" style="position: absolute; right: 15px; cursor: pointer; color: #7f8c8d;"></i>
+                    </div>
+                </div>
+                <button onclick="window.prosesRegistrasiSistem()" style="width: 100%; padding: 12px; background: #f1c40f; color:#1e3799; border:none; border-radius:8px; font-weight:700; font-size:12px; text-transform:uppercase; cursor:pointer;">Daftar Akun</button>
+                <p style="font-size: 12px; text-align: center; color: #555; margin-top: 15px; margin-bottom: 0;">Sudah punya akun? <a href="#" onclick="window.pindahKeView('login')" style="color:#1e3799; font-weight:700; text-decoration:none;">Login</a></p>
+            </div>
+
+            <div id="box-otp-view" style="display: none;">
+                <h3 style="color: #1e3799; font-weight: 700; margin: 0 0 5px 0; font-size: 16px; text-align: center;">Minta Verifikasi OTP</h3>
+                <p style="color: #7f8c8d; font-size: 11.5px; margin: 0 0 20px 0; text-align: center;">Guna menjaga keamanan basis data spasial, silakan masukkan 6 digit kode OTP yang baru saja dikirimkan ke email <b>kelompok3archive@gmail.com</b>.</p>
+                <div style="margin-bottom: 20px;">
+                    <input type="text" id="input-otp-code" placeholder="000000" maxlength="6" style="width:100%; padding: 12px; border: 2px solid #1e3799; border-radius: 8px; font-size: 20px; font-weight:900; text-align: center; letter-spacing: 5px; font-family: inherit; color: #1e3799; box-sizing: border-box;">
+                </div>
+                <button onclick="window.prosesVerifikasiOtpAdmin()" style="width: 100%; padding: 12px; background: #2ecc71; color:#fff; border:none; border-radius:8px; font-weight:700; font-size:12px; text-transform:uppercase; cursor:pointer;">Verifikasi Admin</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="geo-custom-toast" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(12, 36, 97, 0.98); border-left: 5px solid #f1c40f; color: white; padding: 20px 35px; border-radius: 12px; z-index: 200000; box-shadow: 0 15px 40px rgba(0,0,0,0.4); font-family: 'Montserrat', sans-serif; text-align: center; min-width: 300px; animation: fadeInUp 0.3s ease-out;">
+    <div id="toast-icon-box" style="font-size: 28px; margin-bottom: 10px; color: #f1c40f;"><i class="fas fa-info-circle"></i></div>
+    <div id="toast-message-box" style="font-size: 13.5px; font-weight: 600; line-height: 1.5; white-space: pre-line;">Pemberitahuan Sistem</div>
+</div>
+
     <div id="disclaimer-overlay">
         <div class="disclaimer-box">
             <div class="disclaimer-title">
@@ -1215,7 +2423,64 @@ html, body {
         </div>
     </div>
 
+    <div id="bio-popup-modal" class="bio-modal-overlay" onclick="tutupPopupBio(event)">
+        <div class="bio-modal-box">
+            <!-- 1. BANNER ATAS KUNING -->
+            <div class="bio-banner">
+                <span class="bio-close" onclick="document.getElementById('bio-popup-modal').style.display='none'">×</span>
+            </div>
+            
+            <!-- 2. KONTEN TENGAH (FOTO & BIODATA RINGKAS) -->
+            <div class="bio-body-wrapper">
+                <!-- Sisi Kiri: Foto Full Tinggi -->
+                <div class="bio-modal-left">
+                    <img id="modal-target-img" src="" class="bio-modal-img" alt="Foto Profil">
+                </div>
+                
+                <!-- Sisi Kanan: Identitas -->
+                <div class="bio-modal-right">
+                    <!-- Nama Anggota -->
+                    <h3 id="modal-target-name">Nama Anggota</h3>
+                    <!-- Role / Jabatan di bawah nama -->
+                    <div id="modal-target-role" class="bio-role-badge">Role / Jabatan</div>
+                    
+                    <div class="bio-row">
+                        <span class="bio-label">NIM</span>
+                        <span class="bio-separator">:</span>
+                        <span id="modal-target-nim" class="bio-value">-</span>
+                    </div>
+                    <div class="bio-row">
+                        <span class="bio-label">TTL</span>
+                        <span class="bio-separator">:</span>
+                        <span id="modal-target-ttl" class="bio-value">-</span>
+                    </div>
+                    <div class="bio-row">
+                        <span class="bio-label">Asal</span>
+                        <span class="bio-separator">:</span>
+                        <span id="modal-target-asal" class="bio-value">-</span>
+                    </div>
+                    <div class="bio-row">
+                        <span class="bio-label">IG</span>
+                        <span class="bio-separator">:</span>
+                        <span id="modal-target-ig" class="bio-value">-</span>
+                    </div>
+                    <div class="bio-row">
+                        <span class="bio-label">Email</span>
+                        <span class="bio-separator">:</span>
+                        <span id="modal-target-email" class="bio-value">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. BANNER BAWAH BIRU FULL (DESKRIPSI TUGAS) -->
+            <div id="modal-target-jobdesk-banner" class="bio-footer-banner">
+                Deskripsi tanggung jawab dan jobdesk tim akan muncul di sini secara lengkap.
+            </div>
+        </div>
+    </div>
+
     <div id="landing-page">
+
         <nav class="top-navbar">
             <div class="logo-side">
                 <img src="LOGO UNDIP PTRP.png" alt="Logo UNDIP PTRP" style="height: 80px; width: auto; max-height: none;">
@@ -1224,7 +2489,7 @@ html, body {
                 <a id="btn-beranda" class="nav-menu-item active" onclick="bukaTab('beranda')">Beranda</a>
                 <a class="nav-menu-item" onclick="masukPeta()">Jelajahi GeoPTRP</a>
                 <a id="btn-info" class="nav-menu-item" onclick="bukaTab('info')">Informasi Pertanahan</a>
-                <a id="btn-alamat" class="nav-menu-item" onclick="bukaTab('alamat')">Alamat</a>
+                <a id="btn-about" class="nav-menu-item" onclick="bukaTab('about')">About Us</a>
             </div>
         </nav>
 
@@ -1238,56 +2503,54 @@ html, body {
             </div>
                 
             <div id="spatial-interactive-row" class="spatial-flex-container">
-                <div id="main-toggle-container" onclick="handleMainToggle()">
-                    <div class="toggle-text-box">
-                        <i class="fas fa-database"></i>
-                        <span class="text-label">Informasi Data Spasial</span>
-                    </div>
+    
+    <div class="side-banner-line-decor"></div>
+
+    <div class="center-interactive-wrapper">
+        
+        <div id="main-toggle-container" onclick="handleMainToggle()">
+            <div class="toggle-text-box" id="main-toggle-text-content">
+                <i class="fas fa-database"></i>
+                <span>Informasi Data Spasial</span>
+            </div>
+        </div>
+
+        <div class="interaction-area-right" id="interaction-right">
+            <div id="logo-bar-container" class="logo-bar-horizontal">
+                <div class="info-logo-card" id="logo-1" onclick="selectLogo(this, 'admin')">
+                    <i class="fas fa-map-location-dot"></i>
+                    <div class="logo-label">Batas Administrasi</div>
                 </div>
+                <div class="info-logo-card" id="logo-2" onclick="selectLogo(this, 'lahan')">
+                    <i class="fas fa-layer-group"></i>
+                    <div class="logo-label">Penggunaan Lahan</div>
+                </div>
+                <div class="info-logo-card" id="logo-3" onclick="selectLogo(this, 'bidang')">
+                    <i class="fas fa-vector-square"></i>
+                    <div class="logo-label">Bidang Tanah</div>
+                </div>
+                <div class="info-logo-card" id="logo-4" onclick="selectLogo(this, 'nilai')">
+                    <i class="fas fa-coins"></i>
+                    <div class="logo-label">Zona Nilai Tanah</div>
+                </div>
+            </div>
+        </div>
 
-                <div class="interaction-area-right" id="interaction-right">
-                    <div id="logo-bar-container" class="logo-bar-horizontal">
-                        <div class="info-logo-card" id="logo-1" onclick="selectLogo(this, 'admin')">
-                            <i class="fas fa-map-location-dot"></i>
-                            <div class="logo-label">Batas Admin</div>
-                        </div>
-                        <div class="info-logo-card" id="logo-2" onclick="selectLogo(this, 'lahan')">
-                            <i class="fas fa-layer-group"></i>
-                            <div class="logo-label">Lahan</div>
-                        </div>
-                        <div class="info-logo-card" id="logo-3" onclick="selectLogo(this, 'bidang')">
-                            <i class="fas fa-vector-square"></i>
-                            <div class="logo-label">Bidang</div>
-                        </div>
-                        <div class="info-logo-card" id="logo-4" onclick="selectLogo(this, 'nilai')">
-                            <i class="fas fa-coins"></i>
-                            <div class="logo-label">Nilai Tanah</div>
-                        </div>
-                    </div>
+        <div id="info-display-area" class="info-display-box">
+            <div id="info-content-target" class="spatial-info-panel">
+                <div id="spatial-info-text">
+                    <p style="color: #666; text-align: center; font-style: italic; margin: 0; font-size: 12px; font-weight: 600;">
+                        Silakan klik salah satu opsi data di atas untuk memunculkan penjelasan informasi spasial.
+                    </p>
+                </div>
+            </div>
+        </div>
 
-                    <div id="info-display-area" class="info-display-box">
-                        <div id="info-content-target" class="spatial-info-panel">
-                            
-                            <div id="spatial-info-text">
-                                <p style="color: #777; text-align: center; font-style: italic; margin: 0;">
-                                    Silakan klik salah satu logo kecil di samping untuk memunculkan informasi spasial wilayah Ceper dalam bentuk diagram.
-                                </p>
-                            </div>
+    </div>
 
-                            <div id="chart_proporsi_container" class="chart-holder">
-                                <h4 class="chart-main-title">Proporsi Bidang Tanah Terdaftar</h4>
-                                <div id="chart_proporsi" style="width: 100%; height: 200px;"></div>
-                            </div>
+    <div class="side-banner-line-decor"></div>
 
-                            <div id="chart_jumlah_container" class="chart-holder">
-                                <h4 class="chart-main-title">Jumlah Bidang Tanah Per Status Hak</h4>
-                                <div id="chart_jumlah" style="width: 100%; height: 200px;"></div>
-                            </div>
-
-                        </div>
-                    </div>
-                </div> 
-            </div> 
+</div>
 
             <section class="info-section">
                 <div class="info-image">
@@ -1315,7 +2578,7 @@ html, body {
                         </h3>
                         <div class="terms-content">
                             <ul>
-                                <li><strong>Data Akademik:</strong> Informasi ini dikelola oleh mahasiswa untuk kegiatan pembelajaran, bukan acuan resmi.</li>
+                                <li><strong>Data Academic:</strong> Informasi ini dikelola oleh mahasiswa untuk kegiatan pembelajaran, bukan acuan resmi.</li>
                                 <li><strong>Tanpa Jaminan:</strong> Pengelola tidak menjamin keakuratan, ketepatan waktu, maupun kelengkapan data.</li>
                                 <li><strong>Verifikasi Wajib:</strong> Pengguna disarankan konfirmasi ke instansi berwenang sebelum mengambil keputusan.</li>
                                 <li><strong>Masukan:</strong> Hubungi pengelola jika ditemukan ketidaksesuaian data pada peta.</li>
@@ -1337,87 +2600,491 @@ html, body {
                     </div>
                 </div>
             </section>
-        </div> <div id="tab-info" class="sub-page-content">
-        <div class="info-title-container">
-            <h1 class="info-main-title"><i class="fas fa-circle-info"></i> Informasi Pertanahan</h1>
-            <p class="info-sub-title">Kumpulan data tekstual dan statistik agraria wilayah Kecamatan Ceper</p>
         </div>
+
+        <!-- TAB INFORMASI PERTANAHAN DENGAN FIX STABILIZER AREA & REAL FOOTER -->
+        <div id="tab-info" class="sub-page-content" style="position: relative; min-height: calc(100vh - 90px); display: none; padding-bottom: 0;">
+            <div style="padding: 40px 20px 60px 20px; box-sizing: border-box;">
+                <div class="info-title-container">
+                    <h1 class="info-main-title"><i class="fas fa-circle-info"></i> Informasi Pertanahan</h1>
+                    <p class="info-sub-title">Kumpulan data tekstual dan statistik agraria wilayah Kecamatan Ceper</p>
+                </div>
+            
+                <div class="ceper-highlight-container">
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+                        <iframe 
+                            class="ceper-map-frame"
+                            src="https://maps.google.com/maps?q=Kecamatan%20Ceper,%20Klaten&t=&z=13&ie=UTF8&iwloc=&output=embed" 
+                            frameborder="0" 
+                            scrolling="no" 
+                            marginheight="0" 
+                            marginwidth="0"
+                            style="width: 100%; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px;">
+                        </iframe>
+                        <a href="https://www.google.com/maps/dir/?api=1&destination=Kecamatan+Ceper,+Klaten" target="_blank" class="btn-rute-maps"></a>
+                    </div>
+
+                    <div class="ceper-info-stats">
+    <h2>KECAMATAN CEPER</h2>
+    <div class="sub-district">Kabupaten Klaten, Jawa Tengah</div>
     
-        <div class="ceper-highlight-container">
-            <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
-        <iframe 
-            class="ceper-map-frame"
-            src="https://maps.google.com/maps?q=Kecamatan%20Ceper,%20Klaten&t=&z=13&ie=UTF8&iwloc=&output=embed" 
-            frameborder="0" 
-            scrolling="no" 
-            marginheight="0" 
-            marginwidth="0"
-            style="width: 100%; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px;">
-        </iframe>
+    <div class="stat-panel-box" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px;">
         
-        <a href="https://www.google.com/maps/dir/?api=1&destination=Kecamatan+Ceper,+Klaten" 
-           target="_blank" 
-           class="btn-rute-maps">
-        </a>
-    </div>
+<div class="stat-card">
+            <div class="stat-card-title"><i class="fas fa-landmark"></i> Jumlah Desa</div>
+            <div class="stat-card-number">18 <span class="stat-card-unit">Desa</span></div>
+        </div>
 
-            <div class="ceper-info-stats">
-                <h2>KECAMATAN CEPER</h2>
-                <div class="sub-district">Kabupaten Klaten, Jawa Tengah</div>
-                
-                <div class="stat-panel-box">
-                    <div class="stat-card">
-                        <div class="stat-card-title"><i class="fas fa-chart-area"></i> Luas Wilayah</div>
-                        <div class="stat-card-number">25,79 <span class="stat-card-unit">km²</span></div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-card-title"><i class="fas fa-users"></i> Jumlah Penduduk</div>
-                        <div class="stat-card-number">66.256 <span class="stat-card-unit">Jiwa</span></div>
-                    </div>
-                </div>
-            </div>
+        <div class="stat-card">
+            <div class="stat-card-title"><i class="fas fa-chart-area"></i> Luas Wilayah</div>
+            <div class="stat-card-number">25,79 <span class="stat-card-unit">km²</span></div>
         </div>
         
-        <div style="margin-top: 30px; border-top: 2px dashed #ddd; padding-top: 25px; width: 100%;">
-            <h3 style="color: #1e3799; font-size: 18px; font-weight: 700; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 0.5px;">
-                <i class="fas fa-chart-bar"></i> Visualisasi Statistik Pertanahan Wilayah
-            </h3>
-            
-            <div style="display: flex; flex-direction: column; gap: 30px; width: 100%; align-items: center;">
-                
-                <div style="width: 100%; background: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e9ecef; box-sizing: border-box;">
-                    <h4 style="margin: 0 0 5px 0; font-size: 15px; color: #1e3799; font-weight: 700; text-align: center; text-transform: uppercase;">Jumlah Bidang Tanah Per Status Hak Kepemilikan</h4>
-                    <p style="margin: 0 0 20px 0; font-size: 11.5px; color: #7f8c8d; text-align: center; font-style: italic;">Menampilkan total persebaran sertifikasi bidang tanah di Kecamatan Ceper</p>
-                    <div id="chart_jumlah_bidang_vertikal" style="width: 100%; height: 380px; margin: 0 auto;"></div>
+        <div class="stat-card">
+            <div class="stat-card-title"><i class="fas fa-users"></i> Jumlah Penduduk</div>
+            <div class="stat-card-number">66.256 <span class="stat-card-unit">Jiwa</span></div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-title"><i class="fas fa-file-signature"></i> Tanah Terdaftar</div>
+            <div class="stat-card-number">23.708 <span class="stat-card-unit">Bidang</span></div>
+        </div>
+
+    </div>
+</div>
                 </div>
-
-                <div style="display: flex; flex-direction: row; gap: 25px; flex-wrap: wrap; width: 100%; justify-content: center; align-items: stretch;">
+                
+                <div style="margin-top: 30px; border-top: 2px dashed #ddd; padding-top: 25px; width: 100%;">
+                    <h3 style="color: #1e3799; font-size: 18px; font-weight: 700; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <i class="fas fa-chart-bar"></i> Visualisasi Statistik Pertanahan Wilayah
+                    </h3>
                     
-                    <div style="flex: 1; min-width: 340px; max-width: 520px; background: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e9ecef; box-sizing: border-box;">
-                        <h4 style="margin: 0 0 5px 0; font-size: 14px; color: #1e3799; font-weight: 700; text-align: center; text-transform: uppercase; line-height: 1.4;">Proporsi Tanah Terdaftar dan Belum Terdaftar</h4>
-                        <p style="margin: 0 0 15px 0; font-size: 11px; color: #7f8c8d; text-align: center; font-style: italic;">Klik pada potongan diagram untuk memunculkan detail data</p>
-                        <div id="chart_proporsi_tanah" style="width: 100%; height: 300px; margin: 0 auto;"></div>
-                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 30px; width: 100%; align-items: center;">
+                        <div style="width: 100%; background: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e9ecef; box-sizing: border-box;">
+                            <h4 style="margin: 0 0 5px 0; font-size: 15px; color: #1e3799; font-weight: 700; text-align: center; text-transform: uppercase;">Jumlah Bidang Tanah Per Status Hak Kepemilikan</h4>
+                            <p style="margin: 0 0 20px 0; font-size: 11.5px; color: #7f8c8d; text-align: center; font-style: italic;">Menampilkan total persebaran sertifikasi bidang tanah di Kecamatan Ceper</p>
+                            <div id="chart_jumlah_bidang_vertikal" style="width: 100%; height: 380px; margin: 0 auto;"></div>
+                        </div>
 
-                    <div style="flex: 1; min-width: 340px; max-width: 520px; background: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e9ecef; box-sizing: border-box;">
-                        <h4 style="margin: 0 0 5px 0; font-size: 14px; color: #1e3799; font-weight: 700; text-align: center; text-transform: uppercase;">Persentase Luas Wilayah Hak Tanah</h4>
-                        <p style="margin: 0 0 15px 0; font-size: 11px; color: #7f8c8d; text-align: center; font-style: italic;">Kalkulasi kepemilikan ruang berdasarkan satuan Hektar (Ha)</p>
-                        <div id="chart_persentase_hak" style="width: 100%; height: 300px; margin: 0 auto;"></div>
+                        <div style="display: flex; flex-direction: row; gap: 25px; flex-wrap: wrap; width: 100%; justify-content: center; align-items: stretch;">
+                            <div style="flex: 1; min-width: 340px; max-width: 520px; background: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e9ecef; box-sizing: border-box;">
+                                <h4 style="margin: 0 0 5px 0; font-size: 14px; color: #1e3799; font-weight: 700; text-align: center; text-transform: uppercase; line-height: 1.4;">Proporsi Tanah Terdaftar dan Belum Terdaftar</h4>
+                                <p style="margin: 0 0 15px 0; font-size: 11px; color: #7f8c8d; text-align: center; font-style: italic;">Klik pada potongan diagram untuk memunculkan detail data</p>
+                                <div id="chart_proporsi_tanah" style="width: 100%; height: 300px; margin: 0 auto;"></div>
+                            </div>
+
+                            <div style="flex: 1; min-width: 340px; max-width: 520px; background: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e9ecef; box-sizing: border-box;">
+                                <h4 style="margin: 0 0 5px 0; font-size: 14px; color: #1e3799; font-weight: 700; text-align: center; text-transform: uppercase;">Persentase Luas Wilayah Hak Tanah</h4>
+                                <p style="margin: 0 0 15px 0; font-size: 11px; color: #7f8c8d; text-align: center; font-style: italic;">Kalkulasi kepemilikan ruang berdasarkan satuan Hektar (Ha)</p>
+                                <div id="chart_persentase_hak" style="width: 100%; height: 300px; margin: 0 auto;"></div>
+                            </div>
+                        </div>
                     </div>
                     
+                    <p style="font-size: 11px; font-style: italic; color: #888; margin-top: 25px; text-align: center; width: 100%;">
+                        *Sumber data: BPKPAD, Konsolidasi Data Status Tanah & Legalitas Kepemilikan Kecamatan Ceper 2026
+                    </p>
                 </div>
             </div>
             
-            <p style="font-size: 11px; font-style: italic; color: #888; margin-top: 25px; text-align: center; width: 100%;">
-                *Sumber data: Konsolidasi Data Status Tanah & Legalitas Kepemilikan Kecamatan Ceper 2026
-            </p>
+            <!-- REAL DOM FOOTER: MEMOTONG PAS DI DASAR KONTEN TANPA CELAH PUTIH -->
+            <div style="width: 98.9vw; position: relative; left: 50%; right: 50%; margin-left: -49.45vw; margin-right: -50vw; background-color: #1e3799; color: #ffffff; font-size: 13px; font-weight: 700; letter-spacing: 1px; text-align: center; padding: 25px 20px; border-top: 5px solid #f1c40f; box-sizing: border-box; margin-top: 40px;">
+    PERENCANAAN TATA RUANG DAN PERTANAHAN - UNIVERSITAS DIPONEGORO
+</div>
         </div>
-    </div>
 
-        <div id="tab-alamat" class="sub-page-content">
-            <h2>Alamat</h2>
-            <p>Halaman ini masih kosong. Anda dapat menambahkan detail alamat atau peta lokasi di sini nanti...</p>
-        </div>
+        <!-- TAB ABOUT US DENGAN FIX STABILIZER AREA & REAL FOOTER -->
+        <div id="tab-about" class="sub-page-content" style="padding: 0; background: #f4f7f6; overflow-y: auto; height: calc(100vh - 90px); display: none;">
+            <div class="about-main-wrapper" style="padding-bottom: 0;">
+                <div style="padding: 20px 20px 0 20px;">
+                    <!-- 1. Gambar Hero Utama -->
+                    <img src="HEADER ABOUT US.png" class="about-hero-rounded-img" alt="GeoPTRP Ceper">
+
+                    <!-- 2. Tiga Panel Kartu Kreatif -->
+                    <div class="about-cards-3-grid">
+                        <!-- Kartu 1: Universitas -->
+                        <div class="about-card-item">
+                            <div class="about-card-image-box">
+                                <img src="https://mm.feb.undip.ac.id/wp-content/uploads/2021/11/universitas-diponegoro-logo.png" alt="Logo Universitas">
+                            </div>
+                            <h3>Universitas Diponegoro</h3>
+                            <p>Merupakan salah satu Perguruan Tinggi Negeri Badan Hukum (PTN-BH) terkemuka di Indonesia yang berpusat di Semarang, berkomitmen dalam pengembangan riset terapan serta inovasi sains dan teknologi nasional.</p>
+                        </div>
+
+                        <!-- Kartu 2: Program Studi -->
+                        <div class="about-card-item">
+                            <div class="about-card-image-box">
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQVlOkophK-D3YUwW-bXLqIVuVwD3Li784H6w&s.png" alt="Logo Prodi">
+                            </div>
+                            <h3>Perencanaan Tata Ruang dan Pertanahan</h3>
+                            <p>Program Studi Perencanaan Tata Ruang dan Pertanahan Sekolah Vokasi UNDIP melatih kompetensi praktis integrasi perencanaan wilayah dengan pendaftaran tanah kadaster untuk mendukung transformasi agraria digital.</p>
+                        </div>
+
+                        <!-- Kartu 3: Mata Kuliah -->
+                        <div class="about-card-item">
+                            <div class="about-card-image-box">
+                                <img src="LOGO WEBGIS.png" alt="Logo Lab/Matkul" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3067/3067503.png'">
+                            </div>
+                            <h3>Sistem Informasi Pertanahan</h3>
+                            <p>Mata Kuliah ini melatih mahasiswa mengintegrasikan basis data spasial tabular dari GeoServer WMS langsung menuju penataan WebGIS interaktif menggunakan engine peta modern.</p>
+                        </div>
+                    </div>
+
+                    <!-- 3. Tombol Pemicu Utama Visi Misi -->
+                    <div class="about-action-area">
+                        <button class="btn-about-visimisi" onclick="bukaModalVisiMisi()">
+                            <i class="fas fa-eye"></i> Lihat Visi & Misi
+                        </button>
+                    </div>
+
+                    <!-- 4. Judul Tim Pengembang Estetik Elegan Ditengah -->
+                    <div class="main-page-title" style="text-align: center; margin: 50px 0 30px 0;">
+                        <h2 style="color: #1e3799; font-size: 42px; font-family: 'Playfair Display', serif; margin-bottom: 10px;">
+                            Development Team
+                        </h2>
+                        <div style="width: 600px; height: 4px; background-color: #f1c40f; margin: 0 auto 15px auto; border-radius: 2px;"></div>
+                        <p style="color: #636e72; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin: 0;">
+                            Mahasiswa Perencanaan Tata Ruang dan Pertanahan
+                        </p>
+                    </div>
+                    
+                    <!-- Grid Layout untuk 8 Anggota Kelompok -->
+                    <div class="about-profile-grid">
+                        <div class="simple-profile-card" onclick="bukaPopupBio(
+                            'Ridwan Baihaqi Ardana',
+                            'Project Manager & QA Lead',
+                            '40030623620025',
+                            'Karanganyar, 6 Maret 2005',
+                            'Karangpandan, Kabupaten Karanganyar, Jawa Tengah',
+                            '@baehaaqiii',
+                            'ridwanbaihaqiardana@students.undip.ac.id',
+                            'Bertanggung jawab atas koordinasi dan manajemen tim, melakukan code review, serta debugging untuk memastikan fungsionalitas sistem berjalan lancar berkolaborasi dengan Full-Stack Developer.',
+                            'PROFIL_RIDWAN.png'
+                        )">
+                            <div class="avatar-container">
+                                <div class="shape-background"></div>
+                                <img src="LOGO_RIDWAN.png" class="popout-img" alt="Ridwan Baihaqi Ardana">
+                                <div class="avatar-banner-tag">ANGGOTA 1</div>
+                            </div>
+                            <strong class="simple-profile-name">Ridwan Baihaqi A.</strong>
+                            <span class="simple-profile-role">Project Manager</span>
+                        </div>
+
+                        <div class="simple-profile-card" onclick="bukaPopupBio(
+                            'Rafiza Aditama Wellnanda',
+                            'Full-Stack Developer & DevOps Specialist',
+                            '40030623630057',
+                            'Kediri, 2 November 2004',
+                            'Kota Kediri, Jawa Timur',
+                            '@rfzwell',
+                            'Rafizawell@students.undip.ac.id',
+                            'Bertanggung jawab penuh atas arsitektur sistem end-to-end, mulai dari penyusunan lingkungan pengembangan aplikasi, integrasi fitur-fitur utama, hingga konfigurasi dan pemeliharaan platform WebGIS secara keseluruhan.',
+                            'PROFIL_RAFIZA.png'
+                        )">
+                            <div class="avatar-container">
+                                <div class="shape-background"></div>
+                                <img src="LOGO_RAFIZA.png" class="popout-img" alt="Rafiza Aditama Wellnanda">
+                                <div class="avatar-banner-tag">ANGGOTA 2</div>
+                            </div>
+                            <strong class="simple-profile-name">Rafiza Aditama W.</strong>
+                            <span class="simple-profile-role">Full-Stack Developer</span>
+                        </div>
+
+                        <div class="simple-profile-card" onclick="bukaPopupBio(
+                            'Iswandaru Fadhlur Wicaksono',
+                            'Spatial Data Engineer & GIS Server Specialist',
+                            '40030623650128',
+                            'Bekasi, 19 Oktober 2005',
+                            'Jayamukti, Kec. Cikarang Pusat, Kab. Bekasi, Jawa Barat',
+                            '@ifadhh',
+                            'iswandarufadhlur@students.undip.ac.id',
+                            'Bertanggung jawab dalam pemrosesan data spasial, pemodelan basis data geografis, serta konfigurasi dan manajemen Web Map Service (WMS) pada GeoServer.',
+                            'PROFIL_IFADH.png'
+                        )">
+                            <div class="avatar-container">
+                                <div class="shape-background"></div>
+                                <img src="LOGO_IFADH.png" class="popout-img" alt="Iswandaru Fadhlur Wicaksono">
+                                <div class="avatar-banner-tag">ANGGOTA 3</div>
+                            </div>
+                            <strong class="simple-profile-name">Iswandaru Fadhlur W.</strong>
+                            <span class="simple-profile-role">Spatial Data Engineer</span>
+                        </div>
+
+                        <div class="simple-profile-card" onclick="bukaPopupBio(
+                            'Larung Lanang',
+                            'Spatial Data Engineer & GIS Server Specialist',
+                            '40030623650130',
+                            'Pangkalankerinci, 14 Oktober 2004',
+                            'Kota Pekanbaru, Riau',
+                            '@larunglanang4055',
+                            'larunglanang@students.undip.ac.id',
+                            'Bertanggung jawab dalam pemrosesan data spasial, pemodelan basis data geografis, serta konfigurasi dan manajemen Web Map Service (WMS) pada GeoServer.',
+                            'PROFIL_LARUNG.png'
+                        )">
+                            <div class="avatar-container">
+                                <div class="shape-background"></div>
+                                <img src="LOGO_LARUNG.png" class="popout-img" alt="Larung Lanang">
+                                <div class="avatar-banner-tag">ANGGOTA 4</div>
+                            </div>
+                            <strong class="simple-profile-name">Larung Lanang</strong>
+                            <span class="simple-profile-role">Spatial Data Engineer</span>
+                        </div>
+
+                        <div class="simple-profile-card" onclick="bukaPopupBio(
+                            'Audia Benesya Purba',
+                            'Frontend Developer & Content Engineer',
+                            '40030623650133',
+                            'Pematangsiantar, 4 Januari 2005',
+                            'Citeureup, Kabupaten Bogor, Jawa Barat',
+                            '@benes_ya',
+                            'audiabenesyapurba@students.undip.ac.id',
+                            'Bertanggung jawab atas pengumpulan and strukturisasi data tekstual/informasi pertanahan, menyusun tata letak halaman utama (landing page), serta mengintegrasikan informasi kontak dan komponen statis pada beranda aplikasi.',
+                            'PROFIL_AUDI.png'
+                        )">
+                            <div class="avatar-container">
+                                <div class="shape-background"></div>
+                                <img src="LOGO_AUDI.png" class="popout-img" alt="Audia Benesya Purba">
+                                <div class="avatar-banner-tag">ANGGOTA 5</div>
+                            </div>
+                            <strong class="simple-profile-name">Audia Benesya P.</strong>
+                            <span class="simple-profile-role">Frontend Developer</span>
+                        </div>
+
+                        <div class="simple-profile-card" onclick="bukaPopupBio(
+                            'Alifia Rahma',
+                            'Frontend Developer & Content Engineer',
+                            '40030623620019',
+                            'Jakarta, 20 Juli 2005',
+                            'Pedurungan, Kota Semarang, Jawa Tengah',
+                            '@aliffiarrahma',
+                            'alifiarahma@students.undip.ac.id',
+                            'Bertanggung jawab atas pengumpulan dan strukturisasi data tekstual/informasi pertanahan, menyusun tata letak halaman utama (landing page), serta mengintegrasikan informasi kontak dan komponen statis pada beranda aplikasi.',
+                            'PROFIL_FIA.png'
+                        )">
+                            <div class="avatar-container">
+                                <div class="shape-background"></div>
+                                <img src="LOGO_FIA.png" class="popout-img" alt="Alifia Rahma">
+                                <div class="avatar-banner-tag">ANGGOTA 6</div>
+                            </div>
+                            <strong class="simple-profile-name">Alifia Rahma</strong>
+                            <span class="simple-profile-role">Frontend Developer</span>
+                        </div>
+
+                        <div class="simple-profile-card" onclick="bukaPopupBio(
+                            'Najwa Risqina',
+                            'UI/UX Designer & Visual Asset Creator',
+                            '40030623650081',
+                            'Karanganyar, 1 April 2005',
+                            'Lalung, Kabupaten Karanganyar, Jawa Tengah',
+                            '@najwarizz_',
+                            'najwarisqina@students.undip.ac.id',
+                            'Bertanggung jawab merancang konsep user interface (tampilan antarmuka) beranda aplikasi, menyusun wireframe, serta memproduksi aset visual digital, header banner, dan dokumentasi foto untuk kebutuhan layouting.',
+                            'PROFIL_NAJWA.png'
+                        )">
+                            <div class="avatar-container">
+                                <div class="shape-background"></div>
+                                <img src="LOGO_NAJWA.png" class="popout-img" alt="Najwa Risqina">
+                                <div class="avatar-banner-tag">ANGGOTA 7</div>
+                            </div>
+                            <strong class="simple-profile-name">Najwa Risqina</strong>
+                            <span class="simple-profile-role">UI/UX Designer</span>
+                        </div>
+
+                        <div class="simple-profile-card" onclick="bukaPopupBio(
+                            'Desintiya Wanda Prasasti',
+                            'UI/UX Designer & Visual Asset Creator',
+                            '40030623650097',
+                            'Lamongan, 26 Desember 2004',
+                            'Semarang Selatan, Kota Semarang, Jawa Tengah',
+                            '@dsintyawndaa',
+                            'desintiyawandaa@students.undip.ac.id',
+                            'Bertanggung jawab merancang konsep user interface (tampilan antarmuka) beranda aplikasi, menyusun wireframe, serta memproduksi aset visual digital, header banner, dan dokumentasi foto untuk kebutuhan layouting.',
+                            'PROFIL_DESIN.png'
+                        )">
+                            <div class="avatar-container">
+                                <div class="shape-background"></div>
+                                <img src="LOGO_DESIN.png" class="popout-img" alt="Desintiya Wanda Prasasti">
+                                <div class="avatar-banner-tag">ANGGOTA 8</div>
+                            </div>
+                            <strong class="simple-profile-name">Desintiya Wanda P.</strong>
+                            <span class="simple-profile-role">UI/UX Designer</span>
+                        </div>
+                    </div>
+
+                    <div class="main-page-title" style="text-align: center; margin: 60px 0 30px 0;">
+                        <h2 style="color: #1e3799; font-size: 32px; font-family: 'Playfair Display', serif; margin-bottom: 10px;">
+                            Dosen Pengampu
+                        </h2>
+                        <div style="width: 600px; height: 4px; background-color: #f1c40f; margin: 0 auto 15px auto; border-radius: 2px;"></div>
+                        <p style="color: #636e72; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin: 0;">
+                            Sistem Informasi Pertanahan
+                        </p>
+                    </div>
+
+                    <div class="lecturer-profile-grid">
+                        <div class="lecturer-card">
+                            <div class="lecturer-avatar-box">
+                                <img src="https://ptrp.vokasi.undip.ac.id/wp-content/uploads/2024/02/Syachril-Warasambi-Mispaki-S.T.-M.Eng_.jpg" alt="Syachril Warasambi Mispaki, S.T., M.Eng.">
+                            </div>
+                            <strong class="lecturer-name">Syachril Warasambi Mispaki, S.T., M.Eng.</strong>
+                            <span class="lecturer-nip">NIP. 199207202020121008</span>
+                            <span class="lecturer-title">Dosen Koordinator Mata Kuliah</span>
+                        </div>
+
+                        <div class="lecturer-card">
+                            <div class="lecturer-avatar-box">
+                                <img src="https://ptrp.vokasi.undip.ac.id/wp-content/uploads/2025/03/WhatsApp-Image-2025-03-11-at-11.47.26.jpeg" alt="Yoga Kencana Nugraha, S.T., M.Eng.">
+                            </div>
+                            <strong class="lecturer-name">Yoga Kencana Nugraha, S.T., M.Eng.</strong>
+                            <span class="lecturer-nip">NIP. 199102182024061002</span>
+                            <span class="lecturer-title">Dosen Pengampu</span>
+                        </div>
+
+                        <div class="lecturer-card">
+                            <div class="lecturer-avatar-box">
+                                <img src="https://ptrp.vokasi.undip.ac.id/wp-content/uploads/2024/02/Pangi-S.T.-M.T.jpg" alt="Pangi, S.T., M.T.">
+                            </div>
+                            <strong class="lecturer-name">Pangi, S.T., M.T.</strong>
+                            <span class="lecturer-nip">NIP. 198401012015041001</span>
+                            <span class="lecturer-title">Dosen Pengampu</span>
+                        </div>
+
+                        <div class="lecturer-card">
+                            <div class="lecturer-avatar-box">
+                                <img src="https://pwk.undip.ac.id/wp-content/uploads/2024/08/AWS-UNDIP-300x300.png" alt="Prof. Dr. Anang Wahyu Sejati, S.T., M.T.">
+                            </div>
+                            <strong class="lecturer-name">Prof. Dr. Anang Wahyu Sejati, S.T., M.T.</strong>
+                            <span class="lecturer-nip">NIP. -</span>
+                            <span class="lecturer-title">Dosen Pengampu</span>
+                        </div>
+                    </div>
+
+                    <div class="main-page-title" style="text-align: center; margin: 60px 0 30px 0;">
+                        <h2 style="color: #1e3799; font-size: 32px; font-family: 'Playfair Display', serif; margin-bottom: 10px;">
+                            Kontak Kami
+                        </h2>
+                        <div style="width: 600px; height: 4px; background-color: #f1c40f; margin: 0 auto 15px auto; border-radius: 2px;"></div>
+                    </div>
+
+                    <div class="contact-section-container">
+                        <div class="contact-info-left">
+                            <h3 class="contact-sub-title">Informasi Kontak</h3>
+                            
+                            <div class="contact-item">
+                                <div class="contact-icon-box" style="background-color: #1e3799;"><i class="fas fa-map-marked-alt"style="color: #f1c40f;"></i></div>
+                                <div class="contact-text-box">
+                                    <h4>Alamat</h4>
+                                    <p>Gedung Sekolah Vokasi, Universitas Diponegoro, Jl. Prof. Soedarto, Tembalang, Kec. Tembalang, Kota Semarang, Jawa Tengah 50275</p>
+                                </div>
+                            </div>
+
+                            <div class="contact-item">
+                                <div class="contact-icon-box" style="background-color: #1e3799;"><i class="fas fa-envelope"style="color: #f1c40f;"></i></div>
+                                <div class="contact-text-box">
+                                    <h4>Email</h4>
+                                    <p>ptrp@live.undip.ac.id</p>
+                                </div>
+                            </div>
+
+                            <div class="contact-item">
+                                <div class="contact-icon-box" style="background-color: #1e3799;"><i class="fas fa-phone-alt"style="color: #f1c40f;"></i></div>
+                                <div class="contact-text-box">
+                                    <h4>Telepon / Fax</h4>
+                                    <p>(024) 7471379</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="contact-maps-right">
+                            <div class="contact-map-tabs">
+                                <button id="tab-map-basecamp" class="contact-tab-btn active" onclick="
+                                    document.getElementById('tab-map-basecamp').classList.add('active');
+                                    document.getElementById('tab-map-penelitian').classList.remove('active');
+                                    document.getElementById('iframe-map-basecamp').style.display = 'block';
+                                    document.getElementById('iframe-map-penelitian').style.display = 'none';
+                                    document.getElementById('banner-map-basecamp').style.display = 'flex';
+                                    document.getElementById('banner-map-penelitian').style.display = 'none';
+                                ">
+                                    <i class="fas fa-campground"></i> Basecamp
+                                </button>
+                                
+                                <button id="tab-map-penelitian" class="contact-tab-btn" onclick="
+                                    document.getElementById('tab-map-basecamp').classList.remove('active');
+                                    document.getElementById('tab-map-penelitian').classList.add('active');
+                                    document.getElementById('iframe-map-basecamp').style.display = 'none';
+                                    document.getElementById('iframe-map-penelitian').style.display = 'block';
+                                    document.getElementById('banner-map-basecamp').style.display = 'none';
+                                    document.getElementById('banner-map-penelitian').style.display = 'flex';
+                                ">
+                                    <i class="fas fa-search-location"></i> Lokasi Penelitian
+                                </button>
+                            </div>
+
+                            <div class="contact-map-frame-wrapper" style="position: relative; width: 100%; height: 350px; border-radius: 16px; overflow: hidden; border: 1px solid #e9ecef;">
+                                <iframe id="iframe-map-basecamp" class="contact-iframe-map" 
+                                    src="https://maps.google.com/maps?q=COSPLAY%20Centre%20of%20Spatial%20Planning%20and%20Land%20Survey&t=&z=16&ie=UTF8&iwloc=&output=embed" 
+                                    style="display: block; width: 100%; height: 100%; border: 0; position: absolute; top: 0; left: 0; z-index: 1;"
+                                    allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+                                </iframe>
+
+                                <iframe id="iframe-map-penelitian" class="contact-iframe-map" 
+                                    src="https://maps.google.com/maps?q=Kecamatan%20Ceper,%20Klaten&t=&z=13&ie=UTF8&iwloc=&output=embed" 
+                                    style="display: none; width: 100%; height: 100%; border: 0; position: absolute; top: 0; left: 0; z-index: 1;"
+                                    allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+                                </iframe>
+
+                                <div id="banner-map-basecamp" class="map-floating-banner" style="display: flex; position: absolute; bottom: 35px; right: 15px; z-index: 9999;">
+                                    <i class="fas fa-layer-group"></i> COSPLAY <span style="color: #f1c40f; margin-left: 5px;">(Centre of Spatial Planning and Land Survey)</span>
+                                </div>
+
+                                <div id="banner-map-penelitian" class="map-floating-banner" style="display: none; position: absolute; bottom: 35px; right: 15px; z-index: 9999;">
+                                    <i class="fas fa-map-marker-alt"></i> Wilayah Studi: <span style="color: #f1c40f; margin-left: 5px;">Kecamatan Ceper, Kab. Klaten</span>
+                                </div>
+                            </div> 
+                        </div>
+                    </div>
+
+                    <!-- Elemen Pop-up Modal Jendela Melayang Visi Misi -->
+                    <div id="modal-about-visimisi" onclick="tutupModalVisiMisiLuar(event)">
+                        <div class="about-popup-box">
+                            <div class="about-popup-header">
+                                <h3><i class="fas fa-bullseye"></i> Visi & Misi Lembaga</h3>
+                                <span class="about-popup-close" onclick="tutupModalVisiMisi()">×</span>
+                            </div>
+                            <div class="about-popup-body">
+                                <div class="about-popup-nav-tabs">
+                                    <button id="tab-btn-undip" class="popup-tab-btn active" onclick="gantiKontenPopupTab('undip')">Visi Misi UNDIP</button>
+                                    <button id="tab-btn-ptrp" class="popup-tab-btn" onclick="gantiKontenPopupTab('ptrp')">Visi Misi PTRP</button>
+                                </div>
+
+                                <div id="pane-popup-undip" class="popup-text-content-pane" style="display: block;">
+                                    <strong>VISI UNIVERSITAS DIPONEGORO:</strong><br>
+                                    Universitas Diponegoro menjadi Universitas Riset yang Unggul.<br><br>
+                                    <strong>MISI UNIVERSITAS DIPONEGORO:</strong><br>
+                                    1. Menyelenggarakan pendidikan terapan profesional yang menghasilkan lulusan unggul dan kompeten.<br>
+                                    2. Melaksanakan penelitian terapan bermutu tinggi dan publikasi ilmiah demi kemajuan ilmu pengetahuan.<br>
+                                    3. Menyelenggarakan pengabdian masyarakat yang berkontribusi nyata pada pembangunan tata ruang bangsa.
+                                </div>
+
+                                <div id="pane-popup-ptrp" class="popup-text-content-pane">
+                                    <strong>VISI PROGRAM STUDI D4 PTRP:</strong><br>
+                                    Menjadi pusat pendidikan vokasi perencanaan tata ruang dan kadaster yang unggul berstandar internasional pada tahun 2030.<br><br>
+                                    <strong>MISI PROGRAM STUDI D4 PTRP:</strong><br>
+                                    1. Menyelenggarakan pendidikan vokasi di bidang perencanaan tata ruang dan pertanahan yang adaptif teknologi.<br>
+                                    2. Mengembangkan riset terapan di bidang tata guna tanah, administrasi konflik agraria, dan WebGIS pertanahan.<br>
+                                    3. Melaksanakan standarisasi sertifikasi kadaster digital kompeten berwawasan nasional.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- REAL DOM FOOTER: MEMOTONG PAS DI DASAR KONTEN TANPA CELAH PUTIH -->
+                <div style="width: 100vw; max-width: calc(100vw - 15px); position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; background-color: #1e3799; color: #ffffff; font-size: 13px; font-weight: 700; letter-spacing: 1px; text-align: center; padding: 25px 20px; border-top: 5px solid #f1c40f; box-sizing: border-box; margin-top: 40px;">
+    PERENCANAAN TATA RUANG DAN PERTANAHAN - UNIVERSITAS DIPONEGORO
+</div>
+            </div> <!-- Mengunci .about-main-wrapper -->
+        </div> <!-- Mengunci #tab-about -->
 
         <div id="tab-panduan" class="sub-page-content">
             <div class="back-to-beranda">
@@ -1467,7 +3134,12 @@ html, body {
                         <h3><i class="fas fa-info-circle"></i> Informasi Atribut Bidang</h3>
                         <p>Saat peta aktif, Anda dapat melakukan klik kiri secara langsung pada objek bidang tanah atau wilayah tertentu. Panel informasi di sebelah kanan akan muncul dan menampilkan detail atribut tabular objek tersebut dari basis data Geoserver.</p>
                     </div>
-                </div> </div> </div> </div> <div id="header">
+                </div> 
+            </div> 
+        </div> 
+    </div> 
+
+    <div id="header">
         <div class="logo-container">
             <div class="header-left">
                 <img src="https://mm.feb.undip.ac.id/wp-content/uploads/2021/11/universitas-diponegoro-logo.png" alt="Logo Undip">
@@ -1483,12 +3155,14 @@ html, body {
     </div>
 
     <div id="map">
-        <div id="mouse-position" class="mouse-position"></div>
-
-        <div class="search-container-floating" id="floating-search">
-            <input type="text" id="search-input" placeholder="Latitude, Longitude...">
+        <div class="search-container-floating">
+            <input type="text" id="search-input" placeholder="Contoh: -7.675, 110.675">
             <button id="btn-search-coord"><i class="fas fa-search"></i></button>
-            <button id="btn-clear-search" title="Hapus"><i class="fas fa-times"></i></button>
+            <button id="btn-clear-search"><i class="fas fa-times"></i></button>
+        </div>
+
+        <div id="mouse-position-center" class="mouse-position">
+            <i class="fas fa-crosshairs" style="color: #f1c40f;"></i> Gerakkan Kursor di Atas Peta
         </div>
 
         <div class="map-overlay-left" id="sidebar">
@@ -1497,6 +3171,10 @@ html, body {
             </div>
             
             <div class="sidebar-scroll-area">
+                <div id="user-badge-status" style="background: #1e3799; color: #fff; padding: 10px 15px; border-radius: 8px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 15px;">
+                    <i class="fas fa-user-circle" style="color: #f1c40f;"></i> <span id="txt-role-label">Tamu (Umum)</span>
+                </div>
+
                 <div id="layer-list">
                     <div class="basemap-select" style="margin-bottom: 20px;">
                         <label style="font-size: 11px; font-weight: 700; color: #1e3799; text-transform: uppercase; letter-spacing: 1px;">Basemap</label>
@@ -1538,28 +3216,368 @@ html, body {
             </div>
         </div>
 
-        <div class="floating-bottom-right">
-            <div class="measure-container" style="position: relative;">
-                <div class="measure-options" id="measure-menu">
-                    <button id="measure-length"><i class="fas fa-ruler-combined"></i> Ukur Jarak</button>
-                    <button id="measure-area"><i class="fas fa-draw-polygon"></i> Ukur Luas</button>
-                    <button id="clear-measure" style="color:#e74c3c;"><i class="fas fa-eraser"></i> Hapus Ukuran</button>
+        <div class="floating-bottom-right" style="position: absolute; bottom: 30px; right: 20px; display: flex; flex-direction: row; align-items: flex-end; gap: 15px; z-index: 1002;">
+            
+            <div style="position: relative;">
+                <div id="instansi-toolsetbox" style="display: none; background: #ffffff; border: 1px solid #ddd; padding: 15px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); width: 250px; position: absolute; bottom: 60px; right: 0; border-top: 4px solid #1e3799; z-index: 1003;">
+                    <h4 style="margin: 0 0 10px 0; color: #1e3799; font-size: 11px; font-weight:700; text-transform: uppercase;"><i class="fas fa-tools"></i> Alat Spasial Instansi</h4>
+                    <div style="margin-bottom: 12px;">
+                        <label style="font-size: 9.5px; font-weight: 700; color: #4b5563; display: block; margin-bottom: 4px;">Upload File (.KML / .KMZ)</label>
+                        <input type="file" id="upload-kml-file" accept=".kml,.kmz" style="font-size: 10.5px; width: 100%;">
+                    </div>
+                    <div style="margin-bottom: 10px; display: flex; gap: 5px;">
+                        <button id="btn-draw-manual" onclick="window.mulaiDigitasiManualKml()" style="flex:1; padding: 8px; font-size: 10px; font-weight:700; background:#f1f2f6; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer;"><i class="fas fa-pencil-alt" style="color:#0984e3;"></i> Digitasi</button>
+                        <button id="btn-clear-kml" onclick="window.hapusKmlUnggahan()" style="flex:1; padding: 8px; font-size: 10px; font-weight:700; background:#f1f2f6; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; color:#e74c3c;"><i class="fas fa-trash-alt"></i> Hapus KML</button>
+                    </div>
+                    <button onclick="window.open('https://forms.gle/uTVRgnetM4xaE3EQ8', '_blank')" style="width: 100%; padding: 8px; background: #e74c3c; color: white; border: none; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; cursor: pointer;">
+    <i class="fas fa-exclamation-triangle"></i> Lapor Koreksi PL
+</button>
+</div>
+
+                <div id="admin-toolsetbox" style="display: none; background: #fff9db; border: 1px solid #ffe066; padding: 15px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); width: 250px; position: absolute; bottom: 60px; right: 265px; border-top: 4px solid #f1c40f; z-index: 1003;">
+                    <h4 style="margin: 0 0 10px 0; color: #1e3799; font-size: 11px; font-weight:700; text-transform: uppercase;"><i class="fas fa-shield-alt"></i> Control Panel Admin</h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <button onclick="window.downloadFiturBidangTerpilih()" style="width: 100%; padding: 8px; background: #1e3799; color: #fff; border: none; border-radius: 6px; font-size: 10px; font-weight: 700; cursor: pointer; text-transform: uppercase;"><i class="fas fa-download"></i> Ekspor KML Bidang</button>
+                        <a href="http://202.10.37.202:8080/geoserver" target="_blank" style="width: 100%; padding: 8px; background: #2c3e50; color: #fff; border: none; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; text-align: center; text-decoration: none; display: block;"><i class="fas fa-server"></i> Portal GeoServer</a>
+                    </div>
                 </div>
-                <button id="btn-measure-tools" title="Alat Ukur">
-                    <i class="fas fa-ruler"></i>
+
+                <button id="btn-toggle-user-tools" title="Alat Tambahan Pengguna" style="display: none; background: #ffffff; color: #1e3799; border: 2px solid #1e3799; width: 45px; height: 45px; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.15); font-size: 16px; cursor: pointer; align-items: center; justify-content: center;">
+                    <i class="fas fa-folder-plus"></i>
                 </button>
             </div>
-            <button id="btn-home"><i class="fas fa-house"></i> Dashboard</button>
+
+            <div class="measure-container" style="position: relative;">
+                <div class="measure-options" id="measure-menu" style="position: absolute; bottom: 60px; right: 0; background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: none; flex-direction: column; width: 160px; overflow: hidden; border: 1px solid #eee; z-index: 1003;">
+                    <button id="measure-length" style="padding: 12px; border: none; background: none; text-align: left; cursor: pointer; font-size: 11px; font-weight: 600; border-bottom: 1px solid #f0f0f0;"><i class="fas fa-drafting-compass"></i> Ukur Jarak</button>
+                    <button id="measure-area" style="padding: 12px; border: none; background: none; text-align: left; cursor: pointer; font-size: 11px; font-weight: 600; border-bottom: 1px solid #f0f0f0;"><i class="fas fa-vector-square"></i> Ukur Luas</button>
+                    <button id="clear-measure" style="padding: 12px; border: none; background: none; text-align: left; cursor: pointer; font-size: 11px; font-weight: 600; color:#e74c3c;"><i class="fas fa-trash-alt"></i> Hapus Semua</button>
+                </div>
+                <button id="btn-measure-tools" title="Alat Ukur" style="width: 45px; height: 45px; border-radius: 50%; background: #1e3799; color: white; border: none; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-size: 16px; display: flex; justify-content: center; align-items: center;">
+                    <i class="fas fa-ruler-combined"></i>
+                </button>
+            </div>
+
+            <button id="btn-home" style="background: white; border: 2px solid #1e3799; padding: 0 25px; height: 45px; border-radius: 50px; cursor: pointer; font-weight: bold; color: #1e3799; box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px;"><i class="fas fa-house"></i> Dashboard</button>
         </div>
     </div>
+
+    <div id="modal-save-digitasi" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 61, 98, 0.75); z-index: 150000; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
+        <div style="background: #ffffff; width: 90%; max-width: 400px; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.3); animation: zoomIn 0.3s ease;">
+            <div style="background: #f1c40f; color: #1e3799; padding: 15px 20px; font-weight: 700; font-size: 15px; display: flex; justify-content: space-between; align-items: center;">
+                <span><i class="fas fa-save"></i> Simpan / Hapus Digitasi</span>
+                <span onclick="document.getElementById('modal-save-digitasi').style.display='none'" style="cursor: pointer; font-size: 20px;">×</span>
+            </div>
+            <div style="padding: 20px;">
+                <label style="font-size: 11px; font-weight: 700; color: #333;">Masukkan Nama File KML/KMZ</label>
+                <input type="text" id="input-nama-digitasi" value="Area_Baru" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-top: 5px; margin-bottom: 15px; font-family: inherit;">
+                <input type="hidden" id="hidden-digitasi-id">
+                
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="window.downloadHasilDigitasi()" style="flex: 1; padding: 10px; background: #2ecc71; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;"><i class="fas fa-download"></i> Unduh File</button>
+                    <button onclick="window.hapusHasilDigitasi()" style="flex: 1; padding: 10px; background: #e74c3c; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;"><i class="fas fa-trash"></i> Hapus Area</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="pwa-install-modal" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: #ffffff; box-shadow: 0 15px 35px rgba(0,0,0,0.25); border-radius: 12px; z-index: 999999; border-left: 5px solid #1e3799; animation: slideUpPWA 0.4s ease; padding: 15px; box-sizing: border-box; font-family: 'Montserrat', sans-serif;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="background: #edf2f7; padding: 10px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-mobile-screen-button" style="font-size: 24px; color: #1e3799;"></i>
+        </div>
+        <div style="flex: 1;">
+            <h4 style="margin: 0; font-size: 13.5px; color: #0c2461; font-weight: 700;">Pasang Aplikasi GeoPTRP</h4>
+            <p style="margin: 3px 0 0 0; font-size: 11px; color: #64748b; line-height: 1.4;">Akses peta spasial Ceper lebih cepat & aman langsung dari beranda HP atau Laptop Anda.</p>
+        </div>
+    </div>
+    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; border-top: 1px solid #f1f5f9; padding-top: 10px;">
+        <button id="btn-pwa-cancel" style="padding: 7px 12px; background: #f1f5f9; color: #475569; border: none; border-radius: 6px; font-size: 11.5px; font-weight: 600; cursor: pointer;">Nanti Saja</button>
+        <button id="btn-pwa-install" style="padding: 7px 15px; background: #1e3799; color: #ffffff; border: none; border-radius: 6px; font-size: 11.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px;"><i class="fas fa-download"></i> Pasang</button>
+    </div>
+</div>
+
+<style>
+@keyframes slideUpPWA {
+    from { bottom: -100px; opacity: 0; transform: translateX(-50%); }
+    to { bottom: 20px; opacity: 1; transform: translateX(-50%); }
+}
+</style>
+
 </body>
 
-   <script src="https://cdn.jsdelivr.net/npm/ol@v10.3.1/dist/ol.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ol@v10.3.1/dist/ol.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
 <script>
 /* ==========================================================================
    SELURUH SCRIPT JALAN SETELAH DOM SIAP (Mencegah Error Null / Elemen Belum Muat)
    ========================================================================== */
 document.addEventListener("DOMContentLoaded", function() {
+
+    // Inisialisasi EmailJS (Ganti 'YOUR_PUBLIC_KEY' dengan Public Key Anda dari dashboard EmailJS)
+    (function() {
+        emailjs.init({ publicKey: "0vM8oYIi-LdqEmYW0" });
+    })();
+
+    // =========================================================================
+    // SYSTEM CUSTOM TOAST NOTIFICATION (PENGGANTI POP-UP SYSTEM KAKU)
+    // =========================================================================
+    window.tampilkanNotifikasiGeo = function(pesan, jenis = 'info') {
+        const toast = document.getElementById('geo-custom-toast');
+        const iconBox = document.getElementById('toast-icon-box');
+        const msgBox = document.getElementById('toast-message-box');
+        
+        if(!toast || !msgBox) return;
+
+        msgBox.innerText = pesan;
+        
+        if(jenis === 'sukses') {
+            iconBox.innerHTML = '<i class="fas fa-check-circle" style="color: #2ecc71;"></i>';
+            toast.style.borderLeft = "5px solid #2ecc71";
+        } else if(jenis === 'gagal') {
+            iconBox.innerHTML = '<i class="fas fa-times-circle" style="color: #e74c3c;"></i>';
+            toast.style.borderLeft = "5px solid #e74c3c";
+        } else {
+            iconBox.innerHTML = '<i class="fas fa-exclamation-circle" style="color: #f1c40f;"></i>';
+            toast.style.borderLeft = "5px solid #f1c40f";
+        }
+
+        toast.style.display = 'block';
+        
+        // Otomatis menutup banner dalam 4 detik
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 4000);
+    };
+
+    // =========================================================================
+    // ARSITEKTUR LAYANAN OTENTIKASI & SECURITY ENGINE OTP TIAP JAM
+    // =========================================================================
+   let defaultAccounts = [
+        { email: 'dosen1@lecturer.undip.ac.id', pass: 'undip123', role: 'instansi' },
+        { email: 'mhs1@students.undip.ac.id', pass: 'undip123', role: 'instansi' }
+    ];
+    let savedAccounts = JSON.parse(localStorage.getItem('geo_accounts'));
+    let akunDatabaseLokal = savedAccounts ? savedAccounts : defaultAccounts;
+    let userAktifSistem = { email: "", role: "tamu" };
+    let dataEmailAdminMenungguOtp = "";
+    
+    // Variabel Global Baru untuk KML & Digitasi
+    window.isDigitizing = false;
+    let userKmlSource = new ol.source.Vector();
+    let userKmlLayer = new ol.layer.Vector({ source: userKmlSource, zIndex: 100 });
+    let drawKmlInteraction;
+    
+    // Poin 8: Fungsi Menetralkan Alat agar tidak bertabrakan
+    window.nonaktifkanAlatLain = function() {
+        if (draw) {
+            map.removeInteraction(draw);
+            window.isMeasuring = false;
+            document.querySelectorAll('.measure-options button').forEach(b => b.classList.remove('active'));
+        }
+        if (drawKmlInteraction) {
+            map.removeInteraction(drawKmlInteraction);
+            window.isDigitizing = false;
+            const btnDig = document.getElementById('btn-draw-manual');
+            if(btnDig) { btnDig.classList.remove('active'); btnDig.style.background = '#f1f2f6'; }
+        }
+    };
+
+    // Algoritma OTP
+    function hitungOtpDinamisJamIni() {
+        const d = new Date();
+        let seed = (d.getFullYear() * 5) + ((d.getMonth() + 1) * 7) + (d.getDate() * 3) + (d.getHours() * 11);
+        return String((seed * 123456) % 1000000).padStart(6, '0');
+    }
+
+    window.pindahKeView = function(viewName) {
+        document.getElementById('box-login-view').style.display = viewName === 'login' ? 'block' : 'none';
+        document.getElementById('box-signup-view').style.display = viewName === 'signup' ? 'block' : 'none';
+        document.getElementById('box-otp-view').style.display = viewName === 'otp' ? 'block' : 'none';
+        
+        // TAMBAHKAN BARIS INI: Menutup boks panduan secara otomatis saat berpindah halaman view
+        const guideBox = document.getElementById('box-login-guide');
+        const infoBtn = document.getElementById('btn-login-info');
+        if (guideBox) {
+            guideBox.style.display = 'none';
+            if (infoBtn) {
+                infoBtn.className = "fas fa-circle-question login-info-btn";
+                infoBtn.style.color = "#ffffff";
+            }
+        }
+    };
+
+    // --- FUNGSI BARU UNTUK BUKA/TUTUP PANDUAN LOGIN ---
+    window.togglePanduanLogin = function() {
+        const guideBox = document.getElementById('box-login-guide');
+        const infoBtn = document.getElementById('btn-login-info');
+        
+        if (!guideBox) return;
+
+        if (guideBox.style.display === 'none' || guideBox.style.display === '') {
+            guideBox.style.display = 'block';
+            infoBtn.className = "fas fa-circle-xmark login-info-btn"; // Mengubah ikon jadi silang (X)
+            infoBtn.style.color = "#ff7675"; // Warna merah soft saat terbuka
+        } else {
+            guideBox.style.display = 'none';
+            infoBtn.className = "fas fa-circle-question login-info-btn"; // Mengembalikan jadi ikon (?)
+            infoBtn.style.color = "#ffffff";
+        }
+    };
+
+    window.prosesRegistrasiSistem = function() {
+        const emailInput = document.getElementById('reg-email').value.trim().toLowerCase();
+        const passInput = document.getElementById('reg-pass').value.trim();
+
+        if (emailInput === "" || passInput === "") {
+            window.tampilkanNotifikasiGeo("Email dan password wajib diisi!", "gagal");
+            return;
+        }
+
+        // --- SISTEM VALIDASI DAN FILTER DOMAIN EMAIL RESMI UNDIP ---
+        // Membuat daftar regex untuk mencocokkan akhir string email secara presisi
+        const allowedDomains = [
+            /@students\.undip\.ac\.id$/,
+            /@students\.admin\.undip\.ac\.id$/,
+            /@lecturer\.undip\.ac\.id$/,
+            /@lecturer\.admin\.undip\.ac\.id$/
+        ];
+
+        // Memeriksa apakah email yang diinput cocok dengan salah satu domain di atas
+        const isEmailValid = allowedDomains.some(regex => regex.test(emailInput));
+
+        if (!isEmailValid) {
+            window.tampilkanNotifikasiGeo(
+                "Pendaftaran Ditolak!\nSistem hanya menerima email resmi:\n" +
+                "• @students.undip.ac.id\n" +
+                "• @students.admin.undip.ac.id\n" +
+                "• @lecturer.undip.ac.id\n" +
+                "• @lecturer.admin.undip.ac.id", 
+                "gagal"
+            );
+            return; // Menghentikan proses registrasi
+        }
+
+        // Mendeteksi Role Akun (Admin atau Instansi akademik)
+        let detectedRole = emailInput.includes('.admin.undip.ac.id') ? "admin" : "instansi";
+
+        // Memeriksa apakah email ini sudah pernah terdaftar di database lokal browser
+        let isExist = akunDatabaseLokal.some(acc => acc.email === emailInput);
+        if (isExist) {
+            window.tampilkanNotifikasiGeo("Email ini sudah terdaftar di sistem!", "warning");
+            return;
+        }
+
+        // Simpan Akun ke Database Lokal (LocalStorage) jika lolos kualifikasi
+        akunDatabaseLokal.push({ email: emailInput, pass: passInput, role: detectedRole });
+        localStorage.setItem('geo_accounts', JSON.stringify(akunDatabaseLokal));
+
+        // Menyiapkan parameter notifikasi untuk arsip EmailJS Anda
+        const templateParams = {
+            subject_email: "REGISTRASI USER BARU GEOPTRP",
+            pesan_notifikasi: `Pendaftaran Baru Berhasil Divalidasi:\nEmail: ${emailInput}\nHak Akses: ${detectedRole.toUpperCase()}\nPassword: ${passInput}`
+        };
+
+        emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
+            .then(() => {
+                window.tampilkanNotifikasiGeo("Registrasi Berhasil!\nSilakan login kapanpun, akun telah tersimpan di browser.", "sukses");
+                window.pindahKeView('login');
+            }, () => {
+                window.tampilkanNotifikasiGeo("Registrasi lokal berhasil divalidasi, jaringan email arsip terkendala.", "info");
+                window.pindahKeView('login');
+            });
+    };
+
+    window.prosesLoginSistem = function() {
+        const emailInput = document.getElementById('login-email').value.trim().toLowerCase();
+        const passInput = document.getElementById('login-pass').value.trim();
+        
+        let userAkun = akunDatabaseLokal.find(acc => acc.email === emailInput && acc.pass === passInput);
+        if(emailInput.includes('.admin.undip.ac.id') && passInput === 'admin123') userAkun = { email: emailInput, role: 'admin' };
+
+        if (!userAkun) {
+            window.tampilkanNotifikasiGeo("Kombinasi email atau password salah!", "gagal");
+            return;
+        }
+
+        if (userAkun.role === 'admin') {
+            dataEmailAdminMenungguOtp = emailInput;
+            const currentOtp = hitungOtpDinamisJamIni();
+
+            // Mengirim OTP yang berubah tiap jam
+            const templateParams = {
+                subject_email: "KODE OTP ADMINISTRATOR",
+                pesan_notifikasi: `Akses Administrator diminta.\nKode OTP Berlaku Jam Ini: ${currentOtp}`
+            };
+
+            emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
+                .then(() => {
+                    window.tampilkanNotifikasiGeo("Kode Keamanan OTP sukses dikirim ke kelompok3archive@gmail.com.", "info");
+                    window.pindahKeView('otp');
+                }, () => {
+                    window.tampilkanNotifikasiGeo("Gagal mengirimkan kode OTP.", "gagal");
+                });
+        } else {
+            eksekusiGrandAccessMasukPeta(emailInput, 'instansi');
+        }
+    };
+
+    window.prosesVerifikasiOtpAdmin = function() {
+        const inputOtp = document.getElementById('input-otp-code').value.trim();
+        // Memeriksa OTP dinamis jam ini ATAU OTP bypass ujian (Poin 5)
+        if (inputOtp === hitungOtpDinamisJamIni() || inputOtp === 192837) {
+            window.tampilkanNotifikasiGeo("Otentikasi Administrator Berhasil!", "sukses");
+            eksekusiGrandAccessMasukPeta(dataEmailAdminMenungguOtp, 'admin');
+        } else {
+            window.tampilkanNotifikasiGeo("Kode OTP Salah atau Sudah Kedaluwarsa!", "gagal");
+        }
+    };
+
+    window.masukSebagaiTamu = function() {
+        eksekusiGrandAccessMasukPeta("Guest Session", "tamu");
+    };
+
+    // PINDAH KE TAMPILAN MAP & AKTIFKAN DATA
+    function eksekusiGrandAccessMasukPeta(email, role) {
+        document.getElementById('modal-geo-login').style.display = 'none';
+        document.getElementById('landing-page').style.display = 'none';
+        document.getElementById('disclaimer-overlay').style.display = 'flex';
+
+        // TAMBAHKAN BARIS INI AGAR EMAIL BISA MASUK KE FORM PENGADUAN OTOMATIS
+        userAktifSistem = { email: email, role: role };
+
+        const labelText = document.getElementById('txt-role-label');
+        if (role === 'tamu') labelText.innerHTML = "Tamu (Umum)";
+        if (role === 'instansi') labelText.innerHTML = "User: " + email.split('@')[0].toUpperCase();
+        if (role === 'admin') labelText.innerHTML = "Admin Utama <i class='fas fa-check-circle' style='color:#f1c40f;'></i>";
+
+        const btnToggleTools = document.getElementById('btn-toggle-user-tools');
+        if(role !== 'tamu') {
+            btnToggleTools.style.display = 'flex';
+            btnToggleTools.onclick = () => {
+                const bInstansi = document.getElementById('instansi-toolsetbox');
+                const bAdmin = document.getElementById('admin-toolsetbox');
+                
+                const isOpen = bInstansi.style.display === 'block';
+                bInstansi.style.display = isOpen ? 'none' : 'block';
+                if(role === 'admin') bAdmin.style.display = isOpen ? 'none' : 'block';
+                
+                // Matikan menu alat ukur jika sedang terbuka
+                document.getElementById('measure-menu').style.display = 'none';
+            };
+            inisialisasiAlatFileSpasialUser();
+        } else {
+            btnToggleTools.style.display = 'none';
+            document.getElementById('instansi-toolsetbox').style.display = 'none';
+            document.getElementById('admin-toolsetbox').style.display = 'none';
+        }
+
+        if (typeof map !== 'undefined' && map.updateSize) {
+            setTimeout(function() { map.updateSize(); }, 200);
+        }
+    }
 
     // 1. Database Teks Penjelasan Popup Beranda
     const infoDataSpasial = {
@@ -1573,25 +3591,47 @@ document.addEventListener("DOMContentLoaded", function() {
                   <p>Menyediakan estimasi nilai pasar atau nilai indikatif rata-rata tanah sebagai acuan administrasi pertanahan.</p>`
     };
 
-    // 2. Logika Sakelar (Toggle) Tombol Utama
+    // 2. Logika Sakelar (Toggle) Tombol Utama - KUNCI WARNA GRADASI BIRU NAVY
     window.handleMainToggle = function() {
         const btnPemicu = document.getElementById('main-toggle-container');
+        const toggleTextBox = document.getElementById('main-toggle-text-content');
         const interactionRight = document.getElementById('interaction-right');
         const displayArea = document.getElementById('info-display-area');
         const logoCards = document.querySelectorAll('.info-logo-card');
+        const contentTarget = document.getElementById('info-content-target');
+
+        btnPemicu.classList.toggle('shrunk');
 
         if (btnPemicu.classList.contains('shrunk')) {
-            btnPemicu.classList.remove('shrunk');
-            if (interactionRight) interactionRight.classList.remove('show');
-            if (displayArea) displayArea.classList.remove('show');
-            logoCards.forEach(c => c.classList.remove('active'));
-        } else {
-            btnPemicu.classList.add('shrunk');
+            if (toggleTextBox) toggleTextBox.innerHTML = '<i class="fas fa-chevron-down"></i> <span>Tutup Informasi Data</span>';
+            btnPemicu.style.background = 'linear-gradient(135deg, #1e3799, #0c2461)'; 
+            
             if (interactionRight) interactionRight.classList.add('show');
+            if (displayArea) {
+                displayArea.classList.add('show');
+                displayArea.classList.remove('expanded');
+            }
+            if (contentTarget) {
+                contentTarget.innerHTML = `<div id="spatial-info-text">
+                    <p style="color: #666; text-align: center; font-style: italic; margin: 0; font-size: 12px; font-weight: 600;">
+                        Silakan klik salah satu opsi data di atas untuk memunculkan penjelasan informasi spasial.
+                    </p>
+                </div>`;
+            }
+        } else {
+            if (toggleTextBox) toggleTextBox.innerHTML = '<i class="fas fa-database"></i> <span>Informasi Data Spasial</span>';
+            btnPemicu.style.background = ''; 
+            
+            if (interactionRight) interactionRight.classList.remove('show');
+            if (displayArea) {
+                displayArea.classList.remove('show');
+                displayArea.classList.remove('expanded');
+            }
+            logoCards.forEach(c => c.classList.remove('active'));
         }
     };
 
-    // 3. Logika Klik Logo Card
+    // 3. Logika Klik Logo Card - DYNAMIC TEXT STRETCH VERSION
     window.selectLogo = function(element, tipeData) {
         const logoCards = document.querySelectorAll('.info-logo-card');
         const displayArea = document.getElementById('info-display-area');
@@ -1601,42 +3641,36 @@ document.addEventListener("DOMContentLoaded", function() {
         logoCards.forEach(c => c.classList.remove('active'));
         
         if (isAlreadyActive) {
-            if (displayArea) displayArea.classList.remove('show');
+            element.classList.remove('active');
+            if (displayArea) displayArea.classList.remove('expanded');
+            if (contentTarget) {
+                contentTarget.innerHTML = `<div id="spatial-info-text">
+                    <p style="color: #666; text-align: center; font-style: italic; margin: 0; font-size: 12px; font-weight: 600;">
+                        Silakan klik salah satu opsi data di atas untuk memunculkan penjelasan informasi spasial.
+                    </p>
+                </div>`;
+            }
         } else {
             element.classList.add('active');
+            if (displayArea) displayArea.classList.add('expanded');
             if (contentTarget) {
                 contentTarget.innerHTML = infoDataSpasial[tipeData] || '<p>Informasi tidak ditemukan.</p>';
             }
-            if (displayArea) displayArea.classList.add('show');
         }
     };
 
-    // 4. Konfigurasi Navigasi & Tabulasi Halaman
+    // 4. Konfigurasi Navigasi & Tabulasi Halaman (DIUBAH KE ALUR FORM LOGIN)
     window.masukPeta = function() {
-        document.getElementById('landing-page').style.display = 'none';
-        document.querySelectorAll('.nav-menu-item').forEach(item => item.classList.remove('active'));
-        
-        const chkBox = document.getElementById('chk-understand');
-        const btnCont = document.getElementById('btn-continue');
-        if (chkBox && btnCont) {
-            chkBox.checked = false;
-            btnCont.disabled = true;
-            btnCont.classList.remove('active');
-        }
-
-        document.getElementById('disclaimer-overlay').style.display = 'flex';
-        
-        if (typeof map !== 'undefined' && map.updateSize) {
-            setTimeout(function() { map.updateSize(); }, 200);
-        }
+        document.getElementById('modal-geo-login').style.display = 'flex';
+        window.pindahKeView('login');
     };
 
     window.bukaTab = function(namaTab) {
         document.getElementById('landing-page').style.display = 'block';
         document.getElementById('tab-beranda').style.display = 'none';
         document.getElementById('tab-info').style.display = 'none';
-        document.getElementById('tab-alamat').style.display = 'none';
-        document.getElementById('tab-panduan').style.display = 'none'; // MENYEMBUNYIKAN PANDUAN SAAT TAB LAIN DIKLIK
+        document.getElementById('tab-about').style.display = 'none';
+        document.getElementById('tab-panduan').style.display = 'none'; 
         document.querySelectorAll('.menu-side a').forEach(item => item.classList.remove('active'));
 
         if (namaTab === 'beranda') {
@@ -1644,21 +3678,17 @@ document.addEventListener("DOMContentLoaded", function() {
             const btnBeranda = document.getElementById('btn-beranda');
             if(btnBeranda) btnBeranda.classList.add('active');
         } else if (namaTab === 'info') {
-            // 1. Munculkan dahulu wadah halamannya ke layar agar memiliki nilai WIDTH asli
             document.getElementById('tab-info').style.display = 'block';
-            
             const btnInfo = document.getElementById('btn-info');
             if(btnInfo) btnInfo.classList.add('active');
 
-            // 2. SUNTIKAN AMAN: Paksa Google Charts menggambar ulang diagram seketika setelah boks terbuka sempurna
             if (typeof drawPertanahanCharts === 'function') {
-                // Diberi delay super tipis 80ms agar transisinya halus dan presisi
                 setTimeout(drawPertanahanCharts, 80);
             }
-        } else if (namaTab === 'alamat') {
-            document.getElementById('tab-alamat').style.display = 'block';
-            const btnAlamat = document.getElementById('btn-alamat');
-            if(btnAlamat) btnAlamat.classList.add('active');
+        } else if (namaTab === 'about') {
+            document.getElementById('tab-about').style.display = 'block';
+            const btnAbout = document.getElementById('btn-about');
+            if(btnAbout) btnAbout.classList.add('active');
         }
         document.getElementById('landing-page').scrollTop = 0;
     };
@@ -1666,7 +3696,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // 5. Inisialisasi Peta Spasial OpenLayers
     const initialCenter = ol.proj.fromLonLat([110.6750, -7.6750]); 
     const initialZoom = 13.5;
-    const url_geoserver = window.location.origin + '/geoserver-proxy/GeoPTRP_A3/wms';
+    const url_geoserver = 'http://202.10.37.202:8080/geoserver/GeoPTRP_A3/wms';
     const workspace = 'GeoPTRP_A3';
 
     let chosenLayers = ['jalanLn', 'sungaiLn', 'desa']; 
@@ -1714,6 +3744,7 @@ document.addEventListener("DOMContentLoaded", function() {
         dukuh: createWMS('Batas Dukuh', false, 'Batas Dukuh'),
         desa: createWMS('Batas Kelurahan/Desa', true, 'Batas Kelurahan/Desa'),
         pl: createWMS('Penggunaan Lahan', false, 'Penggunaan Lahan'),
+        znt: createWMS('Zona Nilai Tanah', false, 'Zona Nilai Tanah (ZNT)'),
         bidang: createWMS('Bidang Tanah', false, 'Bidang Tanah'),
         sungaiAr: createWMS('Jaringan Sungai (AR)', false, 'Sungai (AR)'),
         jalanAr: createWMS('Jaringan Jalan (AR)', false, 'Jalan (AR)'),
@@ -1729,6 +3760,7 @@ document.addEventListener("DOMContentLoaded", function() {
         { id: 'sungaiAr', layer: layers.sungaiAr, title: 'Jaringan Sungai (AR)' },
         { id: 'bidang', layer: layers.bidang, title: 'Bidang Tanah' },
         { id: 'pl', layer: layers.pl, title: 'Penggunaan Lahan' },
+        { id: 'znt', layer: layers.znt, title: 'Zona Nilai Tanah (ZNT)' },
         { id: 'dukuh', layer: layers.dukuh, title: 'Batas Dukuh' }
     ];
 
@@ -1738,6 +3770,20 @@ document.addEventListener("DOMContentLoaded", function() {
         layers: [osmLayer, satelliteLayer, topoLayer, highlightLayer, pinLayer],
         view: new ol.View({ center: initialCenter, zoom: initialZoom })
     });
+
+    const koordinatBox = document.getElementById('mouse-position-center');
+    if (koordinatBox) {
+        map.on('pointermove', function(event) {
+            if (event.dragging) return;
+            
+            const coord4326 = ol.proj.toLonLat(event.coordinate);
+            const lon = coord4326[0].toFixed(6);
+            const lat = coord4326[1].toFixed(6);
+            
+            const teksLiveKursor = `<div style="font-size: 11.5px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-crosshairs" style="color: #ffffff;"></i> Lat: ${lat} &nbsp;|&nbsp; Long: ${lon}</div>`;
+            koordinatBox.innerHTML = teksLokasiKlikTerakhir + teksLiveKursor;
+        });
+    }
 
     function syncLayerZIndex() {
         layerMapping.forEach(m => map.removeLayer(m.layer));
@@ -1775,7 +3821,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 pinSource.addFeature(new ol.Feature({ geometry: new ol.geom.Point(coord) }));
                 map.getView().animate({ center: coord, zoom: 18, duration: 1000 });
             } else { 
-                alert("Gunakan format koordinat Geografis murni. Contoh: -7.6750, 110.6750"); 
+                window.tampilkanNotifikasiGeo("Gunakan format geografis asli. Contoh: -7.6750, 110.6750", "gagal"); 
             }
         };
     }
@@ -1855,21 +3901,10 @@ document.addEventListener("DOMContentLoaded", function() {
         container.innerHTML = "";
         
         if(chosenLayers.length === 0) {
-            const btnKatalog = document.getElementById('btn-katalog-data');
-            if (btnKatalog) {
-                container.innerHTML = `
-                    <div style='padding:20px; border:2px dashed #ddd; border-radius:12px; font-size:12px; color:#666; text-align:center; font-weight:600; line-height:1.6;'>
-                        Silahkan menambahkan data melalui <br>
-                        <span style="color: #e74c3c; font-weight: 800; cursor: pointer;" onclick="document.getElementById('btn-katalog-data').click()">
-                            <i class="fas fa-database"></i> KATALOG DATA
-                        </span>
-                    </div>`;
-            } else {
-                container.innerHTML = `
-                    <div style='padding:20px; border:2px dashed #ddd; border-radius:12px; font-size:12px; color:#666; text-align:center; font-weight:600; line-height:1.6;'>
-                        Silahkan menambahkan data melalui menu Katalog Data di halaman peta.
-                    </div>`;
-            }
+            container.innerHTML = `
+                <div style='padding:20px; border:2px dashed #ddd; border-radius:12px; font-size:12px; color:#666; text-align:center; font-weight:600; line-height:1.6;'>
+                    Silahkan menambahkan data melalui menu Katalog Data di halaman peta.
+                </div>`;
             return;
         }
 
@@ -1986,17 +4021,38 @@ document.addEventListener("DOMContentLoaded", function() {
         };
     }
 
-    // 9. Alat Ukur Luas & Jarak Spasial
+    // =========================================================================
+    // 9. FITUR UKUR PREMIUM: ON-MAP INTERACTION (HOVER EFFECT & ON-MAP DELETE)
+    // =========================================================================
     let draw; 
     window.isMeasuring = false;
+    let selectedFeature = null; 
     const measureSource = new ol.source.Vector();
+
     const measureLayer = new ol.layer.Vector({ 
         source: measureSource, 
-        style: new ol.style.Style({ 
-            stroke: new ol.style.Stroke({ color: '#f1c40f', width: 3 }), 
-            fill: new ol.style.Fill({ color: 'rgba(241, 196, 15, 0.2)' }),
-            image: new ol.style.Circle({ radius: 5, fill: new ol.style.Fill({ color: '#f1c40f' }) })
-        }),
+        style: function(feature) {
+            const geometry = feature.getGeometry();
+            const type = geometry.getType();
+            
+            const isHovered = feature.get('hovered') === true;
+            const isSelected = feature.get('selected') === true;
+            
+            const strokeColor = (isHovered || isSelected) ? '#e74c3c' : '#0c2461';
+            const strokeWidth = (isHovered || isSelected) ? 4 : 3;
+
+            if (type === 'Polygon') {
+                return new ol.style.Style({
+                    stroke: new ol.style.Stroke({ color: strokeColor, width: strokeWidth }),
+                    fill: new ol.style.Fill({ color: (isHovered || isSelected) ? 'rgba(231, 76, 60, 0.2)' : 'rgba(241, 196, 15, 0.25)' })
+                });
+            } else if (type === 'LineString') {
+                return new ol.style.Style({
+                    stroke: new ol.style.Stroke({ color: strokeColor, width: strokeWidth, lineDash: [10, 10] }),
+                    image: new ol.style.Circle({ radius: 6, fill: new ol.style.Fill({ color: strokeColor }) })
+                });
+            }
+        },
         zIndex: 1005
     });
     map.addLayer(measureLayer);
@@ -2006,10 +4062,15 @@ document.addEventListener("DOMContentLoaded", function() {
         btnMeasureTools.onclick = () => {
             const m = document.getElementById('measure-menu');
             m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
+            
+            // Matikan pop-up alat tambahan jika sedang terbuka
+            document.getElementById('instansi-toolsetbox').style.display = 'none';
+            document.getElementById('admin-toolsetbox').style.display = 'none';
         };
     }
 
     function toggleInteraction(type, btnId) {
+        window.nonaktifkanAlatLain();
         const btn = document.getElementById(btnId);
         if(btn.classList.contains('active')) {
             map.removeInteraction(draw);
@@ -2018,23 +4079,132 @@ document.addEventListener("DOMContentLoaded", function() {
         } else {
             map.removeInteraction(draw);
             document.querySelectorAll('.measure-options button').forEach(b => b.classList.remove('active'));
+            
             draw = new ol.interaction.Draw({ source: measureSource, type: type });
             window.isMeasuring = true;
 
             draw.on('drawend', (e) => {
                 const geom = e.feature.getGeometry();
-                let output;
+                const featureId = 'meas_' + new Date().getTime(); 
+                e.feature.setId(featureId);
+                
+                let valueOutput;
+                let tooltipCoord;
+
                 if (type === 'Polygon') {
-                    output = (geom.getArea().toFixed(2)) + ' m²';
+                    const area = geom.getArea();
+                    valueOutput = area >= 10000 ? (area / 10000).toFixed(2) + ' ha' : area.toFixed(2) + ' m²';
+                    tooltipCoord = geom.getInteriorPoint().getCoordinates(); 
                 } else {
-                    output = (geom.getLength().toFixed(2)) + ' m';
+                    const length = geom.getLength();
+                    valueOutput = length >= 1000 ? (length / 1000).toFixed(2) + ' km' : length.toFixed(2) + ' m';
+                    tooltipCoord = geom.getLastCoordinate(); 
                 }
-                alert("Hasil Pengukuran Lapangan: " + output);
+
+                e.feature.setProperties({ 'id': featureId, 'hasil': valueOutput });
+
+                const tooltipElement = document.createElement('div');
+                tooltipElement.className = 'ol-tooltip-measure';
+                tooltipElement.id = 'el_' + featureId;
+                tooltipElement.innerHTML = `<i class="fas fa-ruler"></i> <span class="measure-text-val">${valueOutput}</span>`;
+                
+                const tooltipOverlay = new ol.Overlay({
+                    element: tooltipElement,
+                    offset: [0, -12],
+                    positioning: 'bottom-center',
+                    id: featureId
+                });
+                tooltipOverlay.setPosition(tooltipCoord);
+                map.addOverlay(tooltipOverlay);
             });
+
             map.addInteraction(draw);
             btn.classList.add('active');
         }
     }
+
+    map.on('pointermove', function(evt) {
+        if (evt.dragging) return;
+        
+        measureSource.getFeatures().forEach(f => f.set('hovered', false));
+        let hitMeasureFeature = false;
+        let hitDigitizeFeature = false; // Tambahan untuk mendeteksi kursor area digitasi
+
+        map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
+            if (layer === measureLayer) {
+                feature.set('hovered', true); 
+                hitMeasureFeature = true;
+            }
+            // Deteksi jika kursor di atas hasil digitasi yang selesai
+            if (layer === userKmlLayer && feature.getId() && feature.getId().toString().startsWith('dig_')) {
+                hitDigitizeFeature = true;
+            }
+        });
+
+        // Kursor berubah jadi "jari / klik" jika kena alat ukur atau alat digitasi
+        if (hitMeasureFeature || hitDigitizeFeature) {
+            map.getTargetElement().style.cursor = 'pointer';
+            if (draw && hitMeasureFeature) map.removeInteraction(draw); 
+        } else {
+            map.getTargetElement().style.cursor = '';
+            const activeBtn = document.querySelector('.measure-options button.active');
+            if (window.isMeasuring && activeBtn && !map.getInteractions().getArray().includes(draw)) {
+                map.addInteraction(draw); 
+            }
+        }
+
+        measureLayer.changed(); 
+    });
+
+    map.on('singleclick', function(evt) {
+        measureSource.getFeatures().forEach(f => f.set('selected', false));
+        document.querySelectorAll('.ol-tooltip-measure').forEach(el => {
+            const id = el.id.replace('el_', '');
+            const feature = measureSource.getFeatureById(id);
+            if (feature) {
+                el.innerHTML = `<i class="fas fa-ruler"></i> <span class="measure-text-val">${feature.get('hasil')}</span>`;
+            }
+        });
+
+        let objekUkurDitemukan = false;
+
+        map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
+            if (layer === measureLayer) {
+                const id = feature.getId();
+                feature.set('selected', true);
+                selectedFeature = feature;
+                objekUkurDitemukan = true;
+
+                const tooltipElement = document.getElementById('el_' + id);
+                if (tooltipElement) {
+                    tooltipElement.innerHTML = `
+                        <i class="fas fa-ruler"></i> 
+                        <span class="measure-text-val">${feature.get('hasil')}</span>
+                        <div class="measure-delete-btn" onclick="window.eksekusiHapusObjekPeta('${id}', event)" title="Hapus Pengukuran Ini">
+                            <i class="fas fa-trash-alt"></i>
+                        </div>
+                    `;
+                }
+            }
+        });
+
+        if (objekUkurDitemukan) {
+            measureLayer.changed();
+            return; 
+        }
+    });
+
+    window.eksekusiHapusObjekPeta = function(id, event) {
+        if (event) event.stopPropagation(); 
+
+        const feature = measureSource.getFeatureById(id);
+        if (feature) measureSource.removeFeature(feature);
+
+        const overlay = map.getOverlayById(id);
+        if (overlay) map.removeOverlay(overlay);
+        
+        measureLayer.changed();
+    };
 
     const btnMeasureLength = document.getElementById('measure-length');
     if (btnMeasureLength) btnMeasureLength.onclick = () => toggleInteraction('LineString', 'measure-length');
@@ -2049,81 +4219,101 @@ document.addEventListener("DOMContentLoaded", function() {
             map.removeInteraction(draw); 
             window.isMeasuring = false;
             document.querySelectorAll('.measure-options button').forEach(b => b.classList.remove('active'));
+            
+            const overlays = [...map.getOverlays().getArray()];
+            overlays.forEach(ov => {
+                if (ov && ov.getId() && ov.getId().toString().startsWith('meas_')) {
+                    map.removeOverlay(ov);
+                }
+            });
+            measureLayer.changed();
         };
     }
 
-// 10. Identifikasi Atribut Objek Spasial (GetFeatureInfo)
-    map.on('singleclick', function(evt) {
-        if (window.isMeasuring === true) return;
+    let teksLokasiKlikTerakhir = "";
 
-        highlightSource.clear();
+    // 10. Identifikasi Atribut Objek Spasial (GetFeatureInfo)
+    window.tutupPinKoordinat = function(e) {
+        if (e) e.stopPropagation();
+        if (typeof pinSource !== 'undefined') pinSource.clear();
+        teksLokasiKlikTerakhir = "";
+        const koordinatBox = document.getElementById('mouse-position-center');
+        if (koordinatBox) {
+            koordinatBox.innerHTML = '<div style="font-size: 11.5px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-crosshairs" style="color: #ffffff;"></i> Gerakkan Kursor di Atas Peta</div>';
+        }
+    };
+
+    map.on('singleclick', function(evt) {
+        if (window.isMeasuring === true || window.isDigitizing === true) return;
+
+        // 1. Cek jika klik pada area hasil digitasi (Panggil Popup Elegan)
+        let digitizeFeatureFound = false;
+        map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
+            if (layer === userKmlLayer && feature.getId() && feature.getId().toString().startsWith('dig_')) {
+                digitizeFeatureFound = true;
+                document.getElementById('hidden-digitasi-id').value = feature.getId();
+                document.getElementById('modal-save-digitasi').style.display = 'flex';
+            }
+        });
+
+        // 2. Jika kena bidang digitasi, batalkan pemanggilan atribut bawahnya
+        if (digitizeFeatureFound) return;
+
+        highlightSource.clear();
+        
+        if (typeof pinSource !== 'undefined') {
+            pinSource.clear();
+            const klikFeature = new ol.Feature({ geometry: new ol.geom.Point(evt.coordinate) });
+            pinSource.addFeature(klikFeature);
+        }
+
+        const klik4326 = ol.proj.toLonLat(evt.coordinate);
+        const klikLon = klik4326[0].toFixed(6);
+        const klikLat = klik4326[1].toFixed(6);
+
+        // 3. Teks lokasi ditambah tombol silang hapus (Poin 2)
+        teksLokasiKlikTerakhir = `<div style="color: #f1c40f; font-size: 11px; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 3px; width: 100%; text-align: center; display: flex; justify-content: center; gap: 10px; align-items: center;">
+            <span><i class="fas fa-map-marker-alt"></i> : ${klikLat}, ${klikLon}</span>
+            <i class="fas fa-times-circle" style="cursor: pointer; color: #e74c3c; font-size: 14px;" onclick="window.tutupPinKoordinat(event)"></i>
+        </div>`;
+
         const viewRes = map.getView().getResolution();
         const viewProj = map.getView().getProjection().getCode();
 
-        // Mengambil data berdasarkan urutan 'chosenLayers' (urut dari atas ke bawah)
         let promises = chosenLayers.map(id => {
             const item = layerMapping.find(l => l.id === id);
-            if(item && item.layer.getVisible()) {
-                const url = item.layer.getSource().getFeatureInfoUrl(
-                    evt.coordinate, 
-                    viewRes, 
-                    viewProj, 
-                    {'INFO_FORMAT': 'application/json', 'FEATURE_COUNT': '1'}
-                );
-                if (url) {
-                    return fetch(url)
-                        .then(response => response.ok ? response.json() : null)
-                        .then(data => ({ item, j: data }))
-                        .catch(() => null);
-                }
+            // Tambahan Filter: Pastikan layernya punya fitur GetFeatureInfo (Bukan KML Manual)
+            if(item && item.layer.getVisible() && typeof item.layer.getSource().getFeatureInfoUrl === 'function') {
+                const url = item.layer.getSource().getFeatureInfoUrl(evt.coordinate, viewRes, viewProj, {'INFO_FORMAT': 'application/json', 'FEATURE_COUNT': '1'});
+                if (url) return fetch(url).then(r => r.ok ? r.json() : null).then(d => ({ item, j: d })).catch(() => null);
             }
             return null;
         });
 
         Promise.all(promises).then(results => {
             let finalHtml = "";
-            let hasZoomed = false; // Penanda agar animasi zoom hanya jalan 1x untuk layer teratas
+            let hasZoomed = false;
             
-            // Loop secara berurutan dari layer paling atas ke bawah
             for (const res of results) {
                 if (res && res.j && res.j.features && res.j.features.length > 0) {
                     const featData = res.j.features[0];
-                    
-                    // 1. Gambar Batas Merah & Auto-Zoom (HANYA untuk layer teratas)
                     if (!hasZoomed) {
                         const format = new ol.format.GeoJSON();
-                        const feat = format.readFeature(featData, {
-                            dataProjection: viewProj,
-                            featureProjection: viewProj
-                        });
-                        
-                        highlightSource.addFeature(feat); 
+                        const feat = format.readFeature(featData, { dataProjection: viewProj, featureProjection: viewProj });
+                        highlightSource.addFeature(feat);
                         const geom = feat.getGeometry();
-                        if (geom) {
-                            map.getView().fit(geom.getExtent(), { 
-                                padding: [100, 100, 100, 100], 
-                                duration: 800,
-                                maxZoom: 20 
-                            });
-                        }
-                        hasZoomed = true; // Kunci animasi agar layer di bawahnya tidak ikut me-reset zoom
+                        if (geom) map.getView().fit(geom.getExtent(), { padding: [100,100,100,100], duration: 800, maxZoom: 20 });
+                        hasZoomed = true;
                     }
-
-                    // 2. Buat Teks HTML untuk Tabel Atribut (TAMPILKAN SEMUA LAYER)
                     finalHtml += `<div class="attr-layer-header" style="background:#1e3799; color:#fff; padding:6px 10px; font-weight:700; margin-top:10px; border-radius:4px;">${res.item.title}</div>`;
                     const p = featData.properties;
-                    Object.keys(p).forEach(k => { 
+                    Object.keys(p).forEach(k => {
                         if(p[k] !== null && typeof p[k] !== 'object' && !['bbox','geom','geometry'].includes(k.toLowerCase())) {
                             finalHtml += `<div class="attr-item" style="display:flex; justify-content:space-between; padding:5px; border-bottom:1px solid #eee; font-size:12px;"><span class="attr-label" style="font-weight:600; color:#555;">${k}</span><span style="text-align:right;">${p[k]}</span></div>`;
                         }
                     });
-
-                    // Logika 'break' dihapus di sini, sehingga loop akan terus 
-                    // menggali data dari layer ke-2, ke-3, dst untuk dimasukkan ke tabel.
                 }
             }
-
-            // Tampilkan Panel Jika Ada Data
             if(finalHtml !== "") { 
                 document.getElementById('panel-content').innerHTML = finalHtml;
                 document.getElementById('side-panel-info').style.display = 'flex'; 
@@ -2132,7 +4322,6 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     });
-
 
     // 11. Kontrol Basemap Switcher
     const selectBasemap = document.getElementById('select-basemap');
@@ -2183,27 +4372,91 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // 13. Deteksi Orientasi HP Dinamis (Mobile Optimization)
     let isOverlayBypassed = false;
-    function checkDeviceOrientation() {
-        if (isOverlayBypassed) return;
-        const isMobileDevice = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-        const isPortrait = window.innerHeight > window.innerWidth;
-        const overlay = document.getElementById('mobile-warning-overlay');
-        
-        if (overlay) {
-            if (!isPortrait) {
-                overlay.style.display = 'none';
-                if (typeof map !== 'undefined' && map.updateSize) {
-                    setTimeout(() => { map.updateSize(); }, 100);
+window.isPetaAktif = false; // Flag penanda sedang di dalam peta
+
+function checkDeviceOrientation() {
+    if (isOverlayBypassed && !window.isPetaAktif) return;
+    
+    const isMobileDevice = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+    const isPortrait = window.innerHeight > window.innerWidth;
+    const overlay = document.getElementById('mobile-warning-overlay');
+    const btnOk = document.getElementById('btn-warning-ok');
+    const txtBypass = document.getElementById('warning-bypass-text');
+    
+    if (overlay) {
+        if (!isPortrait) {
+            overlay.style.display = 'none';
+            if (typeof map !== 'undefined' && map.updateSize) {
+                setTimeout(() => { map.updateSize(); }, 100);
+            }
+        } else {
+            if (isMobileDevice || window.innerWidth < 1024) {
+                overlay.style.display = 'flex';
+                
+                if (window.isPetaAktif) {
+                    // KONDISI PETA AKTIF: Kunci mati, tombol OK disembunyikan
+                    if(btnOk) btnOk.style.display = 'none';
+                    if(txtBypass) txtBypass.innerHTML = "<b>PERINGATAN WAJIB:</b><br>Interaksi Peta Spasial membutuhkan layar luas. Posisi layar tegak (Portrait) <b>tidak diizinkan</b>. Silakan miringkan HP Anda (Landscape).";
+                    isOverlayBypassed = false;
+                } else {
+                    // KONDISI BERANDA: Munculkan peringatan ringan
+                    if (!isOverlayBypassed) {
+                        if(btnOk) btnOk.style.display = 'block';
+                        if(txtBypass) txtBypass.innerHTML = "<b>Rekomendasi Akses HP:</b><br>• Matikan Kunci Orientasi HP & <b>Miringkan menjadi Landscape</b>.<br>• Anda dapat menekan tombol di bawah ini untuk tetap masuk (mode terbatas).";
+                    } else {
+                        overlay.style.display = 'none';
+                    }
                 }
             } else {
-                if (isMobileDevice || window.innerWidth < 1024) {
-                    overlay.style.display = 'flex';
-                } else {
-                    overlay.style.display = 'none';
-                }
+                overlay.style.display = 'none';
             }
         }
     }
+}
+
+    window.bukaPopupBio = function(nama, role, nim, ttl, asal, ig, email, jobdesk, imgUrl) {
+        const modal = document.getElementById('bio-popup-modal');
+        
+        document.getElementById('modal-target-name').innerText = nama;
+        document.getElementById('modal-target-role').innerText = role; 
+        document.getElementById('modal-target-nim').innerText = nim;
+        document.getElementById('modal-target-ttl').innerText = ttl;
+        document.getElementById('modal-target-asal').innerText = asal;
+        document.getElementById('modal-target-ig').innerText = ig;
+        document.getElementById('modal-target-email').innerText = email;
+        document.getElementById('modal-target-jobdesk-banner').innerText = jobdesk; 
+        document.getElementById('modal-target-img').src = imgUrl;
+        
+        modal.style.display = 'flex';
+    };
+
+    window.tutupPopupBio = function(e) {
+        if (e.target.id === 'bio-popup-modal') {
+            document.getElementById('bio-popup-modal').style.display = 'none';
+        }
+    };
+
+    window.bukaModalVisiMisi = function() {
+        document.getElementById('modal-about-visimisi').style.display = 'flex';
+    };
+
+    window.tutupModalVisiMisi = function() {
+        document.getElementById('modal-about-visimisi').style.display = 'none';
+    };
+
+    window.tutupModalVisiMisiLuar = function(event) {
+        if (event.target.id === 'modal-about-visimisi') {
+            document.getElementById('modal-about-visimisi').style.display = 'none';
+        }
+    };
+
+    window.gantiKontenPopupTab = function(tabId) {
+        document.querySelectorAll('.popup-text-content-pane').forEach(p => p.style.display = 'none');
+        document.querySelectorAll('.popup-tab-btn').forEach(b => b.classList.remove('active'));
+        
+        document.getElementById('pane-popup-' + tabId).style.display = 'block';
+        document.getElementById('tab-btn-' + tabId).classList.add('active');
+    };
 
     const btnWarningOk = document.getElementById('btn-warning-ok');
     if (btnWarningOk) {
@@ -2211,7 +4464,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const isPortrait = window.innerHeight > window.innerWidth;
             if (isPortrait) {
                 if (window.innerWidth < 900) {
-                    alert("⚠️ Layar Anda masih terlalu tegak! Mohon miringkan HP Anda menjadi posisi tidur (Landscape) terlebih dadaulu agar data spasial tampil optimal.");
+                    window.tampilkanNotifikasiGeo("⚠️ Posisi layar salah! Mohon miringkan HP Anda menjadi posisi tidur (Landscape) terlebih dahulu.", "warning");
                 } else {
                     isOverlayBypassed = true;
                     document.getElementById('mobile-warning-overlay').style.display = 'none';
@@ -2236,65 +4489,230 @@ document.addEventListener("DOMContentLoaded", function() {
         closePanel.onclick = () => { 
             document.getElementById('side-panel-info').style.display = 'none'; 
             highlightSource.clear(); 
+            
+            if (typeof pinSource !== 'undefined') pinSource.clear();
+            teksLokasiKlikTerakhir = ""; 
         };
     }
 
-    // Fungsi Khusus untuk Membuka Layar Panduan Tanpa Intervensi Tab Lain
     window.bukaLayarPanduan = function() {
         const semuaTab = document.querySelectorAll('.sub-page-content');
-        semuaTab.forEach(tab => {
-            tab.style.display = 'none';
-        });
+        semuaTab.forEach(tab => { tab.style.display = 'none'; });
 
         const semuaMenuNav = document.querySelectorAll('.nav-menu-item');
-        semuaMenuNav.forEach(menu => {
-            menu.classList.remove('active');
-        });
+        semuaMenuNav.forEach(menu => { menu.classList.remove('active'); });
 
         const layarPanduan = document.getElementById('tab-panduan');
-        if (layarPanduan) {
-            layarPanduan.style.display = 'block';
-        }
+        if (layarPanduan) { layarPanduan.style.display = 'block'; }
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // Fungsi interaktif untuk berpindah sub-penjelasan di halaman Panduan Fitur
     window.tampilPanduan = function(fiturId, elemenMenu) {
         const semuaKonten = document.querySelectorAll('.panduan-text-content');
-        semuaKonten.forEach(konten => {
-            konten.style.display = 'none';
-        });
+        semuaKonten.forEach(konten => { konten.style.display = 'none'; });
 
         const kontenTarget = document.getElementById('panduan-' + fiturId);
-        if (kontenTarget) {
-            kontenTarget.style.display = 'block';
-        }
+        if (kontenTarget) { kontenTarget.style.display = 'block'; }
 
         const semuaMenu = document.querySelectorAll('.panduan-menu-item');
-        semuaMenu.forEach(menu => {
-            menu.classList.remove('active');
-        });
+        semuaMenu.forEach(menu => { menu.classList.remove('active'); });
 
         elemenMenu.classList.add('active');
     };
 
-// =========================================================================
-    // VISUALISASI DIAGRAM GOOGLE CHARTS INTERAKTIF (REVISI LAYOUT & TEKS)
+    window.addEventListener('resize', function() {
+        if (typeof drawPertanahanCharts === 'function') {
+            setTimeout(drawPertanahanCharts, 100); 
+        }
+    });
+
     // =========================================================================
-    google.charts.load('current', {'packages':['corechart', 'bar']});
-    
-    // PERBAIKAN: Menggunakan window load untuk memastikan CSS & elemen HTML selesai dirender sempurna sebelum digambar
+    // ADVANCED DATA INPUT ENGINE: SMART CORE KML & KMZ FILE READER (.KML & .KMZ)
     // =========================================================================
-    // VISUALISASI DIAGRAM GOOGLE CHARTS INTERAKTIF (KUNCI TIMING AKSES TOMBOL)
+    function inisialisasiAlatFileSpasialUser() {
+        const fileInput = document.getElementById('upload-kml-file');
+        if (!fileInput) return;
+
+        fileInput.onchange = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            window.tampilkanNotifikasiGeo("Membaca dan memuat format spasial...", "info");
+            
+            if (file.name.toLowerCase().endsWith('.kmz')) {
+                JSZip.loadAsync(file).then(function(zip) {
+                    const kmlFile = Object.keys(zip.files).find(fileName => fileName.toLowerCase().endsWith('.kml'));
+                    if (kmlFile) return zip.files[kmlFile].async("string");
+                    throw new Error("Dokumen KML tidak ditemukan didalam KMZ");
+                }).then(function(kmlText) {
+                    renderTextDataSpasialKeMap(kmlText, file.name);
+                }).catch(function(err) {
+                    window.tampilkanNotifikasiGeo("Gagal mengekstrak KMZ: " + err.message, "gagal");
+                });
+            } else {
+                const reader = new FileReader();
+                reader.onload = function(evt) { renderTextDataSpasialKeMap(evt.target.result, file.name); };
+                reader.readAsText(file);
+            }
+        };
+    }
+
+    function renderTextDataSpasialKeMap(textString, filename) {
+        try {
+            // extractStyles: true agar warna dari Google Earth Pro terbawa
+            const features = new ol.format.KML({ extractStyles: true }).readFeatures(textString, {
+                dataProjection: 'EPSG:4326', featureProjection: map.getView().getProjection().getCode()
+            });
+            
+            // Buat Layer Baru dan langsung masukkan ke Kontrol Layer paling atas
+            let layerId = 'kml_' + new Date().getTime();
+            let newVectorLayer = new ol.layer.Vector({ 
+                source: new ol.source.Vector({features: features}), 
+                zIndex: 100 
+            });
+            
+            map.addLayer(newVectorLayer);
+            layerMapping.push({ id: layerId, layer: newVectorLayer, title: filename });
+            chosenLayers.unshift(layerId); // Masukkan ke urutan teratas kontrol layer
+            updateLayerControlUI(); // Refresh UI Layer
+            syncLayerZIndex(); // Sinkronisasi urutan
+            
+            if (features.length > 0) {
+                map.getView().fit(newVectorLayer.getSource().getExtent(), { padding: [50, 50, 50, 50], duration: 1000 });
+                window.tampilkanNotifikasiGeo(`Berhasil memuat ${features.length} objek spasial dari file ${filename}!`, "sukses");
+            }
+        } catch (err) {
+            window.tampilkanNotifikasiGeo("Struktur format berkas KML/KMZ tidak valid!", "gagal");
+        }
+    }
+
+    window.mulaiDigitasiManualKml = function() {
+        const btn = document.getElementById('btn-draw-manual');
+        if (btn.classList.contains('active')) {
+            window.nonaktifkanAlatLain();
+        } else {
+            window.nonaktifkanAlatLain();
+            window.isDigitizing = true;
+            if(!map.getLayers().getArray().includes(userKmlLayer)) map.addLayer(userKmlLayer);
+            drawKmlInteraction = new ol.interaction.Draw({ source: userKmlSource, type: 'Polygon' });
+            
+            // Otomatis matikan alat sesaat setelah bentuk digambar (sehingga bisa langsung di-klik)
+            drawKmlInteraction.on('drawend', function(e) {
+                const feature = e.feature;
+                feature.setId('dig_' + new Date().getTime());
+                setTimeout(() => {
+                    window.nonaktifkanAlatLain();
+                    window.tampilkanNotifikasiGeo("Digitasi selesai! Arahkan kursor dan klik pada area untuk menyimpan / menghapus.", "sukses");
+                }, 150);
+            });
+
+            map.addInteraction(drawKmlInteraction);
+            btn.classList.add('active');
+            btn.style.background = '#ffeaa7';
+            window.tampilkanNotifikasiGeo("Mode Digitasi Aktif! Klik pada peta untuk mulai menggambar area.", "info");
+        }
+    };
+
+    window.downloadFiturBidangTerpilih = function() {
+        // Download Garis Merah (highlightSource) sebagai KML
+        const features = highlightSource.getFeatures();
+        if (features.length === 0) {
+            window.tampilkanNotifikasiGeo("Klik objek bidang tanah di peta terlebih dahulu untuk mendownload poligonnya!", "gagal");
+            return;
+        }
+        
+        const kmlString = new ol.format.KML().writeFeatures(features, {
+            dataProjection: 'EPSG:4326', featureProjection: map.getView().getProjection().getCode()
+        });
+        
+        const blob = new Blob([kmlString], { type: 'application/vnd.google-earth.kml+xml' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'Batas_Geometri_Koreksi_Admin.kml';
+        a.click(); URL.revokeObjectURL(url);
+        
+        window.tampilkanNotifikasiGeo("Berkas spasial (KML) bidang tanah berhasil diunduh!", "sukses");
+    };
+
+// FUNGSI HAPUS KML UNGGAHAN (Poin 2)
+    window.hapusKmlUnggahan = function() {
+        const kmlLayers = layerMapping.filter(l => l.id.startsWith('kml_'));
+        kmlLayers.forEach(item => {
+            map.removeLayer(item.layer);
+            window.removeLayer(item.id);
+        });
+        
+        // Membersihkan nama file kml di form input
+        const fileInput = document.getElementById('upload-kml-file');
+        if (fileInput) fileInput.value = "";
+        
+        window.tampilkanNotifikasiGeo("Semua data KML/KMZ unggahan berhasil dihapus.", "sukses");
+    };
+
+    // FUNGSI DOWNLOAD POP-UP DIGITASI (Poin 3)
+    window.downloadHasilDigitasi = function() {
+        const id = document.getElementById('hidden-digitasi-id').value;
+        const feature = userKmlSource.getFeatureById(id);
+        const namaLahan = document.getElementById('input-nama-digitasi').value || 'Area_Baru';
+        if (feature) {
+            const kmlString = new ol.format.KML().writeFeatures([feature], {
+                dataProjection: 'EPSG:4326', featureProjection: map.getView().getProjection().getCode()
+            });
+            const blob = new Blob([kmlString], { type: 'application/vnd.google-earth.kml+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = namaLahan + '.kml';
+            a.click(); URL.revokeObjectURL(url);
+            window.tampilkanNotifikasiGeo("File KML hasil digitasi sukses diunduh!", "sukses");
+        }
+        document.getElementById('modal-save-digitasi').style.display = 'none';
+    };
+
+    // FUNGSI HAPUS AREA DIGITASI (Poin 3)
+    window.hapusHasilDigitasi = function() {
+        const id = document.getElementById('hidden-digitasi-id').value;
+        const feature = userKmlSource.getFeatureById(id);
+        if (feature) {
+            userKmlSource.removeFeature(feature);
+            window.tampilkanNotifikasiGeo("Area digitasi berhasil dihapus dari peta.", "info");
+        }
+        document.getElementById('modal-save-digitasi').style.display = 'none';
+    };
+
+    // FUNGSI TOGGLE LIHAT PASSWORD (Poin 5)
+    window.togglePassword = function(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = "password";
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    };
+
+    // =========================================================================
+    // VISUALISASI DIAGRAM GOOGLE CHARTS INTERAKTIF (INFORMASI PERTANAHAN)
     // =========================================================================
     // Memuat library Google Charts di awal secara pasif
-    google.charts.load('current', {'packages':['corechart', 'bar']});
+    if (typeof google !== 'undefined') {
+        google.charts.load('current', {'packages':['corechart', 'bar']});
+    }
 
-    function drawPertanahanCharts() {
+    window.drawPertanahanCharts = function() {
+        if (typeof google === 'undefined' || !google.visualization) return;
         
+        // Membuat formatter angka otomatis untuk mengubah koma menjadi titik (format Indonesia) tanpa desimal
+        var formatterAngka = new google.visualization.NumberFormat({
+            groupingSymbol: '.',
+            decimalSymbol: ',',
+            fractionDigits: 0
+        });
+
         // -------------------------------------------------------------------------
-        // GAMBAR 1: DIAGRAM BATANG TEGAK (COLUMN CHART) - INTERAKSI DIKUNCI
+        // GAMBAR 1: DIAGRAM BATANG TEGAK (COLUMN CHART)
         // -------------------------------------------------------------------------
         var dataJumlahVertikal = google.visualization.arrayToDataTable([
             ['Status Hak', 'Jumlah Bidang', { role: 'style' }, { role: 'annotation' }],
@@ -2304,6 +4722,9 @@ document.addEventListener("DOMContentLoaded", function() {
             ['Hak Guna Bangunan', 94, 'color: #38ada9; stroke-color: #079992; stroke-width: 1', '94'],
             ['Hak Wakaf', 22, 'color: #a29bfe; stroke-color: #786fa6; stroke-width: 1', '22']
         ]);
+        
+        // Terapkan formatter ke kolom 'Jumlah Bidang' (kolom indeks 1)
+        formatterAngka.format(dataJumlahVertikal, 1);
 
         var optionsJumlahVertikal = {
             chartArea: { width: '92%', height: '70%', top: 30, bottom: 40 },
@@ -2312,7 +4733,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 title: 'Kuantitas / Jumlah Elemen Bidang',
                 titleTextStyle: { fontSize: 11, color: '#555', fontName: 'Montserrat', italic: false },
                 gridlines: { color: '#f5f5f5' },
-                textStyle: { fontSize: 10, fontName: 'Montserrat' }
+                textStyle: { fontSize: 10, fontName: 'Montserrat' },
+                format: '#,###' // Mengunci format angka sumbu vertikal agar pakai titik dan tanpa desimal
             },
             hAxis: {
                 textStyle: { fontSize: 11, fontWeight: 'bold', fontName: 'Montserrat', color: '#2c3e50' }
@@ -2322,23 +4744,27 @@ document.addEventListener("DOMContentLoaded", function() {
                 textStyle: { fontSize: 11, fontWeight: 'bold', fontName: 'Montserrat', color: '#1e3799' }
             },
             bar: { groupWidth: '50%' },
-            // SUNTIKAN BARU: Mematikan animasi seleksi/klik pada batang
             tooltip: { trigger: 'focus' }, 
             enableInteractions: true
         };
 
-        var chartJumlah = new google.visualization.ColumnChart(document.getElementById('chart_jumlah_bidang_vertikal'));
-        chartJumlah.draw(dataJumlahVertikal, optionsJumlahVertikal);
-
+        var chartJumlahContainer = document.getElementById('chart_jumlah_bidang_vertikal');
+        if (chartJumlahContainer) {
+            var chartJumlah = new google.visualization.ColumnChart(chartJumlahContainer);
+            chartJumlah.draw(dataJumlahVertikal, optionsJumlahVertikal);
+        }
 
         // -------------------------------------------------------------------------
-        // GAMBAR 2: PIE CHART (HAPUS EFEK PANAH KELUAR SAAT DIKLIK)
+        // GAMBAR 2: PIE CHART
         // -------------------------------------------------------------------------
         var dataProporsi = google.visualization.arrayToDataTable([
             ['Status Registrasi', 'Jumlah Bidang'],
             ['Terdaftar (Sertifikat Hak)', 23708],
             ['Belum Terdaftar (Data Kosong)', 2602]
         ]);
+        
+        // Terapkan formatter ke kolom angka Pie Chart agar saat di-hover angkanya berformat titik
+        formatterAngka.format(dataProporsi, 1);
 
         var optionsProporsi = {
             chartArea: { width: '90%', height: '70%', top: 10, bottom: 40 },
@@ -2350,28 +4776,22 @@ document.addEventListener("DOMContentLoaded", function() {
             },
             pieHole: 0.4, 
             pieSliceTextStyle: { fontSize: 12, fontWeight: '700', fontName: 'Montserrat' },
-            // PERBAIKAN: Set offset tetap 0 agar potongan TIDAK BISA meluncur keluar saat diklik
             slices: {
                 0: { offset: 0.0 },
                 1: { offset: 0.0 }
             },
-            // Tetap memunculkan pop-up angka/persentase data biasa saat disentuh
             tooltip: { showColorCode: true, text: 'both', trigger: 'focus', textStyle: { fontSize: 11, fontName: 'Montserrat' } }
         };
 
-        var chartPie = new google.visualization.PieChart(document.getElementById('chart_proporsi_tanah'));
-        
-        /* PERBAIKAN UTAMA: 
-           Seluruh baris kode 'google.visualization.events.addListener(chartPie, 'select', ...)' 
-           yang kemarin bertugas menggerakkan potongan diagram keluar sekarang TELAH DIHAPUS TOTAL.
-        */
-        chartPie.draw(dataProporsi, optionsProporsi);
+        var chartPieContainer = document.getElementById('chart_proporsi_tanah');
+        if (chartPieContainer) {
+            var chartPie = new google.visualization.PieChart(chartPieContainer);
+            chartPie.draw(dataProporsi, optionsProporsi);
+        }
 
-
-       // -------------------------------------------------------------------------
-        // GAMBAR 3: DIAGRAM MENYAMPING (BAR CHART) - UPDATE DATA PERSENTASE (%)
         // -------------------------------------------------------------------------
-        // Mengubah judul kolom menjadi 'Persentase (%)' dan memasukkan data tabel Anda
+        // GAMBAR 3: DIAGRAM MENYAMPING (BAR CHART) - PERSENTASE
+        // -------------------------------------------------------------------------
         var dataHakLuas = google.visualization.arrayToDataTable([
             ['Status Hak', 'Persentase (%)', { role: 'style' }, { role: 'annotation' }],
             ['Hak Milik', 74.08, 'color: #1e3799', '74.08%'],
@@ -2382,18 +4802,16 @@ document.addEventListener("DOMContentLoaded", function() {
         ]);
 
         var optionsHakLuas = {
-            // Tetap mempertahankan setelan left: 130 agar nama hak di kiri tidak terpotong
             chartArea: { width: '60%', height: '80%', left: 130, top: 15, right: 40 },
             legend: { position: 'none' },
             hAxis: {
-                // Diubah judul sumbunya menjadi Persentase
                 title: 'Persentase Luas Wilayah (%)',
                 titleTextStyle: { fontSize: 10, color: '#7f8c8d', fontName: 'Montserrat', italic: false },
                 textStyle: { fontSize: 9, fontName: 'Montserrat' },
                 gridlines: { color: '#f5f5f5' },
-                // Mengunci batas maksimal sumbu X di angka 100% agar skala diagram proporsional
                 minValue: 0,
-                maxValue: 100
+                maxValue: 100,
+                format: '#\'%\'' // Menghilangkan desimal desimal pasca angka bulat persen di Sumbu X (contoh: 20%)
             },
             vAxis: {
                 textStyle: { fontSize: 10, fontWeight: 'bold', fontName: 'Montserrat', color: '#2c3e50' }
@@ -2406,26 +4824,77 @@ document.addEventListener("DOMContentLoaded", function() {
             tooltip: { trigger: 'focus' }
         };
 
-        var chartBarHorizontal = new google.visualization.BarChart(document.getElementById('chart_persentase_hak'));
-        chartBarHorizontal.draw(dataHakLuas, optionsHakLuas);
+        var chartBarHorizontalContainer = document.getElementById('chart_persentase_hak');
+        if (chartBarHorizontalContainer) {
+            var chartBarHorizontal = new google.visualization.BarChart(chartBarHorizontalContainer);
+            chartBarHorizontal.draw(dataHakLuas, optionsHakLuas);
+        }
+    };
+
+    // ==========================================================================
+    // LOGIKA PWA ENGINE: MEMUNCULKAN POP-UP DOWNLOAD APLIKASI SECARA AMAN
+    // ==========================================================================
+    let deferredPrompt;
+    const pwaModal = document.getElementById('pwa-install-modal');
+    const btnPwaInstall = document.getElementById('btn-pwa-install');
+    const btnPwaCancel = document.getElementById('btn-pwa-cancel');
+
+    // 1. Registrasi Service Worker ke Browser
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+            .then(() => console.log("PWA Service Worker Aman Terverifikasi."))
+            .catch((err) => console.log("SW Error:", err));
     }
 
-    // =========================================================================
-    // SUNTIKAN BARU: LOGIKA AUTO-RESIZE DIAGRAM UNTUK HP LANDSCAPE & DESKTOP
-    // =========================================================================
-    // Fungsi ini memaksa Google Charts menggambar ulang dirinya mengikuti ukuran boks baru
-    window.addEventListener('resize', function() {
-        // Cek apakah fungsi drawPertanahanCharts tersedia, lalu panggil ulang secara berkala
-        if (typeof drawPertanahanCharts === 'function') {
-            // Berikan jeda waktu 100ms agar CSS media queries landscape selesai merender layout boks terlebih dahulu
-            setTimeout(drawPertanahanCharts, 100); 
+    // 2. Tangkap sinyal bawaan browser jika web ini bisa di-download
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // Cegah browser memunculkan bar instalasi bawaannya yang kaku
+        e.preventDefault();
+        // Simpan event ke variabel
+        deferredPrompt = e;
+        
+        // Cek jika user belum pernah mengklik "Nanti Saja" di sesi ini, munculkan pop-up custom Anda
+        if (sessionStorage.getItem('pwa_prompt_dismissed') !== 'true') {
+            if (pwaModal) pwaModal.style.display = 'block';
         }
     });
 
-    // Jalankan render antarmuka management layer utama.
+    // 3. Aksi ketika tombol "Pasang" di-klik
+    if (btnPwaInstall) {
+        btnPwaInstall.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            
+            // Munculkan prompt instalasi resmi sistem operasi (Android/Windows/iOS)
+            deferredPrompt.prompt();
+            
+            // Tunggu respons pilihan dari pengguna
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response to install prompt: ${outcome}`);
+            
+            // Sembunyikan pop-up custom kembali
+            if (pwaModal) pwaModal.style.display = 'none';
+            deferredPrompt = null;
+        });
+    }
+
+    // 4. Aksi ketika tombol "Nanti Saja" di-klik
+    if (btnPwaCancel) {
+        btnPwaCancel.addEventListener('click', () => {
+            if (pwaModal) pwaModal.style.display = 'none';
+            // Simpan pilihan di session agar tidak mengganggu terus selama web belum di-reload baru
+            sessionStorage.setItem('pwa_prompt_dismissed', 'true');
+        });
+    }
+
+    // 5. Jika aplikasi sukses terpasang, sembunyikan pop-up permanen
+    window.addEventListener('appinstalled', () => {
+        if (pwaModal) pwaModal.style.display = 'none';
+        deferredPrompt = null;
+        window.tampilkanNotifikasiGeo("GeoPTRP Berhasil Memasang Aplikasi di Beranda Anda!", "sukses");
+    });
+
     updateLayerControlUI();
 });
-
 </script>
 </body>
 </html>
