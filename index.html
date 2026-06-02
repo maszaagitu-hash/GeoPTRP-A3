@@ -2244,21 +2244,48 @@ html, body {
     #instansi-toolsetbox { bottom: 48px !important; right: 0 !important; width: 220px !important; padding: 10px !important; }
     #admin-toolsetbox { bottom: 48px !important; right: 0 !important; width: 220px !important; padding: 10px !important; z-index: 1004 !important; }
 
+    /* FIX: Memaksa widget koordinat tetap muncul presisi dan stabil saat bidang diklik di HP biasa landscape */
     .mouse-position {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
         bottom: 20px !important; left: 50% !important; transform: translateX(-50%) !important;
         padding: 5px 15px !important; font-size: 10px !important; min-width: 200px !important;
-        display: flex !important; flex-direction: column !important; align-items: center !important;
+        flex-direction: column !important; align-items: center !important;
     }
-}
+
+    /* FIX: Mengunci struktur search floating agar tombol silang tidak terdepak keluar bar */
+    .search-container-floating {
+        width: 240px !important;
+        top: 8px !important;
+        left: 8px !important;
+        padding: 4px 6px !important;
+        align-items: center !important;
+    }
+    #search-input { padding: 5px !important; font-size: 10px !important; }
+    #btn-search-coord, #btn-clear-search { padding: 4px 8px !important; font-size: 10px !important; height: 28px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; 
+    }
+
 
 /* ==========================================================================
    SUNTIKAN PERBAIKAN: KHUSUS HP MODE DESKTOP POTRAIT
    ========================================================================== */
 @media screen and (max-width: 1025px) and (orientation: portrait) {
+    /* Laptop Aman: Pernyataan disclaimer dibiarkan normal bawaan laptop asli jika diakses lewat mode desktop */
+    .disclaimer-box { 
+        max-width: 600px !important; 
+        width: 90% !important; 
+        max-height: none !important; 
+    }
+
+    /* Membersihkan / Menghapus total tombol Zoom to Ceper */
+    .btn-zoom { display: none !important; }
+
     /* Perbaikan Dosen Pengampu agar pas ditengah dan mengecil rapi */
     .lecturer-profile-grid {
         display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important; /* Diubah jadi 2 kolom di portrait desktop agar muat */
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 15px !important;
         padding: 0 4% !important;
         width: 100% !important;
@@ -2270,35 +2297,33 @@ html, body {
         padding: 15px 10px !important;
     }
     .lecturer-name {
-        white-space: normal !important; /* Izinkan teks nama turun ke bawah agar tidak mulur menyamping */
+        white-space: normal !important;
         font-size: 12px !important;
     }
 
-    /* Perbaikan Letak Koordinat Peta agar Naik dan Kelihatan Jelas */
-    .mouse-position {
-        bottom: 85px !important; /* Dinaikkan keatas agar tidak tenggelam di bawah navigasi / sistem browser HP */
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        z-index: 9999 !important;
-        min-width: 240px !important;
-        padding: 8px 15px !important;
-        font-size: 11px !important;
-    }
-}
-
-/* Perbaikan Menaikkan layout peta bawah, 3 tombol utama, koordinat, dashboard & alat di situs desktop portrait */
+    /* FIX AGAR NAIK: Menaikkan Koordinat Kursor, Tombol Alat, Dashboard agar tidak kepotong sistem browser HP */
     .floating-bottom-right { 
-        bottom: 85px !important; 
+        bottom: 140px !important; 
         right: 15px !important; 
         z-index: 9999 !important;
     }
+    .mouse-position {
+        bottom: 140px !important; 
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        z-index: 9999 !important;
+        min-width: 250px !important;
+        padding: 8px 15px !important;
+        font-size: 11px !important;
+    }
     .measure-options { 
-        bottom: 135px !important; 
+        bottom: 195px !important; 
     }
     #instansi-toolsetbox, #admin-toolsetbox {
-        bottom: 135px !important;
+        bottom: 195px !important;
         z-index: 10005 !important;
     }
+}
 
 /* ==========================================================================
    SUNTIKAN PERBAIKAN: KHUSUS HP MODE DESKTOP LANDSCAPE
@@ -2326,58 +2351,50 @@ html, body {
         padding: 20px !important;
         max-height: calc(100vh - 60px) !important;
     }
-}
 
-/* Perbaikan peta agar tidak kebesaran/terpotong layar bawah */
-    #map { 
-        height: calc(100vh - 90px) !important; 
-    }
+    /* FIX: Tinggi peta disesuaikan dan diposisikan aman */
+    #map { height: calc(100vh - 90px) !important; }
     
-    /* Paksa Kontrol Peta Bawah (Dashboard, Alat Ukur, Koordinat) naik menyesuaikan batas layar */
-    .floating-bottom-right { 
-        bottom: 15px !important; 
-        right: 15px !important; 
-        flex-direction: row !important;
-        gap: 8px !important;
-    }
-    #btn-measure-tools, #btn-toggle-user-tools {
-        width: 38px !important;
-        height: 38px !important;
-        font-size: 13px !important;
-    }
-    #btn-home {
-        height: 38px !important;
-        padding: 0 12px !important;
-        font-size: 10px !important;
-    }
-    .measure-options { 
-        bottom: 44px !important; 
-        width: 130px !important;
-    }
-    #instansi-toolsetbox, #admin-toolsetbox {
-        bottom: 44px !important;
-        width: 220px !important;
-    }
-    
-    .mouse-position {
-        bottom: 15px !important;
+    /* FIX: Menghalau bug OpenLayers di HP agar widget koordinat `.mouse-position` dipaksa selalu muncul dan aktif baik saat digeser maupun diklik bidang */
+    .mouse-position { 
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        bottom: 60px !important; /* Dinaikkan agar melayang aman */
         left: 50% !important;
         transform: translateX(-50%) !important;
-        padding: 4px 10px !important;
-        font-size: 9.5px !important;
-        min-width: 180px !important;
+        padding: 6px 12px !important;
+        font-size: 10px !important;
+        min-width: 220px !important;
     }
 
-    /* Memaksa Pop-up Pernyataan (Disclaimer) mengecil di mode desktop landscape HP */
-    .disclaimer-box {
-        max-width: 480px !important;
-        max-height: 88vh !important;
-        padding: 15px !important;
+    /* FIX: Menaikkan tombol alat dan dashboard agar tidak terlalu bawah */
+    .floating-bottom-right { 
+        bottom: 60px !important; 
+        right: 20px !important; 
+        flex-direction: row !important;
+        gap: 10px !important;
+        z-index: 1002 !important;
     }
-    .disclaimer-text {
-        max-height: 100px !important;
-        font-size: 11px !important;
+    #btn-measure-tools, #btn-toggle-user-tools { width: 42px !important; height: 42px !important; font-size: 14px !important; }
+    #btn-home { height: 42px !important; padding: 0 15px !important; font-size: 11px !important; }
+    .measure-options { bottom: 50px !important; width: 140px !important; }
+    #instansi-toolsetbox, #admin-toolsetbox { bottom: 50px !important; right: 0 !important; }
+
+    /* FIX: Mengunci tombol silang (`#btn-clear-search`) agar tetap berada di dalam bar search, tidak keluar bingkai */
+    .search-container-floating {
+        width: 280px !important;
+        align-items: center !important;
+        padding: 6px 10px !important;
     }
+    #search-input { padding: 6px !important; font-size: 11px !important; }
+    #btn-search-coord, #btn-clear-search { padding: 6px 10px !important; font-size: 11px !important; height: 32px !important; display: flex !important; align-items: center !important; justify-content: center !important; }
+
+    /* Memaksa Pop-up Pernyataan (Disclaimer) mengecil secara aman */
+    .disclaimer-box { max-width: 480px !important; max-height: 85vh !important; padding: 15px !important; }
+    .disclaimer-text { max-height: 90px !important; font-size: 11px !important; }
+}
 
 </style>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
