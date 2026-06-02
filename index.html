@@ -2235,24 +2235,33 @@ html, body {
     .map-floating-banner { font-size: 8px !important; padding: 4px 8px !important; bottom: 15px !important; }
 
     /* 10. JELAJAHI GEOPTRP (ALAT UKUR, DASHBOARD, DAN KOORDINAT JURUS KURSOR) */
-    .floating-bottom-right { bottom: 20px !important; right: 15px !important; gap: 10px !important; flex-direction: row !important; }
-    #btn-measure-tools, #btn-toggle-user-tools { width: 40px !important; height: 40px !important; font-size: 14px !important; }
-    #btn-home { height: 40px !important; padding: 0 15px !important; font-size: 11px !important; border-radius: 20px !important; }
-    .measure-options { bottom: 48px !important; width: 130px !important; }
+    /* FIX: Menaikkan tombol agar melayang aman dari sistem navigasi HP biasa landscape */
+    .floating-bottom-right { bottom: 45px !important; right: 15px !important; gap: 8px !important; flex-direction: row !important; }
+    #btn-measure-tools, #btn-toggle-user-tools { width: 38px !important; height: 38px !important; font-size: 13px !important; }
+    #btn-home { height: 38px !important; padding: 0 12px !important; font-size: 10px !important; border-radius: 20px !important; }
+    .measure-options { bottom: 88px !important; width: 130px !important; }
     .measure-options button { padding: 8px !important; font-size: 10px !important; }
     
-    #instansi-toolsetbox { bottom: 48px !important; right: 0 !important; width: 220px !important; padding: 10px !important; }
-    #admin-toolsetbox { bottom: 48px !important; right: 0 !important; width: 220px !important; padding: 10px !important; z-index: 1004 !important; }
+    #instansi-toolsetbox { bottom: 88px !important; right: 0 !important; width: 220px !important; padding: 10px !important; }
+    #admin-toolsetbox { bottom: 88px !important; right: 0 !important; width: 220px !important; padding: 10px !important; z-index: 1004 !important; }
 
-    /* FIX: Memaksa widget koordinat tetap muncul presisi dan stabil saat bidang diklik di HP biasa landscape */
-    .mouse-position {
+    /* FIX KUNCI: Memaksa widget koordinat tetap dipaksa muncul murni baik saat overlay atribut bidang terbuka ataupun tertutup di HP */
+    .mouse-position, 
+    #map .ol-overlaycontainer-stopevent .mouse-position {
         display: flex !important;
         visibility: visible !important;
         opacity: 1 !important;
         pointer-events: auto !important;
-        bottom: 20px !important; left: 50% !important; transform: translateX(-50%) !important;
-        padding: 5px 15px !important; font-size: 10px !important; min-width: 200px !important;
-        flex-direction: column !important; align-items: center !important;
+        position: absolute !important;
+        bottom: 45px !important; 
+        left: 50% !important; 
+        transform: translateX(-50%) !important;
+        padding: 5px 15px !important; 
+        font-size: 10px !important; 
+        min-width: 200px !important;
+        flex-direction: column !important; 
+        align-items: center !important;
+        z-index: 9999 !important;
     }
 
     /* FIX: Mengunci struktur search floating agar tombol silang tidak terdepak keluar bar */
@@ -2264,8 +2273,8 @@ html, body {
         align-items: center !important;
     }
     #search-input { padding: 5px !important; font-size: 10px !important; }
-    #btn-search-coord, #btn-clear-search { padding: 4px 8px !important; font-size: 10px !important; height: 28px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; 
-    }
+    #btn-search-coord, #btn-clear-search { padding: 4px 8px !important; font-size: 10px !important; height: 28px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; }
+} /* <-- Batas penutup mutlak untuk media query landscape agar tidak bocor */
 
 
 /* ==========================================================================
@@ -2279,48 +2288,59 @@ html, body {
         max-height: none !important; 
     }
 
-    /* Membersihkan / Menghapus total tombol Zoom to Ceper */
-    .btn-zoom { display: none !important; }
+    /* Membersihkan / Menghapus total tombol Zoom to Ceper dan tombol Hapus Layer Utama di sidebar */
+    .btn-zoom, .btn-delete { display: none !important; }
 
-    /* Perbaikan Dosen Pengampu agar pas ditengah dan mengecil rapi */
+    /* FIX: Memaksa Grid Dosen diperkecil masif dan disamaratakan sejajar tegak lurus 4 kolom horizontal */
     .lecturer-profile-grid {
         display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 15px !important;
-        padding: 0 4% !important;
+        grid-template-columns: repeat(4, 1fr) !important; /* Dikunci paksa menjadi sejajar 4 dosen */
+        gap: 8px !important;
+        padding: 0 2% !important;
         width: 100% !important;
         box-sizing: border-box !important;
     }
     .lecturer-card {
         width: 100% !important;
         box-sizing: border-box !important;
-        padding: 15px 10px !important;
+        padding: 10px 5px !important;
+    }
+    .lecturer-avatar-box {
+        width: 65px !important;
+        height: 85px !important;
+        margin-bottom: 6px !important;
     }
     .lecturer-name {
-        white-space: normal !important;
-        font-size: 12px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        font-size: 8px !important;
     }
+    .lecturer-nip, .lecturer-title { font-size: 7px !important; }
 
-    /* FIX AGAR NAIK: Menaikkan Koordinat Kursor, Tombol Alat, Dashboard agar tidak kepotong sistem browser HP */
+    /* FIX AGAR NAIK SIGNIFIKAN: Menaikkan Koordinat Kursor, Tombol Alat, Dashboard agar bebas dari dock browser HP */
     .floating-bottom-right { 
-        bottom: 140px !important; 
+        bottom: 165px !important; 
         right: 15px !important; 
         z-index: 9999 !important;
     }
-    .mouse-position {
-        bottom: 140px !important; 
+    .mouse-position,
+    #map .ol-overlaycontainer-stopevent .mouse-position {
+        bottom: 165px !important; 
         left: 50% !important;
         transform: translateX(-50%) !important;
         z-index: 9999 !important;
         min-width: 250px !important;
         padding: 8px 15px !important;
         font-size: 11px !important;
+        position: absolute !important;
+        display: flex !important;
     }
     .measure-options { 
-        bottom: 195px !important; 
+        bottom: 220px !important; 
     }
     #instansi-toolsetbox, #admin-toolsetbox {
-        bottom: 195px !important;
+        bottom: 220px !important;
         z-index: 10005 !important;
     }
 }
@@ -2355,32 +2375,35 @@ html, body {
     /* FIX: Tinggi peta disesuaikan dan diposisikan aman */
     #map { height: calc(100vh - 90px) !important; }
     
-    /* FIX: Menghalau bug OpenLayers di HP agar widget koordinat `.mouse-position` dipaksa selalu muncul dan aktif baik saat digeser maupun diklik bidang */
-    .mouse-position { 
+    /* FIX NAIK RADIKAL: Menyelamatkan koordinat agar tidak amblas/hilang di bawah layar desktop landscape */
+    .mouse-position,
+    #map .ol-overlaycontainer-stopevent .mouse-position { 
         display: flex !important;
         visibility: visible !important;
         opacity: 1 !important;
         pointer-events: auto !important;
-        bottom: 60px !important; /* Dinaikkan agar melayang aman */
+        position: absolute !important;
+        bottom: 95px !important; /* Dinaikkan tinggi menjauhi margin bawah layar */
         left: 50% !important;
         transform: translateX(-50%) !important;
         padding: 6px 12px !important;
         font-size: 10px !important;
         min-width: 220px !important;
+        z-index: 9999 !important;
     }
 
-    /* FIX: Menaikkan tombol alat dan dashboard agar tidak terlalu bawah */
+    /* FIX NAIK RADIKAL: Menaikkan dashboard dan alat ukur agar terlihat jelas */
     .floating-bottom-right { 
-        bottom: 60px !important; 
+        bottom: 95px !important; 
         right: 20px !important; 
         flex-direction: row !important;
         gap: 10px !important;
-        z-index: 1002 !important;
+        z-index: 9999 !important;
     }
     #btn-measure-tools, #btn-toggle-user-tools { width: 42px !important; height: 42px !important; font-size: 14px !important; }
     #btn-home { height: 42px !important; padding: 0 15px !important; font-size: 11px !important; }
-    .measure-options { bottom: 50px !important; width: 140px !important; }
-    #instansi-toolsetbox, #admin-toolsetbox { bottom: 50px !important; right: 0 !important; }
+    .measure-options { bottom: 140px !important; width: 140px !important; }
+    #instansi-toolsetbox, #admin-toolsetbox { bottom: 140px !important; right: 0 !important; }
 
     /* FIX: Mengunci tombol silang (`#btn-clear-search`) agar tetap berada di dalam bar search, tidak keluar bingkai */
     .search-container-floating {
