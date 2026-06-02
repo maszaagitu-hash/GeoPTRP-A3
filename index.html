@@ -2053,6 +2053,11 @@ html, body {
    ========================================================================== */
 @media (max-width: 850px) or (max-height: 550px) {
     #header { height: 40px !important; }
+    /* Sisipkan di bawah #header agar ukuran menu navbar ikut mengecil proporsional */
+    .top-navbar { padding: 8px 20px !important; }
+    .logo-side img { height: 30px !important; }
+    .menu-side { gap: 10px !important; }
+    .menu-side a.nav-menu-item { font-size: 11px !important; padding: 4px 6px !important; }
     .logo-container { padding: 0 10px !important; }
     .logo-container img { height: 35px !important; width: auto !important; }
     .title-text h1 { font-size: 10px !important; }
@@ -2177,10 +2182,30 @@ html, body {
     .about-popup-body { padding: 12px 15px !important; }
     .popup-text-content-pane { max-height: 120px !important; font-size: 11px !important; }
     
-    #modal-geo-login > div { max-width: 380px !important; width: 95% !important; margin: auto !important; }
-    #modal-geo-login div[style*="padding: 30px"] { padding: 15px !important; max-height: calc(100vh - 70px) !important; }
-    .login-guide-box { padding: 8px !important; margin-bottom: 10px !important; }
-    #box-login-view div { margin-bottom: 8px !important; }
+    /* UPDATE FIX NOMOR 8: Pengecilan super aman Pop-up Login & Pernyataan Disclaimer agar tidak jebol layar landscape */
+    #modal-geo-login > div { max-width: 340px !important; width: 95% !important; margin: 5px auto !important; }
+    #modal-geo-login div[style*="padding: 30px"] { 
+        padding: 12px !important; 
+        max-height: 85vh !important; 
+        overflow-y: auto !important; 
+    }
+    #modal-geo-login input { padding: 6px !important; font-size: 11px !important; }
+    .login-guide-box { padding: 6px !important; margin-bottom: 6px !important; }
+    #box-login-view div { margin-bottom: 5px !important; }
+    #box-login-view button { padding: 8px !important; font-size: 12px !important; }
+
+    /* Perbaikan Pop-up Pernyataan (Disclaimer) */
+    .disclaimer-box { 
+        max-height: 90vh !important; 
+        padding: 15px !important; 
+        overflow-y: auto !important; 
+        width: 95% !important;
+    }
+    .disclaimer-title { font-size: 15px !important; margin-bottom: 8px !important; }
+    .disclaimer-text { max-height: 120px !important; font-size: 11px !important; padding: 10px !important; }
+    
+    /* Perbaikan Peta Terpotong di Mode Biasa Landscape */
+    #map { height: calc(100vh - 46px) !important; }
 
     /* 9. ANGGOTA, DOSEN, DAN KONTAK KAMI (SEPERTI LAPTOP SEJAJAR TAPI DIKECILKAN) */
     .about-profile-grid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 10px !important; }
@@ -2261,6 +2286,20 @@ html, body {
     }
 }
 
+/* Perbaikan Menaikkan layout peta bawah, 3 tombol utama, koordinat, dashboard & alat di situs desktop portrait */
+    .floating-bottom-right { 
+        bottom: 85px !important; 
+        right: 15px !important; 
+        z-index: 9999 !important;
+    }
+    .measure-options { 
+        bottom: 135px !important; 
+    }
+    #instansi-toolsetbox, #admin-toolsetbox {
+        bottom: 135px !important;
+        z-index: 10005 !important;
+    }
+
 /* ==========================================================================
    SUNTIKAN PERBAIKAN: KHUSUS HP MODE DESKTOP LANDSCAPE
    ========================================================================== */
@@ -2288,6 +2327,57 @@ html, body {
         max-height: calc(100vh - 60px) !important;
     }
 }
+
+/* Perbaikan peta agar tidak kebesaran/terpotong layar bawah */
+    #map { 
+        height: calc(100vh - 90px) !important; 
+    }
+    
+    /* Paksa Kontrol Peta Bawah (Dashboard, Alat Ukur, Koordinat) naik menyesuaikan batas layar */
+    .floating-bottom-right { 
+        bottom: 15px !important; 
+        right: 15px !important; 
+        flex-direction: row !important;
+        gap: 8px !important;
+    }
+    #btn-measure-tools, #btn-toggle-user-tools {
+        width: 38px !important;
+        height: 38px !important;
+        font-size: 13px !important;
+    }
+    #btn-home {
+        height: 38px !important;
+        padding: 0 12px !important;
+        font-size: 10px !important;
+    }
+    .measure-options { 
+        bottom: 44px !important; 
+        width: 130px !important;
+    }
+    #instansi-toolsetbox, #admin-toolsetbox {
+        bottom: 44px !important;
+        width: 220px !important;
+    }
+    
+    .mouse-position {
+        bottom: 15px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        padding: 4px 10px !important;
+        font-size: 9.5px !important;
+        min-width: 180px !important;
+    }
+
+    /* Memaksa Pop-up Pernyataan (Disclaimer) mengecil di mode desktop landscape HP */
+    .disclaimer-box {
+        max-width: 480px !important;
+        max-height: 88vh !important;
+        padding: 15px !important;
+    }
+    .disclaimer-text {
+        max-height: 100px !important;
+        font-size: 11px !important;
+    }
 
 </style>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
