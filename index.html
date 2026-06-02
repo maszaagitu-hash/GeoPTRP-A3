@@ -2100,34 +2100,21 @@ html, body {
 }
 
 /* ==========================================================================
-   FIX MUTLAK: OPTIMASI RESPONSIVE TOTAL UNTUK LAYAR HP LANDSCAPE
+   FIX MUTLAK: OPTIMASI RESPONSIVE TOTAL UNTUK LAYAR HP LANDSCAPE (MODE BIASA & DESKTOP)
    ========================================================================== */
-@media screen and (max-width: 950px) and (orientation: landscape) {
+@media screen and (max-width: 1024px) and (orientation: landscape) {
     
     /* 1. Mencegah Kebocoran Padding Halaman Utama */
-    #tab-info {
-        padding: 15px 3% !important; 
-    }
+    #tab-info { padding: 15px 3% !important; }
 
-    /* 2. OPTIMASI PANEL MAPS & STATISTIK (TETAP SEJAJAR KIRI-KANAN) */
+    /* 2. OPTIMASI PANEL MAPS & STATISTIK */
     .ceper-highlight-container {
-        display: flex !important;
-        flex-direction: row !important; 
-        gap: 15px !important; 
-        padding: 12px !important; 
-        margin-bottom: 20px !important;
-        align-items: stretch !important;
+        display: flex !important; flex-direction: row !important; 
+        gap: 15px !important; padding: 12px !important; 
+        margin-bottom: 20px !important; align-items: stretch !important;
     }
-    .ceper-map-frame {
-        flex: 1 !important; 
-        min-height: 150px !important; 
-        height: 150px !important;
-    }
-    .ceper-info-stats {
-        flex: 1 !important;
-        justify-content: center !important;
-        padding-top: 0 !important;
-    }
+    .ceper-map-frame { flex: 1 !important; min-height: 140px !important; height: 140px !important; }
+    .ceper-info-stats { flex: 1 !important; justify-content: center !important; padding-top: 0 !important; }
     .ceper-info-stats h2 { font-size: 18px !important; margin-bottom: 1px !important; }
     .ceper-info-stats .sub-district { font-size: 10px !important; margin-bottom: 8px !important; }
     .stat-panel-box { gap: 8px !important; }
@@ -2135,121 +2122,173 @@ html, body {
     .stat-card-number { font-size: 13px !important; }
     .stat-card-title, .stat-card-unit, .ceper-info-stats::after { font-size: 9px !important; }
 
-    /* ==========================================================================
-       3. SINKRONISASI 3 BOKS DIAGRAM (MENGUNCI STRUKTUR AGAR TIDAK MENYUSUT)
-       ========================================================================== */
-    
-    /* Induk Utama Rangkaian Diagram (Memaksa Urutan ke Bawah secara Makro) */
+    /* 3. SINKRONISASI DIAGRAM KECAMATAN CEPER */
     #tab-info div[style*="display: flex; flex-direction: column;"] {
-        display: flex !important;
-        flex-direction: column !important;
-        width: 100% !important;
-        gap: 20px !important;
-        align-items: center !important;
+        display: flex !important; flex-direction: column !important; width: 100% !important; gap: 15px !important;
     }
-
-    /* GAMBAR 1: Memaksa Diagram Batang Tegak Mengisi 100% Lebar Layar Tanpa Menyusut */
     #tab-info div[style*="width: 100%; background: #ffffff;"] {
-        width: 100% !important;
-        max-width: 100% !important;
-        display: block !important;
-        box-sizing: border-box !important;
-        padding: 15px !important;
+        width: 100% !important; max-width: 100% !important; padding: 15px !important;
     }
-    #chart_jumlah_bidang_vertikal { 
-        width: 100% !important;
-        height: 200px !important; /* Tinggi disesuaikan agar pas di layar landscape HP */
-    }
-
-    /* GAMBAR 2 & 3: MEMAKSA KEDUA DIAGRAM DI BAWAHNYA TETAP BERJEJER KE SAMPING */
+    #chart_jumlah_bidang_vertikal { width: 100% !important; height: 180px !important; }
     #tab-info div[style*="display: flex; flex-direction: row;"] {
-        display: flex !important;
-        flex-direction: row !important; /* Kunci mutlak posisi horizontal */
-        justify-content: space-between !important;
-        align-items: stretch !important;
-        gap: 15px !important;
-        width: 100% !important;
+        display: flex !important; flex-direction: row !important; justify-content: space-between !important; gap: 15px !important; width: 100% !important;
     }
-
-    /* Membagi Lebar Boks Gambar 2 & 3 secara Adil Jelas (Masing-masing 49% Lebar Layar) */
     #tab-info div[style*="max-width: 520px;"] {
-        flex: 1 !important;
-        max-width: calc(50% - 8px) !important; /* Formula presisi agar tidak tumpah ke bawah */
-        width: calc(50% - 8px) !important;
-        padding: 15px !important;
-        border-radius: 12px !important;
+        flex: 1 !important; max-width: calc(50% - 8px) !important; width: calc(50% - 8px) !important; padding: 15px !important;
     }
+    #chart_proporsi_tanah, #chart_persentase_hak { width: 100% !important; height: 150px !important; }
 
-    /* Mengunci Skala Tinggi Google Charts di Dalamnya */
-    #chart_proporsi_tanah { 
-        width: 100% !important;
-        height: 170px !important; 
-    }
+    /* 4. PERBAIKAN SEKILAS GEOPTRP (JUSTIFY) */
+    .info-section { display: flex !important; flex-direction: row !important; gap: 30px !important; padding: 20px 5% !important; }
+    .info-image { flex: 0 0 35% !important; max-width: 250px !important; }
+    .info-text { flex: 1 !important; }
+    .info-text p { text-align: justify !important; font-size: 12px !important; line-height: 1.5 !important; }
+    .btn-explore-yellow { padding: 8px 20px !important; font-size: 12px !important; }
+
+    /* 5. SYARAT KETENTUAN & KOTAK PANDUAN (PELETAKAN SEPERTI LAPTOP & DIKECILKAN) */
+    .tag-flex-container { display: flex !important; flex-direction: row !important; gap: 20px !important; }
+    .tag-left-col { flex: 1.3 !important; }
+    .tag-right-col { flex: 0.7 !important; min-width: 220px !important; }
+    .terms-content { padding: 15px 20px !important; }
+    .terms-content li { font-size: 11.5px !important; margin-bottom: 8px !important; }
+    .guide-box-card { padding: 15px !important; }
+    .guide-box-card h4 { font-size: 14px !important; margin-bottom: 5px !important; }
+    .guide-box-card p { font-size: 11px !important; margin-bottom: 10px !important; }
+    .btn-goto-guide { padding: 8px !important; font-size: 12px !important; }
+    .gb-icon { width: 40px !important; height: 40px !important; margin-bottom: 8px !important; }
+    .gb-icon i { font-size: 18px !important; }
+
+    /* 6. HALAMAN PANDUAN FITUR (PELETAKAN SEPERTI LAPTOP KIRI & KANAN) */
+    .panduan-layout { display: grid !important; grid-template-columns: 220px 1fr !important; gap: 15px !important; }
+    .panduan-menu { display: block !important; overflow-x: visible !important; }
+    .panduan-menu-item { width: 100% !important; padding: 10px 15px !important; font-size: 12px !important; border-left: 4px solid #ddd !important; border-bottom: none !important; margin-bottom: 5px !important; }
+    .panduan-menu-item.active { border-left: 4px solid #1e3799 !important; border-bottom: none !important; }
+
+    /* 7. ABOUT US (3 PANEL SEJAJAR KECIL SEPERTI LAPTOP) */
+    .about-cards-3-grid { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 15px !important; }
+    .about-card-item { padding: 12px 10px !important; }
+    .about-card-item h3 { font-size: 11px !important; }
+    .about-card-item p { font-size: 10px !important; }
+    .about-card-image-box { width: 40px !important; height: 40px !important; margin-bottom: 8px !important; }
+
+    /* 8. POP-UP MODAL VISI MISI & POP-UP LOGIN (DIKECILKAN AGAR TIDAK KEPOTONG LAYAR HP) */
+    .about-popup-box { max-width: 460px !important; width: 95% !important; margin: auto !important; }
+    .about-popup-header { padding: 10px 15px !important; }
+    .about-popup-body { padding: 12px 15px !important; }
+    .popup-text-content-pane { max-height: 120px !important; font-size: 11px !important; }
     
-    #chart_persentase_hak { 
+    #modal-geo-login > div { max-width: 380px !important; width: 95% !important; margin: auto !important; }
+    #modal-geo-login div[style*="padding: 30px"] { padding: 15px !important; max-height: calc(100vh - 70px) !important; }
+    .login-guide-box { padding: 8px !important; margin-bottom: 10px !important; }
+    #box-login-view div { margin-bottom: 8px !important; }
+
+    /* 9. ANGGOTA, DOSEN, DAN KONTAK KAMI (SEPERTI LAPTOP SEJAJAR TAPI DIKECILKAN) */
+    .about-profile-grid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 10px !important; }
+    .simple-profile-card { padding: 10px 5px !important; }
+    .avatar-container { width: 60px !important; height: 65px !important; margin-bottom: 5px !important; }
+    .shape-background { width: 55px !important; height: 55px !important; }
+    .popout-img { width: 50px !important; height: 60px !important; }
+    .avatar-banner-tag { font-size: 6px !important; padding: 1px 4px !important; bottom: 2px !important; }
+    .simple-profile-card strong.simple-profile-name { font-size: 8px !important; white-space: nowrap; }
+    .simple-profile-card span.simple-profile-role { font-size: 7px !important; }
+    
+    .lecturer-profile-grid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 10px !important; padding: 0 !important; }
+    .lecturer-card { padding: 10px 5px !important; }
+    .lecturer-avatar-box { width: 70px !important; height: 90px !important; margin-bottom: 8px !important; }
+    .lecturer-name { font-size: 8px !important; white-space: nowrap !important; }
+    .lecturer-nip, .lecturer-title { font-size: 7px !important; }
+
+    .contact-section-container { display: flex !important; flex-direction: row !important; gap: 20px !important; padding: 0 !important; }
+    .contact-info-left { flex: 1 !important; padding: 15px !important; }
+    .contact-maps-right { flex: 1.1 !important; }
+    .contact-sub-title { font-size: 14px !important; margin-bottom: 15px !important; }
+    .contact-item { gap: 10px !important; margin-bottom: 12px !important; }
+    .contact-icon-box { width: 30px !important; height: 30px !important; font-size: 12px !important; }
+    .contact-text-box h4 { font-size: 11px !important; }
+    .contact-text-box p { font-size: 10px !important; }
+    .contact-map-frame-wrapper { height: 180px !important; }
+    .map-floating-banner { font-size: 8px !important; padding: 4px 8px !important; bottom: 15px !important; }
+
+    /* 10. JELAJAHI GEOPTRP (ALAT UKUR, DASHBOARD, DAN KOORDINAT JURUS KURSOR) */
+    .floating-bottom-right { bottom: 20px !important; right: 15px !important; gap: 10px !important; flex-direction: row !important; }
+    #btn-measure-tools, #btn-toggle-user-tools { width: 40px !important; height: 40px !important; font-size: 14px !important; }
+    #btn-home { height: 40px !important; padding: 0 15px !important; font-size: 11px !important; border-radius: 20px !important; }
+    .measure-options { bottom: 48px !important; width: 130px !important; }
+    .measure-options button { padding: 8px !important; font-size: 10px !important; }
+    
+    #instansi-toolsetbox { bottom: 48px !important; right: 0 !important; width: 220px !important; padding: 10px !important; }
+    #admin-toolsetbox { bottom: 48px !important; right: 0 !important; width: 220px !important; padding: 10px !important; z-index: 1004 !important; }
+
+    .mouse-position {
+        bottom: 20px !important; left: 50% !important; transform: translateX(-50%) !important;
+        padding: 5px 15px !important; font-size: 10px !important; min-width: 200px !important;
+        display: flex !important; flex-direction: column !important; align-items: center !important;
+    }
+}
+
+/* ==========================================================================
+   SUNTIKAN PERBAIKAN: KHUSUS HP MODE DESKTOP POTRAIT
+   ========================================================================== */
+@media screen and (max-width: 1025px) and (orientation: portrait) {
+    /* Perbaikan Dosen Pengampu agar pas ditengah dan mengecil rapi */
+    .lecturer-profile-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important; /* Diubah jadi 2 kolom di portrait desktop agar muat */
+        gap: 15px !important;
+        padding: 0 4% !important;
         width: 100% !important;
-        height: 170px !important; 
+        box-sizing: border-box !important;
+    }
+    .lecturer-card {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 15px 10px !important;
+    }
+    .lecturer-name {
+        white-space: normal !important; /* Izinkan teks nama turun ke bawah agar tidak mulur menyamping */
+        font-size: 12px !important;
     }
 
-    /* Penyesuaian Komponen Teks Makro Informasi Grafis */
-    #tab-info h3 { font-size: 14px !important; margin-bottom: 12px !important; }
-    #tab-info h4 { font-size: 11px !important; margin-bottom: 2px !important; text-align: center !important; }
-    #tab-info p[style*="font-size: 11px;"] { font-size: 9px !important; margin-bottom: 5px !important; }
-    #tab-info p[style*="text-align: center; width: 100%;"] { margin-top: 10px !important; font-size: 9px !important; }
-
-    /* --- Tampilan Khas Sekilas GeoPTRP --- */
-    .info-section { display: flex !important; flex-direction: row !important; gap: 20px !important; padding: 15px 5% !important; align-items: center !important; }
-    .info-image { flex: 0 0 30% !important; max-width: 200px !important; }
-    .info-text { flex: 1 !important; gap: 4px !important; }
-    .info-text h2 { font-size: 18px !important; margin-bottom: 2px !important; }
-    .info-text p { font-size: 11px !important; line-height: 1.4 !important; }
-    .btn-right-wrapper { justify-content: flex-end !important; margin-top: 5px !important; }
-    .btn-explore-yellow { padding: 6px 15px !important; font-size: 11px !important; }
+    /* Perbaikan Letak Koordinat Peta agar Naik dan Kelihatan Jelas */
+    .mouse-position {
+        bottom: 85px !important; /* Dinaikkan keatas agar tidak tenggelam di bawah navigasi / sistem browser HP */
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        z-index: 9999 !important;
+        min-width: 240px !important;
+        padding: 8px 15px !important;
+        font-size: 11px !important;
+    }
 }
 
-/* FIX: Sinkronisasi Nama Class untuk Jendela Interaktif */
-@media (max-width: 600px) {
-    .spatial-flex-container { flex-direction: column; align-items: stretch; gap: 12px; }
-    #main-toggle-container.shrunk { width: 100%; flex: initial; min-height: 60px; padding: 10px; }
-    #interaction-right.show { height: auto; flex-direction: column; align-items: stretch; }
-    .logo-bar-horizontal { flex-direction: row; width: 100%; justify-content: space-around; }
-    .info-logo-card.active { transform: scale(1.05) translateY(-2px); }
-    .info-display-box { height: 160px; }
+/* ==========================================================================
+   SUNTIKAN PERBAIKAN: KHUSUS HP MODE DESKTOP LANDSCAPE
+   ========================================================================== */
+@media screen and (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
+    /* Memaksa Grid Dosen mengecil proporsional pada HP mode desktop landscape */
+    .lecturer-profile-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 12px !important;
+    }
+    .lecturer-avatar-box {
+        width: 90px !important;
+        height: 115px !important;
+    }
+    .lecturer-name {
+        font-size: 10px !important;
+        white-space: nowrap !important;
+    }
+
+    /* Memaksa Pop-up login tetap proporsional mengikuti batas tinggi viewport landscape HP */
+    #modal-geo-login > div {
+        max-width: 400px !important;
+    }
+    #modal-geo-login div[style*="padding: 30px"] {
+        padding: 20px !important;
+        max-height: calc(100vh - 60px) !important;
+    }
 }
 
-@media (max-height: 500px) {
-    #landing-page { flex-direction: row !important; }
-    .landing-content { padding: 15px 30px !important; justify-content: center !important; }
-    .landing-content h1 { font-size: 22px !important; }
-    .landing-content p { margin: 10px 0 15px 0 !important; font-size: 13px !important; }
-    .landing-content button { padding: 8px 15px !important; font-size: 13px !important; }
-    #disclaimer-overlay { align-items: flex-start !important; padding-top: 10px !important; overflow-y: auto !important; }
-    .disclaimer-box { padding: 15px !important; margin-bottom: 10px !important; max-width: 550px !important; }
-    .disclaimer-title { font-size: 16px !important; margin-bottom: 8px !important; }
-    .disclaimer-text { max-height: 110px !important; padding: 10px !important; margin-bottom: 10px !important; font-size: 12px !important; }
-    .disclaimer-footer { margin-top: 10px !important; }
-    #btn-continue { padding: 8px 20px !important; }
-}
-
-@media (max-width: 1500px) and (orientation: portrait) {
-    .map-overlay-left { height: calc(100vh - 350px) !important; }
-    .sidebar-scroll-area { max-height: calc(100% - 120px) !important; }
-    .btn-sidebar-toggle-right { bottom: 150px !important; right: 15px !important; position: absolute !important; z-index: 1001 !important; }
-    .floating-bottom-right { bottom: 210px !important; right: 15px !important; position: absolute !important; z-index: 1001 !important; }
-}
-
-@media screen and (max-height: 500px) and (orientation: landscape) {
-    .logo-container img, .logo-side img { height: 25px !important; width: auto !important; max-height: 25px !important; }
-    #header { height: 35px !important; }
-    #btn-home, .btn-sidebar-action, .menu-side a { font-size: 8px !important; padding: 2px 6px !important; height: 20px !important; line-height: 20px !important; }
-    .title-text h1 { font-size: 9px !important; }
-    .title-text h2 { font-size: 6px !important; }
-    .info-display-box { font-size: 9px !important; padding: 5px !important; margin: 5px !important; }
-}
-
-@media screen and (orientation: landscape) {
-    .info-display-box { max-height: 70vh !important; }
-}
 </style>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
