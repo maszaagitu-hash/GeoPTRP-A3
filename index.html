@@ -90,6 +90,12 @@ html, body {
 }
 #btn-warning-ok:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(46, 204, 113, 0.4); }
 
+@keyframes rotatePhone {
+    0% { transform: rotate(0deg); }
+    30% { transform: rotate(-90deg); }
+    70% { transform: rotate(-90deg); }
+    100% { transform: rotate(0deg); }
+}
 /* ==========================================================================
    3. NAVIGATION BAR & HEADER AREA
    ========================================================================== */
@@ -2014,6 +2020,8 @@ html, body {
     padding: 15px;
     margin-bottom: 20px;
     animation: slideUp 0.3s ease-out;
+    max-height: 250px;
+    overflow-y: auto;
 }
 .login-guide-box h4 {
     margin: 0 0 8px 0;
@@ -2433,7 +2441,7 @@ html, body {
             • Aktifkan rotasi layar otomatis dan <b>ubah posisi ponsel menjadi Landscape</b> (peringatan ini akan tertutup otomatis).<br>
             • Jika Anda mengaktifkan fitur <b>Situs Desktop</b> pada browser, silahkan klik tombol di bawah ini untuk langsung mengakses halaman.
         </div>
-        <button id="btn-warning-ok">Lanjutkan ke WebGIS</button>
+        <button id="btn-warning-ok">Saya Mengerti & Masuk WebGIS</button>
     </div>
 </div>
 
@@ -2523,9 +2531,13 @@ html, body {
                     <hr style="position: absolute; top: 50%; left: 0; width: 100%; border: none; border-top: 1px solid #eee; margin: 0; z-index: 1;">
                 </div>
                 <button onclick="window.masukSebagaiTamu()" style="width: 100%; padding: 10px; background: #fff; color:#1e3799; border: 2px solid #1e3799; border-radius:8px; font-weight:700; font-size:12px; text-transform:uppercase; cursor:pointer; margin-bottom: 15px;"><i class="fas fa-user-clock"></i> Masuk Sebagai Tamu</button>
-                <p style="font-size: 12px; text-align: center; color: #555; margin: 0;">Belum punya akun? <a href="#" onclick="window.pindahKeView('signup')" style="color:#f39c12; font-weight:700; text-decoration:none;">Daftar Baru</a></p>
+                <p style="font-size: 12px; text-align: center; color: #555; margin: 0;">Belum punya akun? <a href="#" onclick="window.pindahKeView('signup')" style="color:#f39c12; font-weight:700; text-decoration:none;">Sign Up</a></p>
             </div>
 
+            <div style="margin-bottom: 15px;">
+                   <label style="font-size: 10px; font-weight: 700; color: #2c3e50; text-transform: uppercase;">Nama Lengkap / Username</label>
+                   <input type="text" id="reg-nama" placeholder="Masukkan nama Anda" style="width:100%; padding: 11px; border: 1px solid #ddd; border-radius: 8px; font-size: 12.5px; margin-top: 5px; font-family: inherit; box-sizing: border-box;">
+           </div>
             <div id="box-signup-view" style="display: none;">
                 <div style="margin-bottom: 15px;">
                     <label style="font-size: 10px; font-weight: 700; color: #2c3e50; text-transform: uppercase;">Email Undip / Admin</label>
@@ -2550,6 +2562,10 @@ html, body {
                 </div>
                 <button onclick="window.prosesVerifikasiOtpAdmin()" style="width: 100%; padding: 12px; background: #2ecc71; color:#fff; border:none; border-radius:8px; font-weight:700; font-size:12px; text-transform:uppercase; cursor:pointer;">Verifikasi Admin</button>
             </div>
+            <div id="otp-timeout-area" style="display:none; text-align:center; margin-top:15px;">
+                <p style="font-size: 11px; color: #e74c3c;">Kode salah atau kadaluwarsa?</p>
+             <button onclick="window.prosesLoginSistem()" style="background:none; border:none; color:#1e3799; font-weight:700; cursor:pointer; font-size:12px; text-decoration:underline;">Kirim Ulang Kode OTP</button>
+           </div>
         </div>
     </div>
 </div>
@@ -3598,6 +3614,7 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     window.prosesRegistrasiSistem = function() {
+        const namaInput = document.getElementById('reg-nama').value.trim();
         const emailInput = document.getElementById('reg-email').value.trim().toLowerCase();
         const passInput = document.getElementById('reg-pass').value.trim();
 
@@ -3641,7 +3658,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         // Simpan Akun ke Database Lokal (LocalStorage) jika lolos kualifikasi
-        akunDatabaseLokal.push({ email: emailInput, pass: passInput, role: detectedRole });
+        akunDatabaseLokal.push({ nama: namaInput, email: emailInput, pass: passInput, role: detectedRole });
         localStorage.setItem('geo_accounts', JSON.stringify(akunDatabaseLokal));
 
         // Menyiapkan parameter notifikasi untuk arsip EmailJS Anda
@@ -3699,9 +3716,11 @@ document.addEventListener("DOMContentLoaded", function() {
         // Memeriksa OTP dinamis jam ini ATAU OTP bypass ujian (Poin 5)
         if (inputOtp === hitungOtpDinamisJamIni() || inputOtp === 192837) {
             window.tampilkanNotifikasiGeo("Otentikasi Administrator Berhasil!", "sukses");
+            document.getElementById('otp-timeout-area').style.display = 'none';
             eksekusiGrandAccessMasukPeta(dataEmailAdminMenungguOtp, 'admin');
         } else {
             window.tampilkanNotifikasiGeo("Kode OTP Salah atau Sudah Kedaluwarsa!", "gagal");
+            document.getElementById('otp-timeout-area').style.display = 'block';
         }
     };
 
@@ -3866,7 +3885,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // 5. Inisialisasi Peta Spasial OpenLayers
     const initialCenter = ol.proj.fromLonLat([110.6750, -7.6750]); 
     const initialZoom = 13.5;
-    const url_geoserver = window.location.origin + '/geoserver-proxy/GeoPTRP_A3/wms';;
+    const url_geoserver = window.location.origin + '/geoserver-proxy/GeoPTRP_A3/wms';
     const workspace = 'GeoPTRP_A3';
 
     let chosenLayers = ['jalanLn', 'sungaiLn', 'desa']; 
