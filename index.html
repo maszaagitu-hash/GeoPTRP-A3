@@ -3921,9 +3921,9 @@ document.addEventListener("DOMContentLoaded", function() {
         window.tampilkanNotifikasiGeo("Sedang mengirimkan kode OTP pemulihan...", "info");
         
         const templateParams = {
-            name: akunCek.nama,
-            pesan_notifikasi: otpPemulihanSistem
-        };
+        subject_email: "KODE OTP PEMULIHAN PASSWORD - GEOPTRP",
+        pesan_notifikasi: `Halo ${akunCek.nama},\n\nAnda menerima pesan ini karena adanya permintaan reset kata sandi.\nBerikut adalah Kode OTP Pemulihan Anda: ${otpPemulihanSistem}\n\nJangan bagikan kode ini kepada siapa pun.`
+    };
 
         emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
             .then(() => {
