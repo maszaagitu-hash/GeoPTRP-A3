@@ -3791,11 +3791,11 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
 
-        // --- SISTEM OTP UNTUK ADMIN ---
+       // --- SISTEM OTP ADMIN ---
         if(emailInput.includes('.admin.undip.ac.id') && passInput === 'adminGeoPTRP123') {
-            dataEmailAdminMenungguOtp = emailInput;
-            window.tampilkanNotifikasiGeo("Otentikasi Admin. Silahkan masukkan kode OTP.", "info");
-            window.pindahKeView('otp'); // Menggunakan view OTP yang sudah ada
+            dataEmailAdminMenungguOtp = emailInput; 
+            window.tampilkanNotifikasiGeo("Akses Admin Terdeteksi! Silahkan masukkan Kode OTP.", "info");
+            window.pindahKeView('otp'); 
             return;
         }
 
@@ -3988,13 +3988,20 @@ document.addEventListener("DOMContentLoaded", function() {
 
     window.prosesVerifikasiOtpAdmin = function() {
         const inputOtp = document.getElementById('input-otp-code').value.trim();
-        // Memeriksa OTP dinamis jam ini ATAU OTP bypass ujian (Poin 5)
-        if (inputOtp === hitungOtpDinamisJamIni() || inputOtp === 192837) {
-            window.tampilkanNotifikasiGeo("Otentikasi Administrator Berhasil!", "sukses");
+        const otpValid = hitungOtpDinamisJamIni(); 
+        
+        if (inputOtp === otpValid || inputOtp === "192837") {
+            // PESAN YANG ANDA INGINKAN TETAP MUNCUL DI SINI
+            window.tampilkanNotifikasiGeo("Selamat Datang di Panel Kontrol Bos!", "sukses");
+            
             document.getElementById('otp-timeout-area').style.display = 'none';
-            eksekusiGrandAccessMasukPeta(dataEmailAdminMenungguOtp, 'admin');
+            document.getElementById('modal-geo-login').style.display = 'none';
+            
+            // PANEL DIBUKA SETELAH VERIFIKASI BERHASIL
+            renderTabelAdmin();
+            window.pindahKeView('admin');
         } else {
-            window.tampilkanNotifikasiGeo("Kode OTP Salah atau Sudah Kedaluwarsa!", "gagal");
+            window.tampilkanNotifikasiGeo("Kode OTP salah atau sudah kedaluwarsa!", "gagal");
             document.getElementById('otp-timeout-area').style.display = 'block';
         }
     };
