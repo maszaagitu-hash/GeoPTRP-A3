@@ -3918,25 +3918,21 @@ document.addEventListener("DOMContentLoaded", function() {
         otpPemulihanSistem = Math.floor(100000 + Math.random() * 900000).toString();
         emailTargetPemulihan = emailInput; // Ini tetap pakai format asli untuk mencari di database lokal
         
-        // LOGIKA BARU: MENGHILANGKAN KATA '.admin' AGAR TERKIRIM KE EMAIL ASLI UNDIP
-        let emailPenerimaAsli = emailInput.replace('.admin.undip.ac.id', '.undip.ac.id');
-        
         window.tampilkanNotifikasiGeo("Sedang mengirimkan kode OTP pemulihan...", "info");
         
         const templateParams = {
-            to_email: emailPenerimaAsli,
             name: akunCek.nama,
             pesan_notifikasi: otpPemulihanSistem
         };
 
-        emailjs.send('service_hpw7t68', 'template_79m8av7', templateParams) // Ganti template_0pxk215 dengan ID template baru
+        emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
             .then(() => {
-                window.tampilkanNotifikasiGeo(`Kode OTP berhasil dikirim ke alamat: ${emailPenerimaAsli}`, "sukses");
+                window.tampilkanNotifikasiGeo("Kode OTP telah dikirim ke email admin untuk diproses.", "sukses");
                 window.pindahKeView('otp_forgot');
             }, () => {
-                window.tampilkanNotifikasiGeo("Gagal mengirim kode OTP melalui gateway EmailJS.", "gagal");
+                window.tampilkanNotifikasiGeo("Gagal mengirim kode OTP.", "gagal");
             });
-            };
+    };
 
 
     window.verifikasiOtpLupaPassword = function() {
