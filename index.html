@@ -2273,7 +2273,9 @@ html, body {
     .warning-card h2 { font-size: 15px !important; }
     .warning-card p { font-size: 11px !important; }
     .highlight-text { padding: 8px !important; margin-top: 8px !important; font-size: 11px !important; }
-    #btn-warning-ok { padding: 8px !important; font-size: 12px !important; margin-top: 10px !important; }
+    
+    /* FIX: Menyembunyikan tombol mengerti agar pengguna wajib putar HP ke landscape */
+    #btn-warning-ok { display: none !important; }
 
     /* Perbaikan Peta Terpotong di Mode Biasa Landscape */
     #map { height: calc(100vh - 46px) !important; }
@@ -2353,7 +2355,8 @@ html, body {
    ========================================================================== */
 @media screen and (max-width: 1025px) and (orientation: portrait) {
     /* Memaksa overlay peringatan merah rotasi HP muncul secara mutlak */
-    #mobile-warning-overlay {
+    /* Memaksa overlay muncul HANYA jika elemen tidak memiliki inline style display: none dari JavaScript */
+    #mobile-warning-overlay:not([style*="display: none"]) {
         display: flex !important;
         visibility: visible !important;
         opacity: 1 !important;
@@ -2363,7 +2366,7 @@ html, body {
         width: 100vw !important;
         height: 100vh !important;
         background-color: rgba(15, 25, 20, 0.99) !important;
-        z-index: 1000000 !important; /* Menimpa segalanya */
+        z-index: 1000000 !important;
     }
 
     /* Memastikan boks kartu peringatan di dalam overlay tetap rapi di tengah */
