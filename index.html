@@ -3791,89 +3791,65 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
 
-        // --- SISTEM LOGIN ADMIN DENGAN OTP ---
+        // --- SISTEM BARU: BYPASS KE PANEL ADMIN ---
         if(emailInput.includes('.admin.undip.ac.id') && passInput === 'adminGeoPTRP123') {
-            dataEmailAdminMenungguOtp = emailInput; 
-            
-            // Panggil fungsi kirim email baru (pastikan fungsi ini ada di bawah)
-            window.kirimOtpKeEmailAdmin(emailInput);
-            
-            window.pindahKeView('otp'); 
+            window.tampilkanNotifikasiGeo("Selamat Datang di Panel Kontrol Bos!", "sukses");
+            renderTabelAdmin();
+            window.pindahKeView('admin');
             return;
         }
 
-        // --- LOGIN USER BIASA ---
         let userAkun = akunDatabaseLokal.find(acc => acc.email === emailInput && acc.pass === passInput);
 
         if (!userAkun) {
-            window.tampilkanNotifikasiGeo("Email atau Password salah!", "gagal");
+            window.tampilkanNotifikasiGeo("Email atau Password salah! Periksa kembali otentikasi Anda.", "gagal");
             return;
         }
 
+        // VALIDASI NAMA HARUS SESUAI (Case Insensitive agar tidak kaku pada huruf besar/kecil)
         if (userAkun.nama.toLowerCase() !== namaInput.toLowerCase()) {
-            window.tampilkanNotifikasiGeo("Nama pengguna tidak cocok!", "gagal");
+            window.tampilkanNotifikasiGeo("Nama pengguna tidak cocok dengan akun email yang terdaftar!", "gagal");
             return;
         }
         
+        // Otomatis merapikan huruf kapital pada input box sesuai database
         document.getElementById('login-nama').value = userAkun.nama; 
-        eksekusiGrandAccessMasukPeta(emailInput, userAkun.role);
-    };
-
-    window.kirimOtpKeEmailAdmin = function(emailAdmin) {
-        const otpAdmin = hitungOtpDinamisJamIni();
         
-        // Sesuaikan 'template_ABCDEF1' dengan ID Template baru Anda di dashboard EmailJS
-        const templateParams = {
-            otp_admin: otpAdmin 
-        };
-
-        emailjs.send('service_hpw7t68', 'template_79m8av7', templateParams)
-            .then(() => {
-                window.tampilkanNotifikasiGeo("Kode OTP telah dikirim ke email admin.", "sukses");
-            }, () => {
-                window.tampilkanNotifikasiGeo("Gagal mengirim email OTP.", "gagal");
-            });
+        // Jika login berhasil, masuk ke WebGIS sesuai role
+        eksekusiGrandAccessMasukPeta(emailInput, userAkun.role);
     };
 
     // =========================================================================
     // FITUR BARU: PANEL MANAJEMEN ADMIN 
     // =========================================================================
-    window.renderTabelAdmin = function() {
-    const tabel = document.getElementById('tabel-user-admin');
-    
-    // Jika tabel tidak ditemukan, jangan paksa render
-    if (!tabel) {
-        console.warn("Tabel admin belum dimuat ke DOM. Menunggu retry...");
-        return; 
-    }
-    
-    const tbody = tabel.querySelector('tbody');
-    if (!tbody) return;
+    function renderTabelAdmin() {
+        const tbody = document.querySelector('#tabel-user-admin tbody');
+        tbody.innerHTML = ""; 
+        
+        const databaseTerbaru = JSON.parse(localStorage.getItem('geo_accounts')) || akunDatabaseLokal;
+        
+        if(databaseTerbaru.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3" style="padding: 10px; text-align: center; color: #95a5a6;">Belum ada pengguna yang mendaftar</td></tr>`;
+            return;
+        }
 
-    tbody.innerHTML = ""; 
-    
-    const databaseTerbaru = JSON.parse(localStorage.getItem('geo_accounts')) || [];
-    
-    if(databaseTerbaru.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:20px;">Belum ada pengguna terdaftar</td></tr>`;
-        return;
+        databaseTerbaru.forEach((akun) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td style="padding: 10px; border-bottom: 1px solid #eee;">${akun.nama}</td>
+                <td style="padding: 10px; border-bottom: 1px solid #eee;">${akun.email}</td>
+                <td style="padding: 10px; border-bottom: 1px solid #eee;">
+                    <button class="btn-hapus-secure" style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">Hapus</button>
+                </td>
+            `;
+            
+            row.querySelector('.btn-hapus-secure').addEventListener('click', function() {
+                bukaModalHapusAdmin(akun.email, akun.nama);
+            });
+            
+            tbody.appendChild(row);
+        });
     }
-
-    databaseTerbaru.forEach((akun) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td style="padding: 10px; border-bottom: 1px solid #eee;">${akun.nama}</td>
-            <td style="padding: 10px; border-bottom: 1px solid #eee;">${akun.email}</td>
-            <td style="padding: 10px; border-bottom: 1px solid #eee;">
-                <button onclick="window.bukaModalHapusAdmin('${akun.email}', '${akun.nama}')" 
-                        style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                    Hapus
-                </button>
-            </td>
-        `;
-        tbody.appendChild(row);
-    });
-};
 
     // Variabel bantuan untuk modal hapus
     let targetHapusEmail = "";
@@ -4011,31 +3987,17 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     window.prosesVerifikasiOtpAdmin = function() {
-    const inputOtp = document.getElementById('input-otp-code').value.trim();
-    const otpValid = hitungOtpDinamisJamIni(); 
-    
-    if (inputOtp === otpValid || inputOtp === "192837") {
-        window.tampilkanNotifikasiGeo("Otentikasi Administrator Berhasil!", "sukses");
-        
-        // Sembunyikan semua modal login
-        document.getElementById('otp-timeout-area').style.display = 'none';
-        document.getElementById('modal-geo-login').style.display = 'none';
-        
-        // Pindah ke dashboard admin
-        window.pindahKeView('admin');
-        
-        // Panggil render tabel dengan delay yang cukup untuk memastikan DOM ter-render
-        setTimeout(() => {
-            if (typeof window.renderTabelAdmin === 'function') {
-                window.renderTabelAdmin();
-            }
-        }, 300); 
-        
-    } else {
-        window.tampilkanNotifikasiGeo("Kode OTP Salah atau Kedaluwarsa!", "gagal");
-        document.getElementById('otp-timeout-area').style.display = 'block';
-    }
-};
+        const inputOtp = document.getElementById('input-otp-code').value.trim();
+        // Memeriksa OTP dinamis jam ini ATAU OTP bypass ujian (Poin 5)
+        if (inputOtp === hitungOtpDinamisJamIni() || inputOtp === 192837) {
+            window.tampilkanNotifikasiGeo("Otentikasi Administrator Berhasil!", "sukses");
+            document.getElementById('otp-timeout-area').style.display = 'none';
+            eksekusiGrandAccessMasukPeta(dataEmailAdminMenungguOtp, 'admin');
+        } else {
+            window.tampilkanNotifikasiGeo("Kode OTP Salah atau Sudah Kedaluwarsa!", "gagal");
+            document.getElementById('otp-timeout-area').style.display = 'block';
+        }
+    };
 
     window.masukSebagaiTamu = function() {
         eksekusiGrandAccessMasukPeta("Guest Session", "tamu");
