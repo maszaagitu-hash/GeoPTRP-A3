@@ -2514,12 +2514,12 @@ html, body {
 
            <div id="box-login-view">
     <div style="margin-bottom: 15px;">
-        <label style="font-size: 10px; font-weight: 700; color: #2c3e50; text-transform: uppercase;">Nama Lengkap / Username</label>
-        <input type="text" id="login-nama" placeholder="Masukkan nama Anda" autocomplete="off" style="width:100%; padding: 11px; border: 1px solid #ddd; border-radius: 8px; font-size: 12.5px; margin-top: 5px; font-family: inherit; box-sizing: border-box;">
+        <label style="font-size: 10px; font-weight: 700; color: #2c3e50; text-transform: uppercase;">Nama Lengkap / Username (Isi Manual)</label>
+        <input type="text" id="login-nama" placeholder="Masukkan nama lengkap Anda" autocomplete="new-password" style="width:100%; padding: 11px; border: 1px solid #ddd; border-radius: 8px; font-size: 12.5px; margin-top: 5px; font-family: inherit; box-sizing: border-box;">
     </div>
     <div style="margin-bottom: 15px;">
-        <label style="font-size: 10px; font-weight: 700; color: #2c3e50; text-transform: uppercase;">Email Universitas Diponegoro</label>
-        <input type="email" id="login-email" placeholder="nama@students.undip.ac.id" autocomplete="off" style="width:100%; padding: 11px; border: 1px solid #ddd; border-radius: 8px; font-size: 12.5px; margin-top: 5px; font-family: inherit; box-sizing: border-box;">
+        <label style="font-size: 10px; font-weight: 700; color: #2c3e50; text-transform: uppercase;">Email Universitas Diponegoro (Validasi Utama)</label>
+        <input type="email" id="login-email" placeholder="contoh: nama@students.undip.ac.id" autocomplete="new-password" style="width:100%; padding: 11px; border: 1px solid #ddd; border-radius: 8px; font-size: 12.5px; margin-top: 5px; font-family: inherit; box-sizing: border-box;">
     </div>
     <div style="margin-bottom: 20px; position: relative;">
         <label style="font-size: 10px; font-weight: 700; color: #2c3e50; text-transform: uppercase;">Kata Sandi GeoPTRP</label>
@@ -2527,6 +2527,9 @@ html, body {
             <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" style="width:100%; padding: 11px; border: 1px solid #ddd; border-radius: 8px; font-size: 12.5px; font-family: inherit; box-sizing: border-box;">
             <i class="fas fa-eye" id="toggle-login-pass" onclick="window.togglePassword('login-pass', 'toggle-login-pass')" style="position: absolute; right: 15px; cursor: pointer; color: #7f8c8d;"></i>
         </div>
+    </div>
+    <div style="text-align: right; margin-top: -10px; margin-bottom: 15px;">
+        <a href="#" onclick="window.fiturLupaPassword()" style="font-size: 11px; color: #e74c3c; text-decoration: none; font-weight: 600;">Lupa Kata Sandi?</a>
     </div>
     <button onclick="window.prosesLoginSistem()" style="width: 100%; padding: 12px; background: #1e3799; color:#fff; border:none; border-radius:8px; font-weight:700; font-size:12px; text-transform:uppercase; cursor:pointer; box-shadow:0 4px 12px rgba(30,55,153,0.2);">Masuk Sistem</button>
     
@@ -3588,16 +3591,15 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('box-signup-view').style.display = viewName === 'signup' ? 'block' : 'none';
     document.getElementById('box-otp-view').style.display = viewName === 'otp' ? 'block' : 'none';
     
-    // KODE BARU: Mengosongkan form secara paksa agar selalu bersih
-    if (viewName === 'login') {
-        if(document.getElementById('login-nama')) document.getElementById('login-nama').value = '';
-        document.getElementById('login-email').value = '';
-        document.getElementById('login-pass').value = '';
-    } else if (viewName === 'signup') {
-        document.getElementById('reg-nama').value = '';
-        document.getElementById('reg-email').value = '';
-        document.getElementById('reg-pass').value = '';
-    }
+    // Memastikan seluruh form dibersihkan tanpa sisa saat berpindah jendela popup
+    if (document.getElementById('login-nama')) document.getElementById('login-nama').value = '';
+    if (document.getElementById('login-email')) document.getElementById('login-email').value = '';
+    if (document.getElementById('login-pass')) document.getElementById('login-pass').value = '';
+    if (document.getElementById('reg-nama')) document.getElementById('reg-nama').value = '';
+    if (document.getElementById('reg-email')) document.getElementById('reg-email').value = '';
+    if (document.getElementById('reg-pass')) document.getElementById('reg-pass').value = '';
+    if (document.getElementById('input-otp-code')) document.getElementById('input-otp-code').value = '';
+
 
     // SISIPAN BARU: Menyembunyikan tombol kirim ulang OTP saat pindah halaman view
     const timeoutArea = document.getElementById('otp-timeout-area');
@@ -3705,23 +3707,25 @@ document.addEventListener("DOMContentLoaded", function() {
         const emailInput = document.getElementById('login-email').value.trim().toLowerCase();
         const passInput = document.getElementById('login-pass').value.trim();
         
-        // UBAH: Wajibkan ketiga kolom terisi saat login
         if (namaInput === "" || emailInput === "" || passInput === "") {
-            window.tampilkanNotifikasiGeo("Nama, Email, dan Password wajib diisi!", "gagal");
+            window.tampilkanNotifikasiGeo("Nama, Email, dan Password wajib diisi secara manual!", "gagal");
             return;
         }
 
-        // UBAH: Cek kecocokan nama, email, dan password sekaligus
-        let userAkun = akunDatabaseLokal.find(acc => acc.nama === namaInput && acc.email === emailInput && acc.pass === passInput);
+        // VALIDASI UTAMA: Berdasarkan Email dan Password saja (Mengabaikan kecocokan kombinasi teks Nama)
+        let userAkun = akunDatabaseLokal.find(acc => acc.email === emailInput && acc.pass === passInput);
         
         if(emailInput.includes('.admin.undip.ac.id') && passInput === 'admin123') {
             userAkun = { nama: namaInput, email: emailInput, role: 'admin' };
         }
 
         if (!userAkun) {
-            window.tampilkanNotifikasiGeo("Kombinasi email atau password salah!", "gagal");
+            window.tampilkanNotifikasiGeo("Email atau Password salah! Periksa kembali otentikasi Anda.", "gagal");
             return;
         }
+        
+        // Otomatis mengisi nama ke field input dari database akun yang ditemukan
+        document.getElementById('login-nama').value = userAkun.nama;
 
         if (userAkun.role === 'admin') {
             dataEmailAdminMenungguOtp = emailInput;
@@ -3743,6 +3747,71 @@ document.addEventListener("DOMContentLoaded", function() {
         } else {
             eksekusiGrandAccessMasukPeta(emailInput, 'instansi');
         }
+    };
+
+    // =========================================================================
+    // SOLUSI LUPA PASSWORD & HAPUS AKUN VIA EMAILJS
+    // =========================================================================
+    
+    // Kebutuhan 2: Fitur Lupa Password untuk Pengguna
+    window.fiturLupaPassword = function() {
+        const emailInput = document.getElementById('login-email').value.trim().toLowerCase();
+        
+        if (emailInput === "") {
+            window.tampilkanNotifikasiGeo("Silahkan isi kolom Email Undip Anda terlebih dahulu untuk melacak data kata sandi!", "warning");
+            return;
+        }
+        
+        let akunDitemukan = akunDatabaseLokal.find(acc => acc.email === emailInput);
+        
+        if (!akunDitemukan) {
+            window.tampilkanNotifikasiGeo("Email tidak terdaftar dalam sistem GeoPTRP lokal browser ini!", "gagal");
+            return;
+        }
+        
+        window.tampilkanNotifikasiGeo("Memproses permintaan pemulihan kata sandi...", "info");
+        
+        const templateParams = {
+            subject_email: "PERMINTAAN LUPA PASSWORD USER - GEOPTRP",
+            pesan_notifikasi: `Pengguna dengan Email: ${akunDitemukan.email} melaporkan lupa password.\n\nDetail Akun:\nNama Pengguna: ${akunDitemukan.nama}\nKata Sandi Saat Ini: ${akunDitemukan.pass}\nRole Akses: ${akunDitemukan.role.toUpperCase()}`
+        };
+
+        emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
+            .then(() => {
+                window.tampilkanNotifikasiGeo(`Sukses! Informasi kata sandi untuk akun (${emailInput}) telah dikirimkan ke email pengelola arsip log sistem.`, "sukses");
+            }, (err) => {
+                window.tampilkanNotifikasiGeo("Gagal mengirim laporan pemulihan ke server EmailJS.", "gagal");
+            });
+    };
+
+    // Kebutuhan 3: Fitur Operator untuk Menghapus Akun Pengguna
+    window.operatorHapusAkunUser = function(emailTarget) {
+        let indeksAkun = akunDatabaseLokal.findIndex(acc => acc.email === emailTarget.toLowerCase().trim());
+        
+        if (indeksAkun === -1) {
+            window.tampilkanNotifikasiGeo("Akun target tidak ditemukan atau sudah dihapus!", "gagal");
+            return;
+        }
+        
+        let namaTarget = akunDatabaseLokal[indeksAkun].nama;
+        
+        // Eksekusi penghapusan dari array lokal
+        akunDatabaseLokal.splice(indeksAkun, 1);
+        localStorage.setItem('geo_accounts', JSON.stringify(akunDatabaseLokal));
+        
+        window.tampilkanNotifikasiGeo("Mengirimkan konfirmasi penghapusan data ke core sistem...", "info");
+        
+        const templateParams = {
+            subject_email: "PENGHAPUSAN AKUN USER OLEH OPERATOR",
+            pesan_notifikasi: `Operator Sistem telah berhasil menghapus akun berikut secara permanen dari basis data:\nNama: ${namaTarget}\nEmail: ${emailTarget.toLowerCase()}`
+        };
+
+        emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
+            .then(() => {
+                window.tampilkanNotifikasiGeo(`Akun ${emailTarget} sukses dieliminasi total dari penyimpanan lokal dan arsip EmailJS.`, "sukses");
+            }, () => {
+                window.tampilkanNotifikasiGeo("Penghapusan lokal berhasil, namun gagal memperbarui status log ke EmailJS.", "info");
+            });
     };
 
     window.prosesVerifikasiOtpAdmin = function() {
