@@ -3791,14 +3791,18 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
 
-       // --- SISTEM OTP ADMIN ---
+        // --- SISTEM LOGIN ADMIN DENGAN OTP ---
         if(emailInput.includes('.admin.undip.ac.id') && passInput === 'adminGeoPTRP123') {
             dataEmailAdminMenungguOtp = emailInput; 
-            window.tampilkanNotifikasiGeo("Akses Admin Terdeteksi! Silahkan masukkan Kode OTP.", "info");
+            
+            // Panggil fungsi kirim email baru (pastikan fungsi ini ada di bawah)
+            window.kirimOtpKeEmailAdmin(emailInput);
+            
             window.pindahKeView('otp'); 
             return;
         }
 
+        // --- LOGIN USER BIASA ---
         let userAkun = akunDatabaseLokal.find(acc => acc.email === emailInput && acc.pass === passInput);
 
         if (!userAkun) {
@@ -3806,17 +3810,29 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
 
-        // VALIDASI NAMA HARUS SESUAI (Case Insensitive agar tidak kaku pada huruf besar/kecil)
         if (userAkun.nama.toLowerCase() !== namaInput.toLowerCase()) {
-            window.tampilkanNotifikasiGeo("Nama pengguna tidak cocok dengan akun email yang terdaftar!", "gagal");
+            window.tampilkanNotifikasiGeo("Nama pengguna tidak cocok!", "gagal");
             return;
         }
         
-        // Otomatis merapikan huruf kapital pada input box sesuai database
         document.getElementById('login-nama').value = userAkun.nama; 
-        
-        // Jika login berhasil, masuk ke WebGIS sesuai role
         eksekusiGrandAccessMasukPeta(emailInput, userAkun.role);
+    };
+
+    window.kirimOtpKeEmailAdmin = function(emailAdmin) {
+        const otpAdmin = hitungOtpDinamisJamIni();
+        
+        // Sesuaikan 'template_ABCDEF1' dengan ID Template baru Anda di dashboard EmailJS
+        const templateParams = {
+            otp_admin: otpAdmin 
+        };
+
+        emailjs.send('service_hpw7t68', 'template_79m8av7', templateParams)
+            .then(() => {
+                window.tampilkanNotifikasiGeo("Kode OTP telah dikirim ke email admin.", "sukses");
+            }, () => {
+                window.tampilkanNotifikasiGeo("Gagal mengirim email OTP.", "gagal");
+            });
     };
 
     // =========================================================================
@@ -3991,13 +4007,11 @@ document.addEventListener("DOMContentLoaded", function() {
         const otpValid = hitungOtpDinamisJamIni(); 
         
         if (inputOtp === otpValid || inputOtp === "192837") {
-            // PESAN YANG ANDA INGINKAN TETAP MUNCUL DI SINI
             window.tampilkanNotifikasiGeo("Selamat Datang di Panel Kontrol Bos!", "sukses");
             
             document.getElementById('otp-timeout-area').style.display = 'none';
             document.getElementById('modal-geo-login').style.display = 'none';
             
-            // PANEL DIBUKA SETELAH VERIFIKASI BERHASIL
             renderTabelAdmin();
             window.pindahKeView('admin');
         } else {
