@@ -2529,7 +2529,7 @@ html, body {
         </div>
     </div>
     <div style="text-align: right; margin-top: -10px; margin-bottom: 15px;">
-        <a href="#" onclick="window.fiturLupaPassword()" style="font-size: 11px; color: #e74c3c; text-decoration: none; font-weight: 600;">Lupa Kata Sandi?</a>
+        <a href="#" onclick="window.pindahKeView('forgot')" style="font-size: 11px; color: #e74c3c; text-decoration: none; font-weight: 600;">Lupa Kata Sandi?</a>
     </div>
     <button onclick="window.prosesLoginSistem()" style="width: 100%; padding: 12px; background: #1e3799; color:#fff; border:none; border-radius:8px; font-weight:700; font-size:12px; text-transform:uppercase; cursor:pointer; box-shadow:0 4px 12px rgba(30,55,153,0.2);">Masuk Sistem</button>
     
@@ -2573,6 +2573,55 @@ html, body {
                     <p style="font-size: 11px; color: #e74c3c;">Kode salah atau kadaluwarsa?</p>
                     <button onclick="window.prosesLoginSistem()" style="background:none; border:none; color:#1e3799; font-weight:700; cursor:pointer; font-size:12px; text-decoration:underline;">Kirim Ulang Kode OTP</button>
                 </div>
+            </div>
+            <div id="box-admin-dashboard" style="display: none; padding: 20px; background: #fff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <h3 style="margin-top: 0; color: #2c3e50;">Panel Kontrol Operator GeoPTRP</h3>
+                <p style="font-size: 12px; color: #7f8c8d;">Daftar seluruh akun mahasiswa yang terdaftar di sistem lokal:</p>
+                
+                <div style="overflow-x: auto; max-height: 300px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px;">
+                    <table id="tabel-user-admin" style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+                        <thead style="background: #f4f6f7; position: sticky; top: 0;">
+                            <tr>
+                                <th style="padding: 10px; border-bottom: 2px solid #ddd;">Nama</th>
+                                <th style="padding: 10px; border-bottom: 2px solid #ddd;">Email</th>
+                                <th style="padding: 10px; border-bottom: 2px solid #ddd;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
+                </div>
+                <button onclick="keluarDariAdmin()" style="width: 100%; padding: 10px; background: #7f8c8d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Keluar dari Panel Admin</button>
+            </div>
+
+            <div id="box-forgot-view" style="display: none;">
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 10px; font-weight: 700; color: #2c3e50; text-transform: uppercase;">Masukkan Email Undip Terdaftar</label>
+                    <input type="email" id="forgot-email" placeholder="nama@students.undip.ac.id" style="width:100%; padding: 11px; border: 1px solid #ddd; border-radius: 8px; font-size: 12.5px; margin-top: 5px; box-sizing: border-box;">
+                </div>
+                <button onclick="prosesKirimOtpLupaPassword()" style="width:100%; padding: 12px; background: #3498db; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer; margin-bottom: 10px;">Kirim Kode OTP Pemulihan</button>
+                <button onclick="window.pindahKeView('login')" style="width:100%; padding: 10px; background: none; color:#7f8c8d; border:none; cursor:pointer; font-size: 12px;">Kembali ke Login</button>
+            </div>
+
+            <div id="box-otp-forgot-view" style="display: none;">
+                <p style="font-size: 13px; color: #555; text-align: center;">Kode OTP pemulihan telah dikirim ke email Anda.</p>
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 10px; font-weight: 700; color: #2c3e50; text-transform: uppercase;">Kode OTP Pemulihan</label>
+                    <input type="text" id="input-otp-forgot" placeholder="Masukkan 6 Digit OTP" style="width:100%; padding: 11px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; text-align: center; letter-spacing: 4px; margin-top: 5px; box-sizing: border-box;">
+                </div>
+                <button onclick="verifikasiOtpLupaPassword()" style="width:100%; padding: 12px; background: #2ecc71; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer;">Verifikasi OTP</button>
+            </div>
+
+            <div id="box-new-password-view" style="display: none;">
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 10px; font-weight: 700; color: #2c3e50; text-transform: uppercase;">Kata Sandi Baru</label>
+                    <input type="password" id="new-pass-1" placeholder="Buat kata sandi baru" style="width:100%; padding: 11px; border: 1px solid #ddd; border-radius: 8px; font-size: 12.5px; margin-top: 5px; box-sizing: border-box;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 10px; font-weight: 700; color: #2c3e50; text-transform: uppercase;">Konfirmasi Kata Sandi Baru</label>
+                    <input type="password" id="new-pass-2" placeholder="Ulangi kata sandi baru" style="width:100%; padding: 11px; border: 1px solid #ddd; border-radius: 8px; font-size: 12.5px; margin-top: 5px; box-sizing: border-box;">
+                </div>
+                <button onclick="simpanPasswordBaru()" style="width:100%; padding: 12px; background: #e67e22; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer;">Perbarui Kata Sandi</button>
             </div>
             </div>
             </div>
@@ -3557,6 +3606,8 @@ document.addEventListener("DOMContentLoaded", function() {
     let akunDatabaseLokal = savedAccounts ? savedAccounts : defaultAccounts;
     let userAktifSistem = { email: "", role: "tamu" };
     let dataEmailAdminMenungguOtp = "";
+    let otpPemulihanSistem = "";
+    let emailTargetPemulihan = "";
     
     // Variabel Global Baru untuk KML & Digitasi
     window.isDigitizing = false;
@@ -3587,27 +3638,36 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
    window.pindahKeView = function(viewName) {
-    document.getElementById('box-login-view').style.display = viewName === 'login' ? 'block' : 'none';
-    document.getElementById('box-signup-view').style.display = viewName === 'signup' ? 'block' : 'none';
-    document.getElementById('box-otp-view').style.display = viewName === 'otp' ? 'block' : 'none';
+    // Sembunyikan semua view yang ada
+    const seluruhView = [
+        'box-login-view', 'box-signup-view', 'box-otp-view', 
+        'box-admin-dashboard', 'box-forgot-view', 'box-otp-forgot-view', 'box-new-password-view'
+    ];
+    seluruhView.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.style.display = 'none';
+    });
     
-    // Memastikan seluruh form dibersihkan tanpa sisa saat berpindah jendela popup
-    if (document.getElementById('login-nama')) document.getElementById('login-nama').value = '';
-    if (document.getElementById('login-email')) document.getElementById('login-email').value = '';
-    if (document.getElementById('login-pass')) document.getElementById('login-pass').value = '';
-    if (document.getElementById('reg-nama')) document.getElementById('reg-nama').value = '';
-    if (document.getElementById('reg-email')) document.getElementById('reg-email').value = '';
-    if (document.getElementById('reg-pass')) document.getElementById('reg-pass').value = '';
-    if (document.getElementById('input-otp-code')) document.getElementById('input-otp-code').value = '';
+    // Tampilkan view yang dituju
+    if(viewName === 'login') document.getElementById('box-login-view').style.display = 'block';
+    if(viewName === 'signup') document.getElementById('box-signup-view').style.display = 'block';
+    if(viewName === 'otp') document.getElementById('box-otp-view').style.display = 'block';
+    if(viewName === 'admin') document.getElementById('box-admin-dashboard').style.display = 'block';
+    if(viewName === 'forgot') document.getElementById('box-forgot-view').style.display = 'block';
+    if(viewName === 'otp_forgot') document.getElementById('box-otp-forgot-view').style.display = 'block';
+    if(viewName === 'new_password') document.getElementById('box-new-password-view').style.display = 'block';
+    
+    // Reset seluruh input form
+    const inputs = ['login-nama', 'login-email', 'login-pass', 'reg-nama', 'reg-email', 'reg-pass', 'input-otp-code', 'forgot-email', 'input-otp-forgot', 'new-pass-1', 'new-pass-2'];
+    inputs.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.value = '';
+    });
 
-
-    // SISIPAN BARU: Menyembunyikan tombol kirim ulang OTP saat pindah halaman view
+    // Menutup peringatan dan panduan bawaan
     const timeoutArea = document.getElementById('otp-timeout-area');
-    if (timeoutArea) {
-        timeoutArea.style.display = 'none';
-    }
+    if (timeoutArea) timeoutArea.style.display = 'none';
     
-    // Kode penanganan boks panduan asli milikmu tetap aman di bawah sini
     const guideBox = document.getElementById('box-login-guide');
     const infoBtn = document.getElementById('btn-login-info');
     if (guideBox) {
@@ -3712,106 +3772,173 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
 
-        // VALIDASI UTAMA: Berdasarkan Email dan Password saja (Mengabaikan kecocokan kombinasi teks Nama)
-        let userAkun = akunDatabaseLokal.find(acc => acc.email === emailInput && acc.pass === passInput);
-        
+        // --- SISTEM BARU: BYPASS KE PANEL ADMIN ---
         if(emailInput.includes('.admin.undip.ac.id') && passInput === 'admin123') {
-            userAkun = { nama: namaInput, email: emailInput, role: 'admin' };
+            window.tampilkanNotifikasiGeo("Selamat Datang Administrator! Membuka Panel Kontrol...", "sukses");
+            renderTabelAdmin();
+            window.pindahKeView('admin');
+            return;
         }
+
+        let userAkun = akunDatabaseLokal.find(acc => acc.email === emailInput && acc.pass === passInput);
 
         if (!userAkun) {
             window.tampilkanNotifikasiGeo("Email atau Password salah! Periksa kembali otentikasi Anda.", "gagal");
             return;
         }
         
-        // Otomatis mengisi nama ke field input dari database akun yang ditemukan
         document.getElementById('login-nama').value = userAkun.nama;
-
-        if (userAkun.role === 'admin') {
-            dataEmailAdminMenungguOtp = emailInput;
-            const currentOtp = hitungOtpDinamisJamIni();
-
-            // Mengirim OTP yang berubah tiap jam
-            const templateParams = {
-                subject_email: "KODE OTP ADMINISTRATOR",
-                pesan_notifikasi: `Akses Administrator diminta.\nKode OTP Berlaku Jam Ini: ${currentOtp}`
-            };
-
-            emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
-                .then(() => {
-                    window.tampilkanNotifikasiGeo("Silahkan minta kode verifikasi OTP ke Pengelola Sistem GeoPTRP", "info");
-                    window.pindahKeView('otp');
-                }, () => {
-                    window.tampilkanNotifikasiGeo("Gagal mengirimkan kode OTP.", "gagal");
-                });
-        } else {
-            eksekusiGrandAccessMasukPeta(emailInput, 'instansi');
-        }
+        
+        // Jika login berhasil, masuk ke WebGIS sesuai role
+        eksekusiGrandAccessMasukPeta(emailInput, userAkun.role);
     };
 
     // =========================================================================
-    // SOLUSI LUPA PASSWORD & HAPUS AKUN VIA EMAILJS
+    // FITUR BARU: PANEL MANAJEMEN ADMIN 
     // =========================================================================
-    
-    // Kebutuhan 2: Fitur Lupa Password untuk Pengguna
-    window.fiturLupaPassword = function() {
-        const emailInput = document.getElementById('login-email').value.trim().toLowerCase();
+    function renderTabelAdmin() {
+        const tbody = document.querySelector('#tabel-user-admin tbody');
+        tbody.innerHTML = ""; 
         
-        if (emailInput === "") {
-            window.tampilkanNotifikasiGeo("Silahkan isi kolom Email Undip Anda terlebih dahulu untuk melacak data kata sandi!", "warning");
+        const databaseTerbaru = JSON.parse(localStorage.getItem('geo_accounts')) || akunDatabaseLokal;
+        
+        if(databaseTerbaru.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3" style="padding: 10px; text-align: center; color: #95a5a6;">Belum ada pengguna yang mendaftar</td></tr>`;
             return;
         }
-        
-        let akunDitemukan = akunDatabaseLokal.find(acc => acc.email === emailInput);
-        
-        if (!akunDitemukan) {
-            window.tampilkanNotifikasiGeo("Email tidak terdaftar dalam sistem GeoPTRP lokal browser ini!", "gagal");
-            return;
-        }
-        
-        window.tampilkanNotifikasiGeo("Memproses permintaan pemulihan kata sandi...", "info");
-        
-        const templateParams = {
-            subject_email: "PERMINTAAN LUPA PASSWORD USER - GEOPTRP",
-            pesan_notifikasi: `Pengguna dengan Email: ${akunDitemukan.email} melaporkan lupa password.\n\nDetail Akun:\nNama Pengguna: ${akunDitemukan.nama}\nKata Sandi Saat Ini: ${akunDitemukan.pass}\nRole Akses: ${akunDitemukan.role.toUpperCase()}`
-        };
 
-        emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
-            .then(() => {
-                window.tampilkanNotifikasiGeo(`Sukses! Informasi kata sandi untuk akun (${emailInput}) telah dikirimkan ke email pengelola arsip log sistem.`, "sukses");
-            }, (err) => {
-                window.tampilkanNotifikasiGeo("Gagal mengirim laporan pemulihan ke server EmailJS.", "gagal");
+        databaseTerbaru.forEach((akun) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td style="padding: 10px; border-bottom: 1px solid #eee;">${akun.nama}</td>
+                <td style="padding: 10px; border-bottom: 1px solid #eee;">${akun.email}</td>
+                <td style="padding: 10px; border-bottom: 1px solid #eee;">
+                    <button class="btn-hapus-secure" style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">Hapus</button>
+                </td>
+            `;
+            
+            row.querySelector('.btn-hapus-secure').addEventListener('click', function() {
+                if(confirm(`Apakah Anda yakin ingin menghapus permanen akun: ${akun.email}?`)) {
+                    eksekusiHapusAkunOlehAdmin(akun.email, akun.nama);
+                }
             });
-    };
+            
+            tbody.appendChild(row);
+        });
+    }
 
-    // Kebutuhan 3: Fitur Operator untuk Menghapus Akun Pengguna
-    window.operatorHapusAkunUser = function(emailTarget) {
-        let indeksAkun = akunDatabaseLokal.findIndex(acc => acc.email === emailTarget.toLowerCase().trim());
+    function eksekusiHapusAkunOlehAdmin(emailTarget, namaTarget) {
+        let idx = akunDatabaseLokal.findIndex(acc => acc.email === emailTarget);
+        if(idx !== -1) akunDatabaseLokal.splice(idx, 1);
         
-        if (indeksAkun === -1) {
-            window.tampilkanNotifikasiGeo("Akun target tidak ditemukan atau sudah dihapus!", "gagal");
-            return;
-        }
-        
-        let namaTarget = akunDatabaseLokal[indeksAkun].nama;
-        
-        // Eksekusi penghapusan dari array lokal
-        akunDatabaseLokal.splice(indeksAkun, 1);
         localStorage.setItem('geo_accounts', JSON.stringify(akunDatabaseLokal));
         
-        window.tampilkanNotifikasiGeo("Mengirimkan konfirmasi penghapusan data ke core sistem...", "info");
+        window.tampilkanNotifikasiGeo("Menghapus akun dan mengirim log ke server...", "info");
         
         const templateParams = {
-            subject_email: "PENGHAPUSAN AKUN USER OLEH OPERATOR",
-            pesan_notifikasi: `Operator Sistem telah berhasil menghapus akun berikut secara permanen dari basis data:\nNama: ${namaTarget}\nEmail: ${emailTarget.toLowerCase()}`
+            subject_email: "LOG HAPUS AKUN - OPERATOR GEOPTRP",
+            pesan_notifikasi: `Operator resmi telah menghapus akun berikut dari sistem:\nNama: ${namaTarget}\nEmail: ${emailTarget}`
         };
 
         emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
             .then(() => {
-                window.tampilkanNotifikasiGeo(`Akun ${emailTarget} sukses dieliminasi total dari penyimpanan lokal dan arsip EmailJS.`, "sukses");
+                window.tampilkanNotifikasiGeo(`Akun ${emailTarget} berhasil dihapus dari sistem!`, "sukses");
+                renderTabelAdmin();
             }, () => {
-                window.tampilkanNotifikasiGeo("Penghapusan lokal berhasil, namun gagal memperbarui status log ke EmailJS.", "info");
+                window.tampilkanNotifikasiGeo("Akun terhapus lokal, gagal mengirim log ke EmailJS.", "info");
+                renderTabelAdmin();
             });
+    }
+
+    window.keluarDariAdmin = function() {
+        window.pindahKeView('login');
+    };
+
+    // =========================================================================
+    // FITUR BARU: RESET LUPA PASSWORD VIA OTP
+    // =========================================================================
+    window.prosesKirimOtpLupaPassword = function() {
+        const emailInput = document.getElementById('forgot-email').value.trim().toLowerCase();
+        
+        if(emailInput === "") {
+            window.tampilkanNotifikasiGeo("Silahkan ketik alamat email Anda!", "warning");
+            return;
+        }
+        
+        let akunCek = akunDatabaseLokal.find(acc => acc.email === emailInput);
+        if(!akunCek) {
+            window.tampilkanNotifikasiGeo("Email tersebut tidak terdaftar di sistem kami!", "gagal");
+            return;
+        }
+        
+        otpPemulihanSistem = Math.floor(100000 + Math.random() * 900000).toString();
+        emailTargetPemulihan = emailInput;
+        
+        window.tampilkanNotifikasiGeo("Sedang mengirimkan kode OTP pemulihan...", "info");
+        
+        const templateParams = {
+            subject_email: "KODE OTP PEMULIHAN PASSWORD - GEOPTRP",
+            pesan_notifikasi: `Halo ${akunCek.nama},\n\nAnda menerima pesan ini karena adanya permintaan reset kata sandi.\nBerikut adalah Kode OTP Pemulihan Anda: ${otpPemulihanSistem}\n\nJangan bagikan kode ini kepada siapa pun.`
+        };
+
+        emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
+            .then(() => {
+                window.tampilkanNotifikasiGeo("Kode OTP berhasil dikirim! Silahkan cek email.", "sukses");
+                window.pindahKeView('otp_forgot');
+            }, () => {
+                window.tampilkanNotifikasiGeo("Gagal mengirim kode OTP melalui gateway EmailJS.", "gagal");
+            });
+    };
+
+    window.verifikasiOtpLupaPassword = function() {
+        const inputOtp = document.getElementById('input-otp-forgot').value.trim();
+        
+        if(inputOtp === "") {
+            window.tampilkanNotifikasiGeo("Masukkan kode OTP yang dikirim ke email Anda!", "warning");
+            return;
+        }
+        
+        if(inputOtp === otpPemulihanSistem) {
+            window.tampilkanNotifikasiGeo("Verifikasi OTP Berhasil! Silahkan setel password baru.", "sukses");
+            window.pindahKeView('new_password');
+        } else {
+            window.tampilkanNotifikasiGeo("Kode OTP salah atau tidak sesuai!", "gagal");
+        }
+    };
+
+    window.simpanPasswordBaru = function() {
+        const pass1 = document.getElementById('new-pass-1').value.trim();
+        const pass2 = document.getElementById('new-pass-2').value.trim();
+        
+        if(pass1 === "" || pass2 === "") {
+            window.tampilkanNotifikasiGeo("Kedua kolom kata sandi tidak boleh kosong!", "warning");
+            return;
+        }
+        
+        if(pass1 !== pass2) {
+            window.tampilkanNotifikasiGeo("Konfirmasi password tidak cocok! Pastikan karakter sama persis.", "gagal");
+            return;
+        }
+        
+        if(pass1.length < 6) {
+            window.tampilkanNotifikasiGeo("Sandi baru minimal harus berukuran 6 karakter!", "warning");
+            return;
+        }
+        
+        let idx = akunDatabaseLokal.findIndex(acc => acc.email === emailTargetPemulihan);
+        if(idx !== -1) {
+            akunDatabaseLokal[idx].pass = pass1;
+            localStorage.setItem('geo_accounts', JSON.stringify(akunDatabaseLokal));
+            
+            window.tampilkanNotifikasiGeo("Selamat! Kata sandi akun Anda berhasil diperbarui.", "sukses");
+            
+            otpPemulihanSistem = "";
+            emailTargetPemulihan = "";
+            
+            window.pindahKeView('login');
+        } else {
+            window.tampilkanNotifikasiGeo("Terjadi kegagalan sinkronisasi data internal.", "gagal");
+        }
     };
 
     window.prosesVerifikasiOtpAdmin = function() {
