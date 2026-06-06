@@ -2202,51 +2202,61 @@ html, body {
     .bio-label { width: 50px !important; }
     .bio-footer-banner { padding: 10px 15px !important; font-size: 10.5px !important; }
     
-    /* POIN 2 & 3: PENGECILAN SUPER EKSTREM VERTIKAL POP-UP LOGIN (TETAP STABIL 1 KOLOM) */
+    /* POIN 2 & 3: PEMANGKASAN RADIKAL & LOCK HEIGHT SCROLL BOX POP-UP LOGIN */
     #modal-geo-login > div { 
-        max-width: 280px !important; /* Dipersempit agar boks vertikal terlihat proporsional dan manis */
+        max-width: 260px !important; /* Memperkecil lebar luar boks */
         width: 95% !important; 
         margin: 2px auto !important; 
     }
     #modal-geo-login div[style*="padding: 30px"] { 
-        padding: 10px 14px !important; /* Memangkas padding dalam boks */
-        max-height: 85vh !important;   /* Batas tinggi ketat agar tidak terpotong dock browser */
-        overflow-y: auto !important;   /* Fitur scroll aktif jika isi boks meluap */
+        padding: 6px 12px !important;  /* Padding super tipis */
+        height: 160px !important;      /* KUNCI EKSTREM: Tinggi boks dikunci mati hanya 160px */
+        max-height: 160px !important;
+        overflow-y: scroll !important; /* Memaksa scrollbar vertikal selalu aktif di dalam boks */
     }
     #modal-geo-login h2 { 
-        font-size: 13px !important; 
-        margin: 0 0 4px 0 !important; 
+        font-size: 11px !important; 
+        margin: 0 0 2px 0 !important; 
+        text-align: center !important;
     }
     #modal-geo-login input { 
-        padding: 4px 6px !important; 
-        font-size: 10px !important; 
-        height: 24px !important; /* Tinggi kotak input dikecilkan masif */
+        padding: 2px 5px !important; 
+        font-size: 9.5px !important; 
+        height: 20px !important; /* Ketebalan kotak input dipotong tipis */
     }
     .login-guide-box { 
-        padding: 5px 8px !important; 
-        margin-bottom: 4px !important; 
-        max-height: 75px !important; /* Membatasi tinggi boks panduan kuning */
-    }
-    .login-guide-box h4 { font-size: 10.5px !important; margin-bottom: 2px !important; }
-    .login-guide-box li { font-size: 9.5px !important; margin-bottom: 2px !important; }
-    
-    /* Merapatkan jarak vertikal antar elemen input form */
-    #box-login-view div, #box-signup-view div, #box-forgot-view div, #box-otp-view div { 
+        padding: 4px 6px !important; 
         margin-bottom: 3px !important; 
+        max-height: 55px !important; 
+    }
+    .login-guide-box h4 { font-size: 9.5px !important; margin-bottom: 1px !important; }
+    .login-guide-box li { font-size: 9px !important; margin-bottom: 1px !important; }
+    
+    /* Menghilangkan sisa space kosong antar elemen form di dalam scrollbox */
+    #box-login-view form, #box-signup-view form, #box-forgot-view form {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 2px !important;
+    }
+    #box-login-view div, #box-signup-view div, #box-forgot-view div, #box-otp-view div { 
+        margin-bottom: 1px !important; 
+        padding: 0 !important;
     }
     #box-login-view button, #box-signup-view button, #box-forgot-view button, #box-otp-view button { 
-        padding: 4px !important; 
-        font-size: 11px !important; 
-        height: 26px !important; 
+        padding: 2px !important; 
+        font-size: 10px !important; 
+        height: 22px !important; /* Tombol dibuat tipis */
         margin-top: 2px !important;
     }
     
-    /* Merapatkan teks opsi link paling bawah (Daftar akun / Lupa password) */
+    /* Pengaturan baris link paling bawah agar rapat dan tidak memakan space */
     #box-login-view div[style*="justify-content: space-between"] {
-        margin-top: 4px !important;
-        font-size: 9.5px !important;
+        margin-top: 3px !important;
+        font-size: 9px !important;
+        display: flex !important;
+        flex-direction: row !important;
     }
-    
+
     /* Perbaikan Pop-up Pernyataan (Disclaimer) & Segala Peringatan */
     .disclaimer-box { 
         max-height: 85vh !important; 
