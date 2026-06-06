@@ -2349,70 +2349,48 @@ html, body {
 } /* <-- Batas penutup mutlak untuk media query landscape agar tidak bocor */
 
 /* ==========================================================================
-   SUNTIKAN PERBAIKAN: KHUSUS HP MODE DESKTOP POTRAIT
+   SUNTIKAN PERBAIKAN: KHUSUS HP MODE DESKTOP POTRAIT (FORCE MOBILE WARNING OVERLAY)
    ========================================================================== */
 @media screen and (max-width: 1025px) and (orientation: portrait) {
-    /* Laptop Aman: Pernyataan disclaimer dibiarkan normal bawaan laptop asli jika diakses lewat mode desktop */
-    .disclaimer-box { 
-        max-width: 600px !important; 
-        width: 90% !important; 
-        max-height: none !important; 
-    }
-
-    /* Membersihkan / Menghapus total tombol Zoom to Ceper dan tombol Hapus Layer Utama di sidebar */
-    .btn-zoom, .btn-delete { display: none !important; }
-
-    /* FIX: Memaksa Grid Dosen diperkecil masif dan disamaratakan sejajar tegak lurus 4 kolom horizontal */
-    .lecturer-profile-grid {
-        display: grid !important;
-        grid-template-columns: repeat(4, 1fr) !important; /* Dikunci paksa menjadi sejajar 4 dosen */
-        gap: 8px !important;
-        padding: 0 2% !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
-    .lecturer-card {
-        width: 100% !important;
-        box-sizing: border-box !important;
-        padding: 10px 5px !important;
-    }
-    .lecturer-avatar-box {
-        width: 65px !important;
-        height: 85px !important;
-        margin-bottom: 6px !important;
-    }
-    .lecturer-name {
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        font-size: 8px !important;
-    }
-    .lecturer-nip, .lecturer-title { font-size: 7px !important; }
-
-    /* FIX AGAR NAIK SIGNIFIKAN: Menaikkan Koordinat Kursor, Tombol Alat, Dashboard agar bebas dari dock browser HP */
-    .floating-bottom-right { 
-        bottom: 165px !important; 
-        right: 15px !important; 
-        z-index: 9999 !important;
-    }
-    .mouse-position,
-    #map .ol-overlaycontainer-stopevent .mouse-position {
-        bottom: 165px !important; 
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        z-index: 9999 !important;
-        min-width: 250px !important;
-        padding: 8px 15px !important;
-        font-size: 11px !important;
-        position: absolute !important;
+    /* Memaksa overlay peringatan merah rotasi HP muncul secara mutlak */
+    #mobile-warning-overlay {
         display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background-color: rgba(15, 25, 20, 0.99) !important;
+        z-index: 1000000 !important; /* Menimpa segalanya */
     }
-    .measure-options { 
-        bottom: 220px !important; 
+
+    /* Memastikan boks kartu peringatan di dalam overlay tetap rapi di tengah */
+    .warning-card {
+        display: block !important;
+        background: white !important;
+        padding: 25px 20px !important;
+        border-radius: 16px !important;
+        text-align: center !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important;
+        max-width: 420px !important;
+        width: 90% !important;
+        margin: auto !important;
     }
-    #instansi-toolsetbox, #admin-toolsetbox {
-        bottom: 220px !important;
-        z-index: 10005 !important;
+
+    /* Memaksa icon rotasi HP tetap beranimasi berputar */
+    .warning-icon {
+        display: inline-block !important;
+        font-size: 50px !important;
+        color: #e74c3c !important;
+        margin-bottom: 12px !important;
+        animation: rotatePhone 2.5s infinite ease-in-out !important;
+    }
+
+    /* Menyembunyikan seluruh konten utama halaman di belakang agar tidak bocor/bisa di-scroll */
+    body > *:not(#mobile-warning-overlay) {
+        display: none !important;
     }
 }
 
@@ -2441,29 +2419,6 @@ html, body {
     #modal-geo-login div[style*="padding: 30px"] {
         padding: 25px !important; /* Padding dinaikkan sedikit agar boks terasa lebih lega */
         max-height: calc(100vh - 40px) !important; /* Ditambah tingginya agar lebih proporsional */
-    }
-
-    /* Fix Peletakan Panduan Fitur Sejajar Tengah & Proporsional */
-    #tab-panduan {
-        max-width: 1200px !important; /* Disamakan dengan max-width Syarat Ketentuan */
-        width: 100% !important;
-        padding: 30px 4% !important; /* Memberikan space jeda yang pas, tidak mepet bingkai */
-        margin: 20px auto !important; /* Otomatis rata tengah */
-        box-sizing: border-box !important;
-    }
-    .panduan-layout {
-        display: grid !important;
-        grid-template-columns: 260px 1fr !important; /* Distribusi ruang menu kiri dan display kanan */
-        gap: 35px !important; /* Jarak antar komponen dibuat lega sejajar tata letak boks atas */
-        align-items: start !important;
-    }
-    .panduan-menu-item {
-        padding: 12px 18px !important; /* Ketebalan bar menu disesuaikan agar rapi */
-        font-size: 13px !important;
-    }
-    .panduan-display {
-        padding: 20px !important;
-        min-height: 260px !important;
     }
 
     /* FIX: Tinggi peta disesuaikan dan diposisikan aman */
