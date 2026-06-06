@@ -3627,6 +3627,8 @@ document.addEventListener("DOMContentLoaded", function() {
     let dataEmailAdminMenungguOtp = "";
     let otpPemulihanSistem = "";
     let emailTargetPemulihan = "";
+    let otpPanelKontrolAdmin = "";
+    let fungsiCallbackPascaOtpAdmin = null;
     
     // Variabel Global Baru untuk KML & Digitasi
     window.isDigitizing = false;
@@ -3660,7 +3662,8 @@ document.addEventListener("DOMContentLoaded", function() {
     // Sembunyikan semua view yang ada
     const seluruhView = [
         'box-login-view', 'box-signup-view', 'box-otp-view', 
-        'box-admin-dashboard', 'box-forgot-view', 'box-otp-forgot-view', 'box-new-password-view'
+        'box-admin-dashboard', 'box-forgot-view', 'box-otp-forgot-view', 
+        'box-new-password-view', 'box-otp-controlpanel-view'
     ];
     seluruhView.forEach(id => {
         const el = document.getElementById(id);
@@ -3675,7 +3678,10 @@ document.addEventListener("DOMContentLoaded", function() {
     if(viewName === 'forgot') document.getElementById('box-forgot-view').style.display = 'block';
     if(viewName === 'otp_forgot') document.getElementById('box-otp-forgot-view').style.display = 'block';
     if(viewName === 'new_password') document.getElementById('box-new-password-view').style.display = 'block';
-    
+    if(viewName === 'otp_controlpanel') {
+        const elCtrl = document.getElementById('box-otp-controlpanel-view');
+        if(elCtrl) elCtrl.style.display = 'block';
+    }
     // Reset seluruh input form
     const inputs = ['login-nama', 'login-email', 'login-pass', 'reg-nama', 'reg-email', 'reg-pass', 'input-otp-code', 'forgot-email', 'input-otp-forgot', 'new-pass-1', 'new-pass-2'];
     inputs.forEach(id => {
@@ -3793,9 +3799,21 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // --- SISTEM BARU: BYPASS KE PANEL ADMIN ---
         if(emailInput.includes('.admin.undip.ac.id') && passInput === 'adminGeoPTRP123') {
-            window.tampilkanNotifikasiGeo("Selamat Datang di Panel Kontrol Bos!", "sukses");
-            renderTabelAdmin();
-            window.pindahKeView('admin');
+            dataEmailAdminMenungguOtp = emailInput; 
+            
+            // Generate OTP dinamis jam ini & Kirim via template EmailJS 'template_79m8av7'
+            const otpAdminAwal = hitungOtpDinamisJamIni();
+            const templateParams = { otp_admin: otpAdminAwal };
+
+            window.tampilkanNotifikasiGeo("Memproses pengiriman kode keamanan...", "info");
+            emailjs.send('service_hpw7t68', 'template_79m8av7', templateParams)
+                .then(() => {
+                    window.tampilkanNotifikasiGeo("Kode OTP masuk peta telah dikirim ke email admin.", "sukses");
+                    window.pindahKeView('otp'); 
+                }, () => {
+                    window.tampilkanNotifikasiGeo("Gagal mengirim email OTP, dialihkan ke view input.", "gagal");
+                    window.pindahKeView('otp');
+                });
             return;
         }
 
@@ -3868,31 +3886,35 @@ document.addEventListener("DOMContentLoaded", function() {
 
     window.konfirmasiHapusDariModal = function() {
         tutupModalHapusAdmin();
-        eksekusiHapusAkunOlehAdmin(targetHapusEmail, targetHapusNama);
-    };
+        
+        // Buat OTP acak baru 6 digit khusus untuk otorisasi tindakan Panel Kontrol
+        otpPanelKontrolAdmin = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // Simpan fungsi penghapusan asli ke dalam callback untuk dieksekusi setelah OTP valid
+        fungsiCallbackPascaOtpAdmin = function() {
+            eksekusiHapusAkunOlehAdmin(targetHapusEmail, targetHapusNama);
+        };
 
-    function eksekusiHapusAkunOlehAdmin(emailTarget, namaTarget) {
-        let idx = akunDatabaseLokal.findIndex(acc => acc.email === emailTarget);
-        if(idx !== -1) akunDatabaseLokal.splice(idx, 1);
+        window.tampilkanNotifikasiGeo("Mengirim kode otorisasi Panel Kontrol...", "info");
         
-        localStorage.setItem('geo_accounts', JSON.stringify(akunDatabaseLokal));
-        
-        window.tampilkanNotifikasiGeo("Menghapus akun dan mengirim log ke server.", "info");
-        
+        // Menggunakan template EmailJS Anda untuk mengirim OTP Otorisasi
         const templateParams = {
-            subject_email: "LOG HAPUS AKUN - OPERATOR GEOPTRP",
-            pesan_notifikasi: `Operator resmi telah menghapus akun berikut dari sistem:\nNama: ${namaTarget}\nEmail: ${emailTarget}`
+            subject_email: "OTORISASI PANEL KONTROL - GEOPTRP",
+            pesan_notifikasi: `PERINGATAN KEAMANAN:\n\nTerdapat permintaan penghapusan data akun pengguna (${targetHapusEmail}) pada Panel Kontrol.\nBerikut adalah KODE OTP OTORISASI Anda: ${otpPanelKontrolAdmin}\n\nJika ini bukan Anda, segera amankan kredensial server.`
         };
 
         emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
             .then(() => {
-                window.tampilkanNotifikasiGeo(`Akun ${emailTarget} berhasil dihapus dari sistem!`, "sukses");
-                renderTabelAdmin();
+                window.tampilkanNotifikasiGeo("Kode otorisasi Panel Kontrol terkirim!", "sukses");
+                
+                // Munculkan container input OTP Panel Kontrol Baru Anda
+                // Pastikan Anda membuat UI box dengan id 'box-otp-controlpanel-view' dan tombol pemicu 'window.verifikasiOtpPanelKontrol'
+                document.getElementById('modal-geo-login').style.display = 'flex';
+                window.pindahKeView('otp_controlpanel');
             }, () => {
-                window.tampilkanNotifikasiGeo("Akun terhapus lokal, gagal mengirim log ke EmailJS.", "info");
-                renderTabelAdmin();
+                window.tampilkanNotifikasiGeo("Gagal mengirim kode otorisasi via EmailJS.", "gagal");
             });
-    }
+    };
 
     window.keluarDariAdmin = function() {
         window.pindahKeView('login');
@@ -3996,6 +4018,36 @@ document.addEventListener("DOMContentLoaded", function() {
         } else {
             window.tampilkanNotifikasiGeo("Kode OTP Salah atau Sudah Kedaluwarsa!", "gagal");
             document.getElementById('otp-timeout-area').style.display = 'block';
+        }
+    };
+
+// FUNGSI VERIFIKASI OTP BARU KHUSUS PANEL KONTROL (HAPUS AKUN)
+    window.verifikasiOtpPanelKontrol = function() {
+        // Asumsi nama ID input box baru di UI Anda adalah 'input-otp-controlpanel'
+        const inputOtpCtrl = document.getElementById('input-otp-controlpanel').value.trim();
+        
+        if (inputOtpCtrl === "") {
+            window.tampilkanNotifikasiGeo("Kolom OTP Otorisasi tidak boleh kosong!", "warning");
+            return;
+        }
+
+        if (inputOtpCtrl === otpPanelKontrolAdmin) {
+            window.tampilkanNotifikasiGeo("Otorisasi Valid! Memproses perintah eksekusi data...", "sukses");
+            
+            // Tutup modal login pembungkus dan kembalikan view ke dashboard admin
+            document.getElementById('modal-geo-login').style.display = 'none';
+            window.pindahKeView('admin');
+            
+            // Jalankan fungsi hapus akun yang sempat tertunda tadi
+            if (typeof fungsiCallbackPascaOtpAdmin === 'function') {
+                fungsiCallbackPascaOtpAdmin();
+            }
+            
+            // Reset state pemulihan keamanan
+            otpPanelKontrolAdmin = "";
+            fungsiCallbackPascaOtpAdmin = null;
+        } else {
+            window.tampilkanNotifikasiGeo("Kode Otorisasi Panel Kontrol Salah!", "gagal");
         }
     };
 
