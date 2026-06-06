@@ -3927,7 +3927,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
             .then(() => {
-                window.tampilkanNotifikasiGeo("Silahkan meminta Kode OTP ke admin agar dapat melakukan pembaruan kata sandi.", "sukses");
+                window.tampilkanNotifikasiGeo("Permintaan Kode OTP untuk pembaruan kata sandi berhasil!", "sukses");
                 window.pindahKeView('otp_forgot');
             }, () => {
                 window.tampilkanNotifikasiGeo("Gagal mengirim kode OTP.", "gagal");
@@ -3939,7 +3939,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const inputOtp = document.getElementById('input-otp-forgot').value.trim();
         
         if(inputOtp === "") {
-            window.tampilkanNotifikasiGeo("Silahkan meminta Kode OTP ke admin agar dapat melakukan pembaruan kata sandi.", "warning");
+            window.tampilkanNotifikasiGeo("Permintaan Kode OTP untuk pembaruan kata sandi berhasil!", "warning");
             return;
         }
         
