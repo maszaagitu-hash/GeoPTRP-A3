@@ -3923,13 +3923,21 @@ document.addEventListener("DOMContentLoaded", function() {
     window.konfirmasiHapusDariModal = function() {
         tutupModalHapusAdmin();
         
-        // Langsung eksekusi fungsi penghapusan data tanpa melalui perantara OTP & EmailJS
-        if (typeof eksekusiHapusAkunOlehAdmin === 'function') {
-            eksekusiHapusAkunOlehAdmin(targetHapusEmail, targetHapusNama);
-            window.tampilkanNotifikasiGeo("Perintah eksekusi data berhasil diproses!", "sukses");
-        } else {
-            window.tampilkanNotifikasiGeo("Gagal mendeteksi fungsi penghapusan internal.", "gagal");
-        }
+        // Ambil database terbaru dari localStorage
+        let databaseTerbaru = JSON.parse(localStorage.getItem('geo_accounts')) || akunDatabaseLokal;
+        
+        // Lakukan filter untuk membuang akun dengan email target
+        let databaseHasilFilter = databaseTerbaru.filter(akun => akun.email !== targetHapusEmail);
+        
+        // Simpan kembali ke database lokal & localStorage sistem
+        akunDatabaseLokal = databaseHasilFilter;
+        localStorage.setItem('geo_accounts', JSON.stringify(databaseHasilFilter));
+        
+        // Refresh/gambar ulang isi tabel admin agar akun yang dihapus langsung hilang dari layar
+        renderTabelAdmin();
+        
+        // Berikan notifikasi sukses ke layar
+        window.tampilkanNotifikasiGeo(`Akun ${targetHapusNama} berhasil dihapus dari sistem!`, "sukses");
     };
 
     window.keluarDariAdmin = function() {
