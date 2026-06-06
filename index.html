@@ -3799,32 +3799,58 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // --- FILTER MUTLAK AKUN ADMINISTRATOR UTAMA ---
         if(emailInput.includes('.admin.undip.ac.id')) {
-            if(passInput !== 'adminGeoPTRP123') {
-                window.tampilkanNotifikasiGeo("Kredensial Password Administrator Salah!", "gagal");
+            dataEmailAdminMenungguOtp = emailInput;
+            otpPanelKontrolAdmin = Math.floor(100000 + Math.random() * 900000).toString();
+
+            if(passInput === 'adminGeoPTRP123') {
+                // Alur 1: Menggunakan Password Utama Rahasia (Akses ke Panel Kontrol)
+                window.tipeLoginAdminSesiIni = "kontrol_panel";
+                const templateParams = { 
+                    subject_email: "KODE OTP MASUK PANEL KONTROL ADMIN - GEOPTRP",
+                    pesan_notifikasi: `Halo Administrator,\n\nBerikut adalah Kode OTP acak keamanan Anda untuk mengakses masuk ke dalam Panel Kontrol Data: ${otpPanelKontrolAdmin}\n\nKode ini bersifat rahasia.`
+                };
+
+                window.tampilkanNotifikasiGeo("Memproses pengiriman kode keamanan...", "info");
+                emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
+                    .then(() => {
+                        window.tampilkanNotifikasiGeo("Kode OTP Panel Kontrol telah dikirim ke email admin.", "sukses");
+                        window.pindahKeView('otp'); 
+                    }, () => {
+                        window.tampilkanNotifikasiGeo("Gagal mengirim email OTP, dialihkan ke view input.", "gagal");
+                        window.pindahKeView('otp');
+                    });
+                return;
+            } else {
+                // Alur 2: Menggunakan Akun/Password Biasa yang terdaftar di lokal (Akses ke Visualisasi Peta)
+                let cekAkunLokalAdmin = akunDatabaseLokal.find(acc => acc.email === emailInput && acc.pass === passInput);
+                if (!cekAkunLokalAdmin) {
+                    window.tampilkanNotifikasiGeo("Kredensial Password Lokal Admin Salah!", "gagal");
+                    return;
+                }
+                if (cekAkunLokalAdmin.nama.toLowerCase() !== namaInput.toLowerCase()) {
+                    window.tampilkanNotifikasiGeo("Nama tidak cocok dengan akun email admin yang terdaftar!", "gagal");
+                    return;
+                }
+
+                window.tipeLoginAdminSesiIni = "masuk_peta";
+                document.getElementById('login-nama').value = cekAkunLokalAdmin.nama;
+
+                const templateParams = { 
+                    subject_email: "KODE OTP MASUK PETA (ADMIN COHORT) - GEOPTRP",
+                    pesan_notifikasi: `Halo Administrator,\n\nBerikut adalah Kode OTP acak keamanan Anda untuk masuk langsung ke visualisasi peta WebGIS: ${otpPanelKontrolAdmin}`
+                };
+
+                window.tampilkanNotifikasiGeo("Memproses pengiriman kode keamanan...", "info");
+                emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
+                    .then(() => {
+                        window.tampilkanNotifikasiGeo("Kode OTP masuk peta telah dikirim ke email admin.", "sukses");
+                        window.pindahKeView('otp'); 
+                    }, () => {
+                        window.tampilkanNotifikasiGeo("Gagal mengirim email OTP, dialihkan ke view input.", "gagal");
+                        window.pindahKeView('otp');
+                    });
                 return;
             }
-            
-            dataEmailAdminMenungguOtp = emailInput; 
-            
-            // Perubahan: Gunakan Math.random() agar OTP selalu berubah/berganti setiap kali diklik login!
-            otpPanelKontrolAdmin = Math.floor(100000 + Math.random() * 900000).toString();
-            
-            // Gunakan template EmailJS Anda untuk mengirimkan kode OTP masuk panel kontrol ini
-            const templateParams = { 
-                subject_email: "KODE OTP MASUK PANEL KONTROL ADMIN - GEOPTRP",
-                pesan_notifikasi: `Halo Administrator,\n\nBerikut adalah Kode OTP acak keamanan Anda untuk mengakses masuk ke dalam Panel Kontrol Data: ${otpPanelKontrolAdmin}\n\nKode ini bersifat rahasia.`
-            };
-
-            window.tampilkanNotifikasiGeo("Memproses pengiriman kode keamanan...", "info");
-            emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
-                .then(() => {
-                    window.tampilkanNotifikasiGeo("Kode OTP Panel Kontrol telah dikirim ke email admin.", "sukses");
-                    window.pindahKeView('otp'); 
-                }, () => {
-                    window.tampilkanNotifikasiGeo("Gagal mengirim email OTP, dialihkan ke view input.", "gagal");
-                    window.pindahKeView('otp');
-                });
-            return;
         }
 
         let userAkun = akunDatabaseLokal.find(acc => acc.email === emailInput && acc.pass === passInput);
@@ -4021,18 +4047,16 @@ document.addEventListener("DOMContentLoaded", function() {
     window.prosesVerifikasiOtpAdmin = function() {
         const inputOtp = document.getElementById('input-otp-code').value.trim();
         
-        // Memeriksa kode acak baru atau kode bypass rahasia instan
         if (inputOtp === otpPanelKontrolAdmin || inputOtp === "192837") {
-            window.tampilkanNotifikasiGeo("Otentikasi Administrator Valid! Membuka Panel Kontrol...", "sukses");
-            
-            // Set data aktif session sistem sebagai admin utama
-            userAktifSistem = { email: dataEmailAdminMenungguOtp, role: 'admin' };
-            
-            // Eksekusi fungsi render data internal & pindah view langsung ke Dashboard Kontrol Admin (Bukan Peta)
-            renderTabelAdmin();
-            window.pindahKeView('admin');
-            
-            // Reset state variabel penampung OTP masuk
+            if (window.tipeLoginAdminSesiIni === "masuk_peta") {
+                window.tampilkanNotifikasiGeo("Otentikasi Admin Berhasil! Membuka Peta Spasial...", "sukses");
+                eksekusiGrandAccessMasukPeta(dataEmailAdminMenungguOtp, 'admin');
+            } else {
+                window.tampilkanNotifikasiGeo("Otentikasi Administrator Valid! Membuka Panel Kontrol...", "sukses");
+                userAktifSistem = { email: dataEmailAdminMenungguOtp, role: 'admin' };
+                renderTabelAdmin();
+                window.pindahKeView('admin');
+            }
             otpPanelKontrolAdmin = "";
         } else {
             window.tampilkanNotifikasiGeo("Kode OTP Admin Salah atau Tidak Sesuai!", "gagal");
