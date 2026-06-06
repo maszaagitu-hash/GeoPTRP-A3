@@ -2214,10 +2214,15 @@ html, body {
         max-height: 160px !important;
         overflow-y: scroll !important; /* Memaksa scrollbar vertikal selalu aktif di dalam boks */
     }
-    #modal-geo-login h2 { 
-        font-size: 11px !important; 
-        margin: 0 0 2px 0 !important; 
+    
+    /* FIX: Memperkecil teks judul view login ("Mulai Jelajahi GeoPTRP", dll) secara masif */
+    #modal-geo-login h2,
+    #box-login-view h2, #box-signup-view h2, #box-forgot-view h2, #box-otp-view h2 { 
+        font-size: 10px !important; 
+        margin: 0 0 3px 0 !important; 
         text-align: center !important;
+        line-height: 1.2 !important;
+        font-weight: 700 !important;
     }
     #modal-geo-login input { 
         padding: 2px 5px !important; 
@@ -2242,16 +2247,18 @@ html, body {
         margin-bottom: 1px !important; 
         padding: 0 !important;
     }
+    
+    /* FIX: Mengecilkan tombol dan menggeser tombol aksi utama / masuk sebagai tamu agak ke bawah sedikit */
     #box-login-view button, #box-signup-view button, #box-forgot-view button, #box-otp-view button { 
         padding: 2px !important; 
         font-size: 10px !important; 
-        height: 22px !important; /* Tombol dibuat tipis */
-        margin-top: 2px !important;
+        height: 22px !important; 
+        margin-top: 6px !important; /* Diberi space sedikit agar agak ke bawah dari input/elemen atasnya */
     }
     
-    /* Pengaturan baris link paling bawah agar rapat dan tidak memakan space */
+    /* FIX: Pengaturan baris opsi paling bawah (Lupa Kata Sandi / Daftar Akun) agar bergeser agak ke bawah sedikit */
     #box-login-view div[style*="justify-content: space-between"] {
-        margin-top: 3px !important;
+        margin-top: 10px !important; /* Memberi jarak vertikal agar turun agak ke bawah */
         font-size: 9px !important;
         display: flex !important;
         flex-direction: row !important;
