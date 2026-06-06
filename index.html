@@ -3853,23 +3853,31 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
 
-        let userAkun = akunDatabaseLokal.find(acc => acc.email === emailInput && acc.pass === passInput);
-
-        if (!userAkun) {
-            window.tampilkanNotifikasiGeo("Email atau Password salah! Periksa kembali otentikasi Anda.", "gagal");
+        // --- VALIDASI EMAIL & PASSWORD AKUN INSTANSI/MAHASISWA ---
+        // 1. Cek apakah email terdaftar di database
+        let emailDitemukan = akunDatabaseLokal.some(acc => acc.email === emailInput);
+        
+        if (!emailDitemukan) {
+            window.tampilkanNotifikasiGeo("Akun belum terdaftar di sistem! Silahkan registrasi terlebih dahulu.", "gagal");
             return;
         }
 
-        // VALIDASI NAMA HARUS SESUAI (Case Insensitive agar tidak kaku pada huruf besar/kecil)
+        // 2. Jika email ada, cari yang password-nya cocok
+        let userAkun = akunDatabaseLokal.find(acc => acc.email === emailInput && acc.pass === passInput);
+
+        if (!userAkun) {
+            window.tampilkanNotifikasiGeo("Kata sandi (Password) yang Anda masukkan salah!", "gagal");
+            return;
+        }
+
+        // 3. Validasi kesesuaian Nama Pengguna
         if (userAkun.nama.toLowerCase() !== namaInput.toLowerCase()) {
             window.tampilkanNotifikasiGeo("Nama pengguna tidak cocok dengan akun email yang terdaftar!", "gagal");
             return;
         }
         
-        // Otomatis merapikan huruf kapital pada input box sesuai database
+        // Jika semua lolos, rapikan huruf kapital dan beri akses masuk peta
         document.getElementById('login-nama').value = userAkun.nama; 
-        
-        // Jika login berhasil, masuk ke WebGIS sesuai role
         eksekusiGrandAccessMasukPeta(emailInput, userAkun.role);
     };
 
