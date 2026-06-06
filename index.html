@@ -2158,7 +2158,7 @@ html, body {
     .info-text p { text-align: justify !important; font-size: 12px !important; line-height: 1.5 !important; }
     .btn-explore-yellow { padding: 8px 20px !important; font-size: 12px !important; }
 
-    /* 5. SYARAT KETENTUAN & KOTAK PANDUAN (PELETAKAN SEPERTI LAPTOP & DIKECILKAN) */
+    /* 5. SYARAT KETENTUAN & KOTAK PANDUAN */
     .tag-flex-container { display: flex !important; flex-direction: row !important; gap: 20px !important; }
     .tag-left-col { flex: 1.3 !important; }
     .tag-right-col { flex: 0.7 !important; min-width: 220px !important; }
@@ -2171,51 +2171,71 @@ html, body {
     .gb-icon { width: 40px !important; height: 40px !important; margin-bottom: 8px !important; }
     .gb-icon i { font-size: 18px !important; }
 
-    /* 6. HALAMAN PANDUAN FITUR (PELETAKAN SEPERTI LAPTOP KIRI & KANAN) */
+    /* 6. HALAMAN PANDUAN FITUR */
     .panduan-layout { display: grid !important; grid-template-columns: 220px 1fr !important; gap: 15px !important; }
     .panduan-menu { display: block !important; overflow-x: visible !important; }
     .panduan-menu-item { width: 100% !important; padding: 10px 15px !important; font-size: 12px !important; border-left: 4px solid #ddd !important; border-bottom: none !important; margin-bottom: 5px !important; }
     .panduan-menu-item.active { border-left: 4px solid #1e3799 !important; border-bottom: none !important; }
 
-    /* 7. ABOUT US (3 PANEL SEJAJAR KECIL SEPERTI LAPTOP) */
+    /* 7. ABOUT US */
     .about-cards-3-grid { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 15px !important; }
     .about-card-item { padding: 12px 10px !important; }
     .about-card-item h3 { font-size: 11px !important; }
     .about-card-item p { font-size: 10px !important; }
     .about-card-image-box { width: 40px !important; height: 40px !important; margin-bottom: 8px !important; }
 
-    /* 8. POP-UP MODAL VISI MISI & POP-UP LOGIN (DIKECILKAN AGAR TIDAK KEPOTONG LAYAR HP) */
+    /* 8. POP-UP MODAL VISI MISI */
     .about-popup-box { max-width: 460px !important; width: 95% !important; margin: auto !important; }
     .about-popup-header { padding: 10px 15px !important; }
     .about-popup-body { padding: 12px 15px !important; }
     .popup-text-content-pane { max-height: 120px !important; font-size: 11px !important; }
     
-    /* UPDATE FIX NOMOR 8: Pengecilan super aman Pop-up Login & Pernyataan Disclaimer agar tidak jebol layar landscape */
-    #modal-geo-login > div { max-width: 340px !important; width: 95% !important; margin: 5px auto !important; }
+    /* POIN 1: PENGECILAN KARTU BIODATA ANGGOTA (Agar tidak terpotong di Landscape HP) */
+    .bio-modal-box { max-width: 480px !important; width: 95% !important; max-height: 90vh !important; overflow-y: auto !important; }
+    .bio-banner { height: 35px !important; }
+    .bio-close { font-size: 22px !important; right: 15px !important; }
+    .bio-modal-left { flex: 0 0 32% !important; }
+    .bio-modal-right { padding: 12px 15px !important; }
+    #modal-target-name { font-size: 15px !important; }
+    .bio-role-badge { font-size: 10px !important; margin-bottom: 8px !important; padding-bottom: 3px !important; }
+    .bio-row { font-size: 11px !important; margin-bottom: 4px !important; }
+    .bio-label { width: 50px !important; }
+    .bio-footer-banner { padding: 10px 15px !important; font-size: 10.5px !important; }
+    
+    /* POIN 2 & 3: PENGECILAN EKSTREM POP-UP LOGIN & SEGALA MACAM PERINGATAN (Maksimal tinggi + Scroll) */
+    #modal-geo-login > div { max-width: 310px !important; width: 95% !important; margin: 5px auto !important; }
     #modal-geo-login div[style*="padding: 30px"] { 
-        padding: 12px !important; 
-        max-height: 85vh !important; 
+        padding: 15px !important; 
+        max-height: 80vh !important; 
         overflow-y: auto !important; 
     }
     #modal-geo-login input { padding: 6px !important; font-size: 11px !important; }
-    .login-guide-box { padding: 6px !important; margin-bottom: 6px !important; }
-    #box-login-view div { margin-bottom: 5px !important; }
-    #box-login-view button { padding: 8px !important; font-size: 12px !important; }
+    .login-guide-box { padding: 6px !important; margin-bottom: 6px !important; max-height: 100px !important; }
+    #box-login-view div { margin-bottom: 4px !important; }
+    #box-login-view button { padding: 8px !important; font-size: 11px !important; }
 
-    /* Perbaikan Pop-up Pernyataan (Disclaimer) */
+    /* Perbaikan Pop-up Pernyataan (Disclaimer) & Segala Peringatan */
     .disclaimer-box { 
-        max-height: 90vh !important; 
-        padding: 15px !important; 
+        max-height: 85vh !important; 
+        padding: 12px !important; 
         overflow-y: auto !important; 
         width: 95% !important;
     }
-    .disclaimer-title { font-size: 15px !important; margin-bottom: 8px !important; }
-    .disclaimer-text { max-height: 120px !important; font-size: 11px !important; padding: 10px !important; }
+    .disclaimer-title { font-size: 14px !important; margin-bottom: 6px !important; }
+    .disclaimer-text { max-height: 90px !important; font-size: 10.5px !important; padding: 8px !important; }
     
+    /* Peringatan Kunci Orientasi Layar Terpotong */
+    .warning-card { padding: 15px !important; max-width: 320px !important; max-height: 85vh !important; overflow-y: auto !important; }
+    .warning-icon { font-size: 30px !important; margin-bottom: 6px !important; }
+    .warning-card h2 { font-size: 15px !important; }
+    .warning-card p { font-size: 11px !important; }
+    .highlight-text { padding: 8px !important; margin-top: 8px !important; font-size: 11px !important; }
+    #btn-warning-ok { padding: 8px !important; font-size: 12px !important; margin-top: 10px !important; }
+
     /* Perbaikan Peta Terpotong di Mode Biasa Landscape */
     #map { height: calc(100vh - 46px) !important; }
 
-    /* 9. ANGGOTA, DOSEN, DAN KONTAK KAMI (SEPERTI LAPTOP SEJAJAR TAPI DIKECILKAN) */
+    /* 9. ANGGOTA, DOSEN, DAN KONTAK KAMI */
     .about-profile-grid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 10px !important; }
     .simple-profile-card { padding: 10px 5px !important; }
     .avatar-container { width: 60px !important; height: 65px !important; margin-bottom: 5px !important; }
@@ -2242,18 +2262,19 @@ html, body {
     .contact-map-frame-wrapper { height: 180px !important; }
     .map-floating-banner { font-size: 8px !important; padding: 4px 8px !important; bottom: 15px !important; }
 
-    /* 10. JELAJAHI GEOPTRP (ALAT UKUR, DASHBOARD, DAN KOORDINAT JURUS KURSOR) */
-    /* FIX: Menaikkan tombol agar melayang aman dari sistem navigasi HP biasa landscape */
-    .floating-bottom-right { bottom: 45px !important; right: 15px !important; gap: 8px !important; flex-direction: row !important; }
+    /* POIN 5: JELAJAHI GEOPTRP (Menaikkan Koordinat, Tombol Alat, Dashboard & Mengatur Jarak Menu Ukur) */
+    .floating-bottom-right { bottom: 65px !important; right: 15px !important; gap: 8px !important; flex-direction: row !important; }
     #btn-measure-tools, #btn-toggle-user-tools { width: 38px !important; height: 38px !important; font-size: 13px !important; }
     #btn-home { height: 38px !important; padding: 0 12px !important; font-size: 10px !important; border-radius: 20px !important; }
-    .measure-options { bottom: 88px !important; width: 130px !important; }
+    
+    /* Menggeser menu ukur tepat tipis berada sedikit di atas tombol alat */
+    .measure-options { bottom: 45px !important; right: 0 !important; width: 130px !important; box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important; }
     .measure-options button { padding: 8px !important; font-size: 10px !important; }
     
-    #instansi-toolsetbox { bottom: 88px !important; right: 0 !important; width: 220px !important; padding: 10px !important; }
-    #admin-toolsetbox { bottom: 88px !important; right: 0 !important; width: 220px !important; padding: 10px !important; z-index: 1004 !important; }
+    #instansi-toolsetbox { bottom: 45px !important; right: 0 !important; width: 220px !important; padding: 10px !important; }
+    #admin-toolsetbox { bottom: 45px !important; right: 0 !important; width: 220px !important; padding: 10px !important; z-index: 1004 !important; }
 
-    /* FIX KUNCI: Memaksa widget koordinat tetap dipaksa muncul murni baik saat overlay atribut bidang terbuka ataupun tertutup di HP */
+    /* Memaksa boks widget koordinat naik mengikuti posisi tombol navigasi */
     .mouse-position, 
     #map .ol-overlaycontainer-stopevent .mouse-position {
         display: flex !important;
@@ -2261,7 +2282,7 @@ html, body {
         opacity: 1 !important;
         pointer-events: auto !important;
         position: absolute !important;
-        bottom: 45px !important; 
+        bottom: 65px !important; 
         left: 50% !important; 
         transform: translateX(-50%) !important;
         padding: 5px 15px !important; 
@@ -2283,7 +2304,6 @@ html, body {
     #search-input { padding: 5px !important; font-size: 10px !important; }
     #btn-search-coord, #btn-clear-search { padding: 4px 8px !important; font-size: 10px !important; height: 28px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; }
 } /* <-- Batas penutup mutlak untuk media query landscape agar tidak bocor */
-
 
 /* ==========================================================================
    SUNTIKAN PERBAIKAN: KHUSUS HP MODE DESKTOP POTRAIT
@@ -2425,6 +2445,16 @@ html, body {
     /* Memaksa Pop-up Pernyataan (Disclaimer) mengecil secara aman */
     .disclaimer-box { max-width: 480px !important; max-height: 85vh !important; padding: 15px !important; }
     .disclaimer-text { max-height: 90px !important; font-size: 11px !important; }
+}
+
+/* POIN 4 FIX: Menjamin teks hasil koordinat marker pin tetap dipaksa tampil di tengah layar boks */
+.mouse-position div[style*="border-bottom"], 
+.mouse-position span {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
 </style>
