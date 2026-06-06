@@ -3787,22 +3787,22 @@ document.addEventListener("DOMContentLoaded", function() {
         const passInput = document.getElementById('login-pass').value.trim();
         
         if (namaInput === "" || emailInput === "" || passInput === "") {
-            window.tampilkanNotifikasiGeo("Nama, Email, dan Password wajib diisi secara manual!", "gagal");
+            window.tampilkanNotifikasiGeo("Nama, Email, dan Password wajib diisi!", "gagal");
             return;
         }
 
-        // --- SISTEM BARU: BYPASS KE PANEL ADMIN ---
+        // --- SISTEM OTP UNTUK ADMIN ---
         if(emailInput.includes('.admin.undip.ac.id') && passInput === 'adminGeoPTRP123') {
-            window.tampilkanNotifikasiGeo("Selamat Datang Min! Membuka Panel Kontrol.", "sukses");
-            renderTabelAdmin();
-            window.pindahKeView('admin');
+            dataEmailAdminMenungguOtp = emailInput;
+            window.tampilkanNotifikasiGeo("Otentikasi Admin. Silahkan masukkan kode OTP.", "info");
+            window.pindahKeView('otp'); // Menggunakan view OTP yang sudah ada
             return;
         }
 
         let userAkun = akunDatabaseLokal.find(acc => acc.email === emailInput && acc.pass === passInput);
 
         if (!userAkun) {
-            window.tampilkanNotifikasiGeo("Email atau Password salah! Periksa kembali otentikasi Anda.", "gagal");
+            window.tampilkanNotifikasiGeo("Email atau Password salah!", "gagal");
             return;
         }
 
@@ -3944,7 +3944,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         
         if(inputOtp === otpPemulihanSistem) {
-            window.tampilkanNotifikasiGeo("Verifikasi OTP Berhasil! Silahkan setel password baru.", "sukses");
+            window.tampilkanNotifikasiGeo("Verifikasi OTP Berhasil! Silahkan perbarui password anda.", "sukses");
             window.pindahKeView('new_password');
         } else {
             window.tampilkanNotifikasiGeo("Kode OTP salah atau tidak sesuai!", "gagal");
