@@ -3768,7 +3768,7 @@ document.addEventListener("DOMContentLoaded", function() {
         // Menyiapkan parameter notifikasi untuk arsip EmailJS Anda
         const templateParams = {
             subject_email: "REGISTRASI USER BARU GEOPTRP",
-            pesan_notifikasi: `Pendaftaran Baru Berhasil Divalidasi:\nEmail: ${emailInput}\nHak Akses: ${detectedRole.toUpperCase()}\nPassword: ${passInput}`
+            pesan_notifikasi: `Pendaftaran Baru Berhasil Divalidasi:\nNama: ${namaInput}\nEmail: ${emailInput}\nHak Akses: ${detectedRole.toUpperCase()}\nPassword: ${passInput}`
         };
 
         emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
@@ -3805,8 +3805,15 @@ document.addEventListener("DOMContentLoaded", function() {
             window.tampilkanNotifikasiGeo("Email atau Password salah! Periksa kembali otentikasi Anda.", "gagal");
             return;
         }
+
+        // VALIDASI NAMA HARUS SESUAI (Case Insensitive agar tidak kaku pada huruf besar/kecil)
+        if (userAkun.nama.toLowerCase() !== namaInput.toLowerCase()) {
+            window.tampilkanNotifikasiGeo("Nama pengguna tidak cocok dengan akun email yang terdaftar!", "gagal");
+            return;
+        }
         
-        document.getElementById('login-nama').value = userAkun.nama;
+        // Otomatis merapikan huruf kapital pada input box sesuai database
+        document.getElementById('login-nama').value = userAkun.nama; 
         
         // Jika login berhasil, masuk ke WebGIS sesuai role
         eksekusiGrandAccessMasukPeta(emailInput, userAkun.role);
@@ -3909,23 +3916,26 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         
         otpPemulihanSistem = Math.floor(100000 + Math.random() * 900000).toString();
-        emailTargetPemulihan = emailInput;
+        emailTargetPemulihan = emailInput; // Ini tetap pakai format asli untuk mencari di database lokal
+        
+        // LOGIKA BARU: MENGHILANGKAN KATA '.admin' AGAR TERKIRIM KE EMAIL ASLI UNDIP
+        let emailPenerimaAsli = emailInput.replace('.admin.undip.ac.id', '.undip.ac.id');
         
         window.tampilkanNotifikasiGeo("Sedang mengirimkan kode OTP pemulihan...", "info");
         
         const templateParams = {
-            subject_email: "KODE OTP PEMULIHAN PASSWORD - GEOPTRP",
-            pesan_notifikasi: `Halo ${akunCek.nama},\n\nAnda menerima pesan ini karena adanya permintaan reset kata sandi.\nBerikut adalah Kode OTP Pemulihan Anda: ${otpPemulihanSistem}\n\nJangan bagikan kode ini kepada siapa pun.`
+            to_email: emailPenerimaAsli,
+            name: akunCek.nama,
+            pesan_notifikasi: otpPemulihanSistem
         };
 
-        emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
+        emailjs.send('service_hpw7t68', 'template_79m8av7', templateParams) // Ganti template_0pxk215 dengan ID template baru
             .then(() => {
-                window.tampilkanNotifikasiGeo("Kode OTP berhasil dikirim! Silahkan cek email.", "sukses");
+                window.tampilkanNotifikasiGeo(`Kode OTP berhasil dikirim ke alamat: ${emailPenerimaAsli}`, "sukses");
                 window.pindahKeView('otp_forgot');
             }, () => {
                 window.tampilkanNotifikasiGeo("Gagal mengirim kode OTP melalui gateway EmailJS.", "gagal");
             });
-    };
 
     window.verifikasiOtpLupaPassword = function() {
         const inputOtp = document.getElementById('input-otp-forgot').value.trim();
