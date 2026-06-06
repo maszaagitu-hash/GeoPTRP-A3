@@ -2202,78 +2202,49 @@ html, body {
     .bio-label { width: 50px !important; }
     .bio-footer-banner { padding: 10px 15px !important; font-size: 10.5px !important; }
     
-    /* POIN 2 & 3: OPTIMASI EKSTREM HORIZONTAL FORM LOGIN (ANTI LAYAR TERPOTONG LANDSCAPE) */
+    /* POIN 2 & 3: PENGECILAN SUPER EKSTREM VERTIKAL POP-UP LOGIN (TETAP STABIL 1 KOLOM) */
     #modal-geo-login > div { 
-        max-width: 540px !important; /* Diperlebar agar bisa horizontal menyamping */
+        max-width: 280px !important; /* Dipersempit agar boks vertikal terlihat proporsional dan manis */
         width: 95% !important; 
-        margin: 5px auto !important; 
+        margin: 2px auto !important; 
     }
     #modal-geo-login div[style*="padding: 30px"] { 
-        padding: 10px 15px !important; 
-        max-height: 85vh !important; 
-        overflow-y: auto !important; 
+        padding: 10px 14px !important; /* Memangkas padding dalam boks */
+        max-height: 85vh !important;   /* Batas tinggi ketat agar tidak terpotong dock browser */
+        overflow-y: auto !important;   /* Fitur scroll aktif jika isi boks meluap */
     }
-    
-    /* Memaksa setiap view di dalam modal login (login, signup, forgot) menjadi susunan 2 kolom horizontal */
-    #box-login-view, #box-signup-view, #box-forgot-view, #box-otp-view, #box-new-password-view {
-        display: grid !important;
-        grid-template-columns: 1fr 1.1fr !important; /* Kiri info/panduan, kanan form input */
-        gap: 12px !important;
-        align-items: center !important;
+    #modal-geo-login h2 { 
+        font-size: 13px !important; 
+        margin: 0 0 4px 0 !important; 
     }
-
-    /* Memaksa judul view mengambil baris penuh di atas */
-    #box-login-view h2, #box-signup-view h2, #box-forgot-view h2, #box-otp-view h2, #box-new-password-view h2 {
-        grid-column: span 2 !important;
-        font-size: 14px !important;
-        margin: 0 0 2px 0 !important;
-        text-align: center !important;
-    }
-
-    /* Menata kolom kiri khusus untuk boks petunjuk panduan agar tipis */
-    .login-guide-box { 
-        display: block !important; /* Tetap tampil berdampingan */
-        padding: 6px 8px !important; 
-        margin-bottom: 0 !important; 
-        max-height: 120px !important; 
-        font-size: 10px !important;
-    }
-    .login-guide-box h4 { font-size: 11px !important; margin-bottom: 3px !important; }
-    .login-guide-box li { font-size: 10px !important; margin-bottom: 3px !important; }
-
-    /* Menata wadah pembungkus input di kolom kanan */
-    #box-login-view form, 
-    #box-login-view div:not(.login-guide-box),
-    #box-signup-view div, #box-forgot-view div {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 4px !important;
-        margin-bottom: 0 !important;
-        width: 100% !important;
-    }
-
-    /* Pengecilan ekstrem elemen input text dan password */
     #modal-geo-login input { 
-        padding: 5px 8px !important; 
-        font-size: 10.5px !important; 
-        height: 26px !important; 
+        padding: 4px 6px !important; 
+        font-size: 10px !important; 
+        height: 24px !important; /* Tinggi kotak input dikecilkan masif */
     }
+    .login-guide-box { 
+        padding: 5px 8px !important; 
+        margin-bottom: 4px !important; 
+        max-height: 75px !important; /* Membatasi tinggi boks panduan kuning */
+    }
+    .login-guide-box h4 { font-size: 10.5px !important; margin-bottom: 2px !important; }
+    .login-guide-box li { font-size: 9.5px !important; margin-bottom: 2px !important; }
     
-    /* Pengecilan tombol aksi utama */
-    #box-login-view button, #box-signup-view button, #box-forgot-view button { 
-        padding: 6px !important; 
+    /* Merapatkan jarak vertikal antar elemen input form */
+    #box-login-view div, #box-signup-view div, #box-forgot-view div, #box-otp-view div { 
+        margin-bottom: 3px !important; 
+    }
+    #box-login-view button, #box-signup-view button, #box-forgot-view button, #box-otp-view button { 
+        padding: 4px !important; 
         font-size: 11px !important; 
-        height: 28px !important;
+        height: 26px !important; 
         margin-top: 2px !important;
     }
-
-    /* Link opsi bawah (Daftar akun / lupa password) dibuat berjejer rapat */
+    
+    /* Merapatkan teks opsi link paling bawah (Daftar akun / Lupa password) */
     #box-login-view div[style*="justify-content: space-between"] {
-        flex-direction: row !important;
-        justify-content: space-between !important;
-        font-size: 10px !important;
-        grid-column: span 2 !important; /* Memanjang penuh kembali di bawah grid */
         margin-top: 4px !important;
+        font-size: 9.5px !important;
     }
     
     /* Perbaikan Pop-up Pernyataan (Disclaimer) & Segala Peringatan */
