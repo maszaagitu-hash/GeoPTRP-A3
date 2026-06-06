@@ -3810,7 +3810,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     pesan_notifikasi: `Halo Administrator,\n\nBerikut adalah Kode OTP acak keamanan Anda untuk mengakses masuk ke dalam Panel Kontrol Data: ${otpPanelKontrolAdmin}\n\nKode ini bersifat rahasia.`
                 };
 
-                window.tampilkanNotifikasiGeo("Memproses pengiriman kode keamanan...", "info");
+                window.tampilkanNotifikasiGeo("Memproses pengiriman kode keamanan.", "info");
                 emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
                     .then(() => {
                         window.tampilkanNotifikasiGeo("Kode OTP Panel Kontrol telah dikirim ke email admin.", "sukses");
@@ -3836,14 +3836,14 @@ document.addEventListener("DOMContentLoaded", function() {
                 document.getElementById('login-nama').value = cekAkunLokalAdmin.nama;
 
                 const templateParams = { 
-                    subject_email: "KODE OTP MASUK PETA (ADMIN COHORT) - GEOPTRP",
+                    subject_email: "KODE OTP MASUK PETA (ADMIN) - GEOPTRP",
                     pesan_notifikasi: `Halo Administrator,\n\nBerikut adalah Kode OTP acak keamanan Anda untuk masuk langsung ke visualisasi peta WebGIS: ${otpPanelKontrolAdmin}`
                 };
 
-                window.tampilkanNotifikasiGeo("Memproses pengiriman kode keamanan...", "info");
+                window.tampilkanNotifikasiGeo("Memproses pengiriman kode keamanan.", "info");
                 emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
                     .then(() => {
-                        window.tampilkanNotifikasiGeo("Kode OTP masuk peta telah dikirim ke email admin.", "sukses");
+                        window.tampilkanNotifikasiGeo("Kode OTP Jelajahi GeoPTRP telah dikirim ke email admin.", "sukses");
                         window.pindahKeView('otp'); 
                     }, () => {
                         window.tampilkanNotifikasiGeo("Gagal mengirim email OTP, dialihkan ke view input.", "gagal");
@@ -3858,7 +3858,7 @@ document.addEventListener("DOMContentLoaded", function() {
         let emailDitemukan = akunDatabaseLokal.some(acc => acc.email === emailInput);
         
         if (!emailDitemukan) {
-            window.tampilkanNotifikasiGeo("Akun belum terdaftar di sistem! Silahkan registrasi terlebih dahulu.", "gagal");
+            window.tampilkanNotifikasiGeo("Akun belum terdaftar di sistem! Silahkan daftar akun terlebih dahulu.", "gagal");
             return;
         }
 
@@ -4045,10 +4045,10 @@ document.addEventListener("DOMContentLoaded", function() {
         
         if (inputOtp === otpPanelKontrolAdmin || inputOtp === "192837") {
             if (window.tipeLoginAdminSesiIni === "masuk_peta") {
-                window.tampilkanNotifikasiGeo("Otentikasi Admin Berhasil! Membuka Peta Spasial...", "sukses");
+                window.tampilkanNotifikasiGeo("Selamat Menjelajahi GeoPTRP!", "sukses");
                 eksekusiGrandAccessMasukPeta(dataEmailAdminMenungguOtp, 'admin');
             } else {
-                window.tampilkanNotifikasiGeo("Otentikasi Administrator Valid! Membuka Panel Kontrol...", "sukses");
+                window.tampilkanNotifikasiGeo("Selamat Datang di Kontrol Panel!", "sukses");
                 userAktifSistem = { email: dataEmailAdminMenungguOtp, role: 'admin' };
                 renderTabelAdmin();
                 window.pindahKeView('admin');
