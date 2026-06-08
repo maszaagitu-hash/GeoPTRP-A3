@@ -5587,22 +5587,48 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     };
 
-    // 4. DETEKSI SCROLL OTOMATIS MENGGUNAKAN INTERSECTION OBSERVER (UNTUK HALAMAN ABOUT)
-    // Mencari elemen teks target di halaman berdasarkan teksnya jika ID belum terpasang
+    const fungsiSelectLogoLama = window.selectLogo;
+    window.selectLogo = function(element, tipeData) {
+        fungsiSelectLogoLama(element, tipeData);
+        if (element.classList.contains('active')) {
+            const narasiDetail = infoDataSpasial[tipeData];
+            if (narasiDetail) {
+                window.bicaraGeoSistem("Membaca informasi. " + narasiDetail);
+            }
+        } else {
+            window.bicaraGeoSistem("Menutup penjelasan data.");
+        }
+    };
+
+    // 4. DETEKSI SCROLL PRESISI MENGGUNAKAN INTERSECTION OBSERVER (HALAMAN ABOUT)
     setTimeout(() => {
-        const h3Elements = document.querySelectorAll('#tab-about h3, #tab-about h2, #tab-about div');
+        const h3Elements = document.querySelectorAll('#tab-about h3, #tab-about h2, #tab-about div, #tab-about p');
         
-        let targetTim, targetKontak, targetFooter;
+        let targetDevelopmentTeam, targetTim, targetKontak, targetFooter;
         h3Elements.forEach(el => {
             const txt = el.innerText.toLowerCase();
+            if (txt.includes('development team')) targetDevelopmentTeam = el;
             if (txt.includes('dosen pengampu') && !txt.includes('kontak')) targetTim = el;
             if (txt.includes('kontak kami')) targetKontak = el;
             if (txt.includes('hubungi kami') || el.classList.contains('footer') || el.tagName === 'FOOTER') targetFooter = el;
         });
 
-        const opsiObserver = { root: document.getElementById('landing-page'), threshold: 0.5 };
-        
-        // Observer teks Anggota Tim / Dosen Pengampu
+        const scrollContainer = document.getElementById('landing-page');
+
+        // Setelan Observer 1: Mendeteksi elemen saat MENYENTUH ATAS (Header)
+        // Properti rootMargin "-60px 0px -90% 0px" membuat area deteksi mengunci di batas atas layar saja
+        const opsiSentuhHeader = { root: scrollContainer, rootMargin: "-60px 0px -90% 0px", threshold: 0 };
+
+        if (targetDevelopmentTeam) {
+            let suaraDevJalan = false;
+            new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting && !suaraDevJalan && document.getElementById('tab-about').style.display === 'block') {
+                    suaraDevJalan = true;
+                    window.bicaraGeoSistem("Berikut adalah profil tim pengembang studio kami.");
+                }
+            }, opsiSentuhHeader).observe(targetDevelopmentTeam);
+        }
+
         if (targetTim) {
             let suaraTimJalan = false;
             new IntersectionObserver((entries) => {
@@ -5610,10 +5636,9 @@ document.addEventListener("DOMContentLoaded", function() {
                     suaraTimJalan = true;
                     window.bicaraGeoSistem("Berikut adalah anggota tim kami yang berjumlah delapan anggota. Silahkan klik salah satu anggota untuk informasi lebih lanjut.");
                 }
-            }, opsiObserver).observe(targetTim);
+            }, opsiSentuhHeader).observe(targetTim);
         }
 
-        // Observer teks Kontak Kami
         if (targetKontak) {
             let suaraKontakJalan = false;
             new IntersectionObserver((entries) => {
@@ -5621,10 +5646,12 @@ document.addEventListener("DOMContentLoaded", function() {
                     suaraKontakJalan = true;
                     window.bicaraGeoSistem("Dosen pengampu kami berjumlah empat orang. Silahkan klik untuk melihat informasi detail bimbingan.");
                 }
-            }, opsiObserver).observe(targetKontak);
+            }, opsiSentuhHeader).observe(targetKontak);
         }
 
-        // Observer Footer / Hubungi Kami
+        // Setelan Observer 2: Mendeteksi saat FOOTER MENTOK KELIHATAN FULL DI BAWAH SCREEN
+        const opsiMentokBawah = { root: scrollContainer, threshold: 0.95 };
+
         if (targetFooter) {
             let suaraFooterJalan = false;
             new IntersectionObserver((entries) => {
@@ -5632,28 +5659,42 @@ document.addEventListener("DOMContentLoaded", function() {
                     suaraFooterJalan = true;
                     window.bicaraGeoSistem("Silahkan hubungi kami apabila terdapat pertanyaan lebih lanjut mengenai data spasial ini. Anda juga dapat melihat lokasi basecamp kami pada peta di sebelah kiri, dan wilayah studi pada peta di sebelah kanan.");
                 }
-            }, opsiObserver).observe(targetFooter);
+            }, opsiMentokBawah).observe(targetFooter);
         }
-    }, 1000);
+    }, 1200);
 
     // 5. INTERAKSI KLIK BIOGRAFI TIM (MEMBACAKAN NAMA & JOBDESK)
     const fungsiBukaPopupBioLama = window.bukaPopupBio;
     window.bukaPopupBio = function(nama, role, nim, ttl, asal, ig, email, jobdesk, imgUrl) {
         fungsiBukaPopupBioLama(nama, role, nim, ttl, asal, ig, email, jobdesk, imgUrl);
-        window.bicaraGeoSistem("Menampilkan profil, " + nama + ". Jabatan sebagai " + jobdesk);
+        window.bicaraGeoSistem("Menampilkan profil, " + nama + ", memiliki jobdesk " + jobdesk);
     };
 
-    // 6. MODAL VISI MISI & PANDUAN AKSES (HANYA BERSUARA SAAT BUKA)
+    // 6. MODAL VISI MISI & PANDUAN AKSES (DENGAN PEMBACA SUB-MENU PANDUAN AKSES)
     const fungsiBukaModalVisiMisiLama = window.bukaModalVisiMisi;
     window.bukaModalVisiMisi = function() {
         fungsiBukaModalVisiMisiLama();
-        window.bicaraGeoSistem("Menampilkan visi dan misi lembaga.");
+        window.bicaraGeoSistem("Visi Lembaga: Mewujudkan tertib tata ruang dan administrasi pertanahan yang inklusif, presisi, berbasis data cloud terpadu, dan berdaya guna tinggi bagi pembangunan wilayah berkelanjutan. Misi Lembaga: Pertama, mengintegrasikan data kadaster dan tata ruang Kecamatan Ceper ke dalam WebGIS yang mudah diakses. Kedua, memfasilitasi kebutuhan riset spasial dan administrasi pertanahan bagi instansi terkait.");
     };
 
     const fungsiBukaLayarPanduanLama = window.bukaLayarPanduan;
     window.bukaLayarPanduan = function() {
         fungsiBukaLayarPanduanLama();
-        window.bicaraGeoSistem("Membuka panduan standarisasi akses dan penggunaan aplikasi.");
+        window.bicaraGeoSistem("Membuka panduan standarisasi akses dan penggunaan aplikasi. Silahkan klik pada menu sub-fitur panduan yang ingin dipelajari.");
+    };
+
+    // Pembaca Otomatis Isi Sub-Menu Panduan Akses / Tingkat Pengguna saat diklik di dalam modal
+    const fungsiTampilPanduanLama = window.tampilPanduan;
+    window.tampilPanduan = function(fiturId, elemenMenu) {
+        fungsiTampilPanduanLama(fiturId, elemenMenu);
+        
+        if (fiturId === 'akses' || fiturId.includes('akses')) {
+            window.bicaraGeoSistem("Membuka Panduan Akses Sistem. Aplikasi ini dioptimalkan untuk peramban desktop demi kestabilan rendering data spasial. Pengguna perangkat seluler diwajibkan mengaktifkan rotasi otomatis layar dan menggunakan mode landscape tidur agar peta dapat beroperasi.");
+        } else if (fiturId === 'user' || fiturId.includes('user') || fiturId.includes('tingkat')) {
+            window.bicaraGeoSistem("Membuka Panduan Tingkat Akses Pengguna. Hak akses dibagi menjadi tiga tier. Pertama, tier Tamu Umum untuk publik dengan fitur penjelajahan peta terbatas. Kedua, tier Instansi untuk akademisi dan pegawai bersertifikat email institusi resmi dengan hak manipulasi file spasial. Ketiga, tier Administrator Utama untuk kontrol penuh database cloud.");
+        } else {
+            window.bicaraGeoSistem("Menampilkan detail panduan fitur " + fiturId);
+        }
     };
 
     // 7. ALUR AUTENTIKASI: LOGIN, SIGN UP, DAN GRAND ACCESS MASUK PETA
@@ -5667,26 +5708,23 @@ document.addEventListener("DOMContentLoaded", function() {
     window.pindahKeView = function(viewName) {
         fungsiPindahKeViewLama(viewName);
         if (viewName === 'signup') {
-            window.bicaraGeoSistem("Halaman pendaftaran pengguna baru. Akses terbagi menjadi admin untuk pengelola data dan instansi untuk pengguna bersertifikat email institusi.");
+            window.bicaraGeoSistem("Halaman pendaftaran pengguna baru. Akses tier akun terbagi secara otomatis berdasarkan domain email resmi yang didaftarkan. Gunakan email students untuk level instansi mahasiswa, dan email lecturer untuk tingkat staf.");
         }
     };
 
-    // Menangkap respon notifikasi sukses daftar dari toast
     const fungsiNotifikasiLama = window.tampilkanNotifikasiGeo;
     window.tampilkanNotifikasiGeo = function(pesan, jenis) {
         fungsiNotifikasiLama(pesan, jenis);
         if (pesan.includes("Registrasi Berhasil")) {
             window.bicaraGeoSistem("Selamat! Akun Anda berhasil terdaftar secara terpusat di server cloud. Silahkan login menggunakan data tersebut.");
         } else {
-            window.bicaraGeoSistem(pesan); // Suarakan otomatis pesan peringatan/error sistem lainnya
+            window.bicaraGeoSistem(pesan); 
         }
     };
 
-    // Suara penyambutan saat berhasil masuk ke lembar peta utama setelah disclaimer ditutup
     const fungsiEksekusiGrandAccessLama = eksekusiGrandAccessMasukPeta;
     eksekusiGrandAccessMasukPeta = function(email, role) {
         fungsiEksekusiGrandAccessLama(email, role);
-        // Kita kaitkan suara pada tombol continue di dalam overlay ini
         const btnContinue = document.getElementById('btn-continue');
         if (btnContinue) {
             const fungsiKlikContinueLama = btnContinue.onclick;
