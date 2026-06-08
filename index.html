@@ -3172,7 +3172,7 @@ html, body {
                             'Citeureup, Kabupaten Bogor, Jawa Barat',
                             '@benes_ya',
                             'audiabenesyapurba@students.undip.ac.id',
-                            'Bertanggung jawab atas pengumpulan and strukturisasi data tekstual/informasi pertanahan, menyusun tata letak halaman utama (landing page), serta mengintegrasikan informasi kontak dan komponen statis pada beranda aplikasi.',
+                            'Bertanggung jawab atas pengumpulan dan strukturisasi data tekstual/informasi pertanahan, menyusun tata letak halaman utama (landing page), serta mengintegrasikan informasi kontak dan komponen statis pada beranda aplikasi.',
                             'PROFIL_AUDI.png'
                         )">
                             <div class="avatar-container">
@@ -5515,13 +5515,13 @@ document.addEventListener("DOMContentLoaded", function() {
             const adminBox = document.getElementById('box-admin-dashboard');
             if (adminBox) adminBox.style.display = 'none';
             
-            window.tampilkanNotifikasiGeo("Berhasil keluar dari sesi Administrator.", "sukses");
+           window.tampilkanNotifikasiGeo("Berhasil keluar dari sesi Administrator.", "sukses");
             window.pindahKeView('login');
         }
     });
 
     // ==========================================================================
-    // GEOPTRP ULTIMATE INTERACTIVE VOICE ASSISTANT ENGINE (FIXED & OPTIMIZED)
+    // GEOPTRP ULTIMATE INTERACTIVE VOICE ASSISTANT ENGINE (REVISED)
     // ==========================================================================
     
     // Fungsi Utama Eksekusi Suara (Termasuk Pembersihan Tag HTML)
@@ -5537,15 +5537,11 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     };
 
-    // 1. OTOMATIS SUARA SAAT WEB PERTAMA KALI DIBUKA (Dipicu Pergerakan Kursor Pertama)
-    let sudahMenyapaGeo = false;
-    document.addEventListener('mousemove', function() {
-        if (!sudahMenyapaGeo) {
-            sudahMenyapaGeo = true;
-            setTimeout(() => {
-                window.bicaraGeoSistem("Selamat datang di aplikasi WebGIS Geo P T R P Kecamatan Ceper. Silahkan jelajahi ruang dan informasi pertanahan kami.");
-            }, 300);
-        }
+    // 1. OTOMATIS SUARA SAAT REFRESH / WEB BARU PERTAMA KALI DIBUKA (MENGGUNAKAN WINDOW LOAD)
+    window.addEventListener('load', function() {
+        setTimeout(() => {
+            window.bicaraGeoSistem("Selamat datang di aplikasi WebGIS Geo P T R P Kecamatan Ceper. Silahkan jelajahi ruang dan informasi pertanahan kami.");
+        }, 500); // Delay sedikit setelah loading selesai agar peramban siap merendering audio
     });
 
     // 2. LOGIKA SUARA DINAMIS SAAT BERGANTI TAB MENU UTAMA
@@ -5564,7 +5560,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // 3. LOGIKA SUARA SAAT KLIK INFORMASI DATA SPASIAL & AMBIL TEKS PENJELASANNYA
     const fungsiHandleMainToggleLama = window.handleMainToggle;
- inversion:   window.handleMainToggle = function() {
+    window.handleMainToggle = function() {
         fungsiHandleMainToggleLama();
         const btnPemicu = document.getElementById('main-toggle-container');
         if (btnPemicu && btnPemicu.classList.contains('shrunk')) {
@@ -5574,7 +5570,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     };
 
-    // PERBAIKAN: Duplikasi fungsi selectLogo lama sudah dihapus agar tidak crash
     const fungsiSelectLogoLama = window.selectLogo;
     window.selectLogo = function(element, tipeData) {
         fungsiSelectLogoLama(element, tipeData);
@@ -5590,11 +5585,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // 4. DETEKSI SCROLL PRESISI MENGGUNAKAN INTERSECTION OBSERVER (HALAMAN ABOUT)
     setTimeout(() => {
-        const h3Elements = document.querySelectorAll('#tab-about h3, #tab-about h2, #tab-about div, #tab-about p, #tab-about span');
+        // Ambil seluruh kontainer teks h1-h3 dan elemen div teks pembuka di dalam Tab About
+        const targetElements = document.querySelectorAll('#tab-about h2, #tab-about h3, #tab-about .section-title, #tab-about div');
         
         let targetDevelopmentTeam, targetTim, targetKontak, targetFooter;
-        h3Elements.forEach(el => {
-            const txt = el.innerText.toLowerCase();
+        targetElements.forEach(el => {
+            const txt = el.innerText.toLowerCase().trim();
             if (txt.includes('development team')) targetDevelopmentTeam = el;
             if (txt.includes('dosen pengampu') && !txt.includes('kontak')) targetTim = el;
             if (txt.includes('kontak kami')) targetKontak = el;
@@ -5603,8 +5599,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
         const scrollContainer = document.getElementById('landing-page');
 
-        // Setelan Observer 1: Mendeteksi elemen saat MENYENTUH ATAS (Header)
-        const opsiSentuhHeader = { root: scrollContainer, rootMargin: "-60px 0px -90% 0px", threshold: 0 };
+        // Mengatur margin deteksi atas agar suara langsung terpicu saat teks menyentuh atau mendekati batas header atas
+        const opsiSentuhHeader = { root: scrollContainer, rootMargin: "-40px 0px -80% 0px", threshold: 0 };
 
         if (targetDevelopmentTeam) {
             let suaraDevJalan = false;
@@ -5636,8 +5632,8 @@ document.addEventListener("DOMContentLoaded", function() {
             }, opsiSentuhHeader).observe(targetKontak);
         }
 
-        // Setelan Observer 2: Mendeteksi saat FOOTER MENTOK KELIHATAN FULL DI BAWAH SCREEN
-        const opsiMentokBawah = { root: scrollContainer, threshold: 0.95 };
+        // Setelan Observer 2: Mendeteksi saat FOOTER KELIHATAN FULL MENTOK DI BAWAH SCREEN
+        const opsiMentokBawah = { root: scrollContainer, threshold: 0.90 };
 
         if (targetFooter) {
             let suaraFooterJalan = false;
@@ -5657,53 +5653,62 @@ document.addEventListener("DOMContentLoaded", function() {
         window.bicaraGeoSistem("Menampilkan profil, " + nama + ", memiliki jobdesk " + jobdesk);
     };
 
-    // 6. MODAL VISI MISI & PANDUAN AKSES (DENGAN PEMBACA SUB-MENU PANDUAN AKSES)
+    // 6. MODAL VISI MISI & PANDUAN AKSES (RINGKAS SESUAI REQUEST)
     const fungsiBukaModalVisiMisiLama = window.bukaModalVisiMisi;
     window.bukaModalVisiMisi = function() {
         fungsiBukaModalVisiMisiLama();
-        window.bicaraGeoSistem("Visi Lembaga: Mewujudkan tertib tata ruang dan administrasi pertanahan yang inklusif, presisi, berbasis data cloud terpadu, dan berdaya guna tinggi bagi pembangunan wilayah berkelanjutan. Misi Lembaga: Pertama, mengintegrasikan data kadaster dan tata ruang Kecamatan Ceper ke dalam WebGIS yang mudah diakses. Kedua, memfasilitasi kebutuhan riset spasial dan administrasi pertanahan bagi instansi terkait.");
+        window.bicaraGeoSistem("Menampilkan visi dan misi lembaga.");
     };
 
     const fungsiBukaLayarPanduanLama = window.bukaLayarPanduan;
     window.bukaLayarPanduan = function() {
         fungsiBukaLayarPanduanLama();
-        window.bicaraGeoSistem("Membuka panduan standarisasi akses dan penggunaan aplikasi. Silahkan klik pada menu sub-fitur panduan yang ingin dipelajari.");
+        window.bicaraGeoSistem("Membuka panduan standarisasi akses dan penggunaan aplikasi.");
     };
 
-    // Pembaca Otomatis Isi Sub-Menu Panduan Akses / Tingkat Pengguna saat diklik di dalam modal
     const fungsiTampilPanduanLama = window.tampilPanduan;
     window.tampilPanduan = function(fiturId, elemenMenu) {
         fungsiTampilPanduanLama(fiturId, elemenMenu);
-        
         if (fiturId === 'akses' || fiturId.includes('akses')) {
-            window.bicaraGeoSistem("Membuka Panduan Akses Sistem. Aplikasi ini dioptimalkan untuk peramban desktop demi kestabilan rendering data spasial. Pengguna perangkat seluler diwajibkan mengaktifkan rotasi otomatis layar dan menggunakan mode landscape tidur agar peta dapat beroperasi.");
+            window.bicaraGeoSistem("Membuka Panduan Akses Sistem. Aplikasi ini dioptimalkan untuk peramban desktop demi kestabilan rendering data spasial. Pengguna perangkat seluler diwajibkan menggunakan mode landscape tidur agar peta dapat beroperasi.");
         } else if (fiturId === 'user' || fiturId.includes('user') || fiturId.includes('tingkat')) {
-            window.bicaraGeoSistem("Membuka Panduan Tingkat Akses Pengguna. Hak akses dibagi menjadi tiga tier. Pertama, tier Tamu Umum untuk publik dengan fitur penjelajahan peta terbatas. Kedua, tier Instansi untuk akademisi dan pegawai bersertifikat email institusi resmi dengan hak manipulasi file spasial. Ketiga, tier Administrator Utama untuk kontrol penuh database cloud.");
-        } else {
-            window.bicaraGeoSistem("Menampilkan detail panduan fitur " + fiturId);
+            window.bicaraGeoSistem("Membuka Panduan Tingkat Akses Pengguna. Hak akses dibagi menjadi tiga tier. Yaitu level Tamu Umum untuk publik, level Instansi untuk akademisi, dan level Administrator Utama.");
         }
     };
 
-    // 7. ALUR AUTENTIKASI: LOGIN, SIGN UP, DAN GRAND ACCESS MASUK PETA
+    // 7. ALUR AUTENTIKASI RINGKAS & NOTIFIKASI OTP DATA
     const fungsiMasukPetaLama = window.masukPeta;
     window.masukPeta = function() {
         fungsiMasukPetaLama();
-        window.bicaraGeoSistem("Silahkan login seperti biasa menggunakan email resmi U N D I P.");
+        window.bicaraGeoSistem("Silahkan login dengan akun yang sudah anda daftarkan.");
     };
 
     const fungsiPindahKeViewLama = window.pindahKeView;
     window.pindahKeView = function(viewName) {
         fungsiPindahKeViewLama(viewName);
         if (viewName === 'signup') {
-            window.bicaraGeoSistem("Halaman pendaftaran pengguna baru. Akses tier akun terbagi secara otomatis berdasarkan domain email resmi yang didaftarkan. Gunakan email students untuk level instansi mahasiswa, dan email lecturer untuk tingkat staf.");
+            window.bicaraGeoSistem("Silahkan daftarkan akun anda menggunakan empat format yang tersedia sesuai dengan institusi resmi U N D I P. Apabila bingung, anda bisa klik tombol tanda tanya di sebelah pojok kiri atas.");
+        }
+    };
+
+    // Intersepsi Fungsi Klik Tombol Tanda Tanya Panduan Login / Registrasi (?)
+    const fungsiTogglePanduanLoginLama = window.togglePanduanLogin;
+    window.togglePanduanLogin = function() {
+        fungsiTogglePanduanLoginLama();
+        const guideBox = document.getElementById('box-login-guide');
+        if (guideBox && (guideBox.style.display === 'block')) {
+            window.bicaraGeoSistem("Menampilkan penjelasan singkat panduan akses pengguna. Pastikan nama, email institusi resmi, dan password minimal berukuran enam karakter diisi dengan benar untuk menghindari pemblokiran server.");
         }
     };
 
     const fungsiNotifikasiLama = window.tampilkanNotifikasiGeo;
     window.tampilkanNotifikasiGeo = function(pesan, jenis) {
         fungsiNotifikasiLama(pesan, jenis);
+        
         if (pesan.includes("Registrasi Berhasil")) {
-            window.bicaraGeoSistem("Selamat! Akun Anda berhasil terdaftar secara terpusat di server cloud. Silahkan login menggunakan data tersebut.");
+            window.bicaraGeoSistem("Selamat! Akun anda berhasil terdaftar. Silahkan login.");
+        } else if (pesan.includes("Kode OTP") || pesan.includes("kode keamanan")) {
+            window.bicaraGeoSistem("Sistem mendeteksi akses administrator. Kode O T P keamanan telah dikirimkan ke email admin. Silahkan periksa kotak masuk anda.");
         } else {
             window.bicaraGeoSistem(pesan); 
         }
@@ -5717,7 +5722,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const fungsiKlikContinueLama = btnContinue.onclick;
             btnContinue.onclick = function() {
                 if (fungsiKlikContinueLama) fungsiKlikContinueLama();
-                window.bicaraGeoSistem("Selamat datang di peta spasial interaktif Geo P T R P. Selamat menikmati fitur-fitur analisis dan digitasi yang tersedia.");
+                window.bicaraGeoSistem("Selamat datang di peta spasial interaktif Geo P T R P. Selamat menikmati fitur yang ada sesuai dengan tingkatan pengguna anda.");
             };
         }
     };
