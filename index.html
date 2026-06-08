@@ -3690,7 +3690,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // =========================================================================
     // ARSITEKTUR LAYANAN OTENTIKASI & SECURITY ENGINE INTERFACES (CLOUD CENTER)
     // =========================================================================
-    const URL_DATABASE_SHEETS = "https://script.google.com/macros/s/AKfycbx71Uq24sJsIkA9fNHK-TslcWrNtJnBD7N1osFUqupyYKSeZ2AvHFxHofnK6uLO4lPuDg/exec";
+    const URL_DATABASE_SHEETS = "https://script.google.com/macros/s/AKfycbxmZsUmJIBB7Mo5E_3tUaaqwOyHV8-91KOMoGyJ2Tar2C_VbWhY6lQbybSEHE7okuXI3A/exec";
 
     let akunDatabaseLokal = [];
     let userAktifSistem = { email: "", role: "tamu" };
@@ -3930,14 +3930,22 @@ document.addEventListener("DOMContentLoaded", function() {
                                 window.pindahKeView('otp');
                             });
                     } else if (adminDitemukanDiCloud.pass && passInput === String(adminDitemukanDiCloud.pass).trim()) {
-                        // PERBAIKAN: Mengonversi password database admin menjadi String dan menghapus spasi hantu (.trim())
-                        window.tampilkanNotifikasiGeo("Kredensial cocok! Memproses akses jelajahi WebGIS.", "sukses");
-                        
-                        // Memaksa penutupan modal login lama agar tidak menumpuk di atas peta WebGIS
-                        document.getElementById('modal-geo-login').style.display = 'none';
-                        window.isPetaAktif = true;
-                        
-                        eksekusiGrandAccessMasukPeta(emailInput, 'admin');
+                        // PERBAIKAN: Sekarang diarahkan ke pengiriman kode OTP terlebih dahulu sebelum diarahkan masuk ke peta
+                        window.tipeLoginAdminSesiIni = "masuk_peta";
+                        const templateParams = { 
+                            subject_email: "KODE OTP LOG_IN UTAMA MAPS ADMIN - GEOPTRP",
+                            pesan_notifikasi: `Halo Administrator,\n\nBerikut adalah Kode OTP acak keamanan Anda untuk memvalidasi login masuk jelajahi Peta Utama: ${otpPanelKontrolAdmin}\n\nKode ini bersifat rahasia.`
+                        };
+
+                        window.tampilkanNotifikasiGeo("Memproses pengiriman kode keamanan peta.", "info");
+                        emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
+                            .then(() => {
+                                window.tampilkanNotifikasiGeo("Kode OTP Verifikasi Peta telah dikirim ke email admin.", "sukses");
+                                window.pindahKeView('otp'); 
+                            }, () => {
+                                window.tampilkanNotifikasiGeo("Gagal mengirim email OTP, dialihkan ke view input.", "gagal");
+                                window.pindahKeView('otp');
+                            });
                     } else {
                         // Jika kedua password di atas tidak ada yang cocok
                         window.tampilkanNotifikasiGeo("Kata sandi (Password) Admin Salah!", "gagal");
@@ -4125,9 +4133,9 @@ document.addEventListener("DOMContentLoaded", function() {
         if(idx !== -1) {
             window.tampilkanNotifikasiGeo("Sinkronisasi perubahan sandi ke server pusat", "info");
             
-            // Payload integrasi cloud database
+            // PERBAIKAN: Mengubah action menjadi 'update_password' agar tidak memicu appendRow() di Google Sheets
             const payload = {
-                action: "register", // Menggunakan endpoint register/write pusat untuk override data berdasar eksistensi email
+                action: "update_password", 
                 email: emailTargetPemulihan,
                 pass: pass1
             };
@@ -5472,18 +5480,16 @@ document.addEventListener("DOMContentLoaded", function() {
         window.tampilkanNotifikasiGeo("GeoPTRP Berhasil Memasang Aplikasi di Beranda Anda!", "sukses");
     });
 
-    // PERBAIKAN: Memastikan eksekusi listener logout dibungkus secara aman tanpa terpengaruh error UI kontrol layer peta
+    // PERBAIKAN: Memastikan tombol keluar panel kontrol langsung memunculkan pop-up modal login
     document.addEventListener('click', function(event) {
         if (event.target && (event.target.id === 'btn-logout-admin' || event.target.closest('#btn-logout-admin'))) {
             userAktifSistem = { email: "", role: "tamu" };
             
+            // Memaksa pop-up login utama langsung tampil terbuka ke depan layar
             const modalLogin = document.getElementById('modal-geo-login');
-            const landingPage = document.getElementById('landing-page');
-            
             if (modalLogin) modalLogin.style.display = 'flex';
-            if (landingPage) landingPage.style.display = 'block';
             
-            // Mengamankan penutupan pembungkus kontainer panel admin dashboard agar kembali bersih ke login view
+            // Menutup pembungkus dashboard panel admin agar tidak terlihat di latar belakang
             const adminBox = document.getElementById('box-admin-dashboard');
             if (adminBox) adminBox.style.display = 'none';
             
