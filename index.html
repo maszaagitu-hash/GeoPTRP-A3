@@ -5540,7 +5540,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // 1. OTOMATIS SUARA SAAT REFRESH / WEB BARU PERTAMA KALI DIBUKA (MENGGUNAKAN WINDOW LOAD)
     window.addEventListener('load', function() {
         setTimeout(() => {
-            window.bicaraGeoSistem("Selamat datang di aplikasi WebGIS Geo P T R P Kecamatan Ceper. Silahkan jelajahi ruang dan informasi pertanahan kami.");
+            window.bicaraGeoSistem("Selamat datang di aplikasi WebGIS Geo P T R P Kecamatan Ceper. Silahkan jelajahi webgis kami.");
         }, 500); // Delay sedikit setelah loading selesai agar peramban siap merendering audio
     });
 
@@ -5552,9 +5552,9 @@ document.addEventListener("DOMContentLoaded", function() {
         if (namaTab === 'beranda') {
             window.bicaraGeoSistem("Beralih ke halaman beranda utama.");
         } else if (namaTab === 'info') {
-            window.bicaraGeoSistem("Beralih ke halaman informasi pertanahan. Wilayah studi berada di Kecamatan Ceper, menyajikan beberapa informasi spasial beserta statistiknya. Anda juga dapat mengetahui lokasi wilayah studi dengan mengklik peta atau rute yang tersedia.");
+            window.bicaraGeoSistem("Beralih ke halaman informasi pertanahan yang menyajikan beberapa informasi spasial beserta statistiknya di wilayah studi kami yang berada di Kecamatan Ceper, Anda juga dapat mengetahui lokasi wilayah studi dengan mengklik peta atau rute yang tersedia.");
         } else if (namaTab === 'about') {
-            window.bicaraGeoSistem("Beralih ke tentang kami. Menyajikan profil tim studio, visi misi, dan kontak pengembang.");
+            window.bicaraGeoSistem("Beralih ke tentang kami. Menyajikan profil tim pengembang, visi misi, dan kontak pengembang.");
         }
     };
 
@@ -5607,29 +5607,19 @@ document.addEventListener("DOMContentLoaded", function() {
             new IntersectionObserver((entries) => {
                 if (entries[0].isIntersecting && !suaraDevJalan && document.getElementById('tab-about').style.display === 'block') {
                     suaraDevJalan = true;
-                    window.bicaraGeoSistem("Berikut adalah profil tim pengembang studio kami.");
+                    window.bicaraGeoSistem("Berikut adalah anggota tim kami yang berjumlah delapan anggota. Silahkan klik salah satu anggota untuk informasi lebih lanjut.");
                 }
             }, opsiSentuhHeader).observe(targetDevelopmentTeam);
         }
 
-        if (targetTim) {
-            let suaraTimJalan = false;
+        if (targetDosenPengampu) {
+            let suaraDosJalan = false;
             new IntersectionObserver((entries) => {
-                if (entries[0].isIntersecting && !suaraTimJalan && document.getElementById('tab-about').style.display === 'block') {
-                    suaraTimJalan = true;
-                    window.bicaraGeoSistem("Berikut adalah anggota tim kami yang berjumlah delapan anggota. Silahkan klik salah satu anggota untuk informasi lebih lanjut.");
+                if (entries[0].isIntersecting && !suaraDosJalan && document.getElementById('tab-about').style.display === 'block') {
+                    suaraDosJalan = true;
+                    window.bicaraGeoSistem("Berikut adalah dosen pengampu kami yang berjumlah empat orang.");
                 }
-            }, opsiSentuhHeader).observe(targetTim);
-        }
-
-        if (targetKontak) {
-            let suaraKontakJalan = false;
-            new IntersectionObserver((entries) => {
-                if (entries[0].isIntersecting && !suaraKontakJalan && document.getElementById('tab-about').style.display === 'block') {
-                    suaraKontakJalan = true;
-                    window.bicaraGeoSistem("Dosen pengampu kami berjumlah empat orang. Silahkan klik untuk melihat informasi detail bimbingan.");
-                }
-            }, opsiSentuhHeader).observe(targetKontak);
+            }, opsiSentuhHeader).observe(targetDosenPengampu);
         }
 
         // Setelan Observer 2: Mendeteksi saat FOOTER KELIHATAN FULL MENTOK DI BAWAH SCREEN
@@ -5672,7 +5662,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (fiturId === 'akses' || fiturId.includes('akses')) {
             window.bicaraGeoSistem("Membuka Panduan Akses Sistem. Aplikasi ini dioptimalkan untuk peramban desktop demi kestabilan rendering data spasial. Pengguna perangkat seluler diwajibkan menggunakan mode landscape tidur agar peta dapat beroperasi.");
         } else if (fiturId === 'user' || fiturId.includes('user') || fiturId.includes('tingkat')) {
-            window.bicaraGeoSistem("Membuka Panduan Tingkat Akses Pengguna. Hak akses dibagi menjadi tiga tier. Yaitu level Tamu Umum untuk publik, level Instansi untuk akademisi, dan level Administrator Utama.");
+            window.bicaraGeoSistem("Membuka Panduan Tingkat Akses Pengguna. Hak akses dibagi menjadi tiga tingkatan. Yaitu level Tamu Umum untuk publik, level Instansi untuk akademisi, dan level Administrator Utama.");
         }
     };
 
@@ -5687,7 +5677,7 @@ document.addEventListener("DOMContentLoaded", function() {
     window.pindahKeView = function(viewName) {
         fungsiPindahKeViewLama(viewName);
         if (viewName === 'signup') {
-            window.bicaraGeoSistem("Silahkan daftarkan akun anda menggunakan empat format yang tersedia sesuai dengan institusi resmi U N D I P. Apabila bingung, anda bisa klik tombol tanda tanya di sebelah pojok kiri atas.");
+            window.bicaraGeoSistem("Silahkan daftarkan akun anda menggunakan empat format yang tersedia sesuai dengan petunjuk yang ada. Apabila terdapat kendala, anda bisa klik tombol tanda tanya di sebelah pojok kiri atas.");
         }
     };
 
