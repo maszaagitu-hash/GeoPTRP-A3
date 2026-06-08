@@ -3886,8 +3886,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
             // --- FILTER MUTLAK AKUN ADMINISTRATOR UTAMA ---
                 if(emailInput.includes('.admin.undip.ac.id')) {
-                    // Cek mutlak: Email admin harus terdaftar di Google Sheets cloud terlebih dahulu
-                    let adminDitemukan DiCloud = akunDatabaseLokal.find(acc => acc.email === emailInput);
+                    // Cek mutlak: Email admin harus terdaftar di Google Sheets cloud terlebih dahulu (Spasi Dihapus)
+                    let adminDitemukanDiCloud = akunDatabaseLokal.find(acc => acc.email === emailInput);
                     
                     if (!adminDitemukanDiCloud) {
                         window.tampilkanNotifikasiGeo("Akses Ditolak! Akun Admin ini belum terdaftar di database server cloud.", "gagal");
