@@ -5521,7 +5521,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     // ==========================================================================
-    // GEOPTRP ULTIMATE INTERACTIVE VOICE ASSISTANT ENGINE
+    // GEOPTRP ULTIMATE INTERACTIVE VOICE ASSISTANT ENGINE (FIXED & OPTIMIZED)
     // ==========================================================================
     
     // Fungsi Utama Eksekusi Suara (Termasuk Pembersihan Tag HTML)
@@ -5564,7 +5564,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // 3. LOGIKA SUARA SAAT KLIK INFORMASI DATA SPASIAL & AMBIL TEKS PENJELASANNYA
     const fungsiHandleMainToggleLama = window.handleMainToggle;
-    window.handleMainToggle = function() {
+ inversion:   window.handleMainToggle = function() {
         fungsiHandleMainToggleLama();
         const btnPemicu = document.getElementById('main-toggle-container');
         if (btnPemicu && btnPemicu.classList.contains('shrunk')) {
@@ -5574,19 +5574,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     };
 
-    const fungsiSelectLogoLama = window.selectLogo;
-    window.selectLogo = function(element, tipeData) {
-        fungsiSelectLogoLama(element, tipeData);
-        if (element.classList.contains('active')) {
-            const narasiDetail = infoDataSpasial[tipeData];
-            if (narasiDetail) {
-                window.bicaraGeoSistem("Membaca informasi. " + narasiDetail);
-            }
-        } else {
-            window.bicaraGeoSistem("Menutup penjelasan data.");
-        }
-    };
-
+    // PERBAIKAN: Duplikasi fungsi selectLogo lama sudah dihapus agar tidak crash
     const fungsiSelectLogoLama = window.selectLogo;
     window.selectLogo = function(element, tipeData) {
         fungsiSelectLogoLama(element, tipeData);
@@ -5602,7 +5590,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // 4. DETEKSI SCROLL PRESISI MENGGUNAKAN INTERSECTION OBSERVER (HALAMAN ABOUT)
     setTimeout(() => {
-        const h3Elements = document.querySelectorAll('#tab-about h3, #tab-about h2, #tab-about div, #tab-about p');
+        const h3Elements = document.querySelectorAll('#tab-about h3, #tab-about h2, #tab-about div, #tab-about p, #tab-about span');
         
         let targetDevelopmentTeam, targetTim, targetKontak, targetFooter;
         h3Elements.forEach(el => {
@@ -5616,7 +5604,6 @@ document.addEventListener("DOMContentLoaded", function() {
         const scrollContainer = document.getElementById('landing-page');
 
         // Setelan Observer 1: Mendeteksi elemen saat MENYENTUH ATAS (Header)
-        // Properti rootMargin "-60px 0px -90% 0px" membuat area deteksi mengunci di batas atas layar saja
         const opsiSentuhHeader = { root: scrollContainer, rootMargin: "-60px 0px -90% 0px", threshold: 0 };
 
         if (targetDevelopmentTeam) {
