@@ -3933,7 +3933,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         // PERBAIKAN: Sekarang diarahkan ke pengiriman kode OTP terlebih dahulu sebelum diarahkan masuk ke peta
                         window.tipeLoginAdminSesiIni = "masuk_peta";
                         const templateParams = { 
-                            subject_email: "KODE OTP LOG_IN UTAMA MAPS ADMIN - GEOPTRP",
+                            subject_email: "KODE OTP JELAJAHI GEOPTRP OLEH ADMIN - GEOPTRP",
                             pesan_notifikasi: `Halo Administrator,\n\nBerikut adalah Kode OTP acak keamanan Anda untuk memvalidasi login masuk jelajahi Peta Utama: ${otpPanelKontrolAdmin}\n\nKode ini bersifat rahasia.`
                         };
 
@@ -5480,9 +5480,14 @@ document.addEventListener("DOMContentLoaded", function() {
         window.tampilkanNotifikasiGeo("GeoPTRP Berhasil Memasang Aplikasi di Beranda Anda!", "sukses");
     });
 
-    // PERBAIKAN: Memastikan tombol keluar panel kontrol langsung memunculkan pop-up modal login
+    // PERBAIKAN MUTLAK: Mengamankan trigger klik tombol logout admin agar responsif tanpa interupsi
     document.addEventListener('click', function(event) {
-        if (event.target && (event.target.id === 'btn-logout-admin' || event.target.closest('#btn-logout-admin'))) {
+        const tombolLogout = event.target.id === 'btn-logout-admin' ? event.target : event.target.closest('#btn-logout-admin');
+        
+        if (tombolLogout) {
+            event.preventDefault(); // Mencegah interupsi navigasi default/href kosong yang membuat halaman macet
+            event.stopPropagation(); // Menghentikan gelembung event agar tidak bertabrakan dengan map interaksi
+            
             userAktifSistem = { email: "", role: "tamu" };
             
             // Memaksa pop-up login utama langsung tampil terbuka ke depan layar
