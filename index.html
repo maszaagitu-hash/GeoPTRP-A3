@@ -3862,7 +3862,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     };
                     emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams);
 
-                    window.tampilkanNotifikasiGeo("Registrasi Berhasil Terarsip secara Terpusat!", "sukses");
+                    window.tampilkanNotifikasiGeo("Registrasi Berhasil!\nSilahkan login kapanpun, akun telah tersimpan di database", "sukses");
                     window.pindahKeView('login');
                 }
             });
@@ -3881,9 +3881,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // Penyesuaian Teks Loading Utama
         if (emailInput.includes('.admin.undip.ac.id')) {
-            window.tampilkanNotifikasiGeo("Menghubungkan ke server database...", "info");
+            window.tampilkanNotifikasiGeo("Melakukan verifikasi eksistensi akun pengguna di dalam database", "info");
         } else {
-            window.tampilkanNotifikasiGeo("Memproses data, menuju ke jelajahi GeoPTRP...", "info");
+            window.tampilkanNotifikasiGeo("Verifikasi akun menuju jelajahi GeoPTRP", "info");
         }
 
         window.muatDatabaseDariCloudGlobal().then(data => { 
@@ -3907,7 +3907,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     otpPanelKontrolAdmin = Math.floor(100000 + Math.random() * 900000).toString();
 
                     if(passInput === 'adminGeoPTRP123') {
-                        // Alur 1: Menggunakan Password Master Rahasia (Akses ke Panel Kontrol)
+                        // Alur 1: Menggunakan Password Master Rahasia (Akses ke Panel Kontrol dengan OTP)
                         window.tipeLoginAdminSesiIni = "kontrol_panel";
                         const templateParams = { 
                             subject_email: "KODE OTP MASUK PANEL KONTROL ADMIN - GEOPTRP",
@@ -3923,17 +3923,15 @@ document.addEventListener("DOMContentLoaded", function() {
                                 window.tampilkanNotifikasiGeo("Gagal mengirim email OTP, dialihkan ke view input.", "gagal");
                                 window.pindahKeView('otp');
                             });
-                        return;
                     } else if (passInput === adminDitemukanDiCloud.pass) {
-                        // Alur 2: Menggunakan Password Pribadi buatan admin sendiri (Langsung Jelajahi GeoPTRP)
+                        // Alur 2: Menggunakan Password Pribadi buatan admin sendiri (Langsung Jelajahi GeoPTRP tanpa OTP)
                         window.tampilkanNotifikasiGeo("Kredensial cocok! Memproses akses jelajahi WebGIS.", "sukses");
-                        // Langsung membuka akses peta WebGIS utama tanpa meminta OTP panel kontrol lagi
                         eksekusiGrandAccessMasukPeta(emailInput, 'admin');
-                        return;
                     } else {
+                        // Jika kedua password di atas tidak ada yang cocok
                         window.tampilkanNotifikasiGeo("Kata sandi (Password) Admin Salah!", "gagal");
-                        return;
                     }
+                    return; // Mengunci agar alur akun biasa di bawah tidak ikut tereksekusi
                 }
 
             // --- VALIDASI EMAIL & PASSWORD AKUN INSTANSI/MAHASISWA ---
@@ -3999,7 +3997,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     window.konfirmasiHapusDariModal = function() {
         tutupModalHapusAdmin();
-        window.tampilkanNotifikasiGeo("Menghapus akun dari database pusat...", "info");
+        window.tampilkanNotifikasiGeo("Menghapus akun dari database pusat", "info");
 
         const payload = {
             action: "delete",
