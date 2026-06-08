@@ -3952,9 +3952,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 return;
             }
 
-            if (userAkun.nama.toLowerCase() !== namaInput.toLowerCase()) {
-                window.tampilkanNotifikasiGeo("Nama pengguna tidak cocok dengan akun email yang terdaftar!", "gagal");
-                return;
+            // Perbaikan: Gunakan .trim() pada data nama dari database untuk menghindari spasi hantu
+            if (userAkun.nama.trim().toLowerCase() !== namaInput.toLowerCase()) {
+             window.tampilkanNotifikasiGeo("Nama pengguna tidak cocok dengan akun email yang terdaftar!", "gagal");
+            return;
             }
             
             document.getElementById('login-nama').value = userAkun.nama; 
