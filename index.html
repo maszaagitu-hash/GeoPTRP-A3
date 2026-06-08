@@ -3923,16 +3923,21 @@ document.addEventListener("DOMContentLoaded", function() {
                                 window.tampilkanNotifikasiGeo("Gagal mengirim email OTP, dialihkan ke view input.", "gagal");
                                 window.pindahKeView('otp');
                             });
-                    } else if (passInput === adminDitemukanDiCloud.pass) {
+                    } else if (adminDitemukanDiCloud.pass && passInput === adminDitemukanDiCloud.pass) {
                         // Alur 2: Menggunakan Password Pribadi buatan admin sendiri (Langsung Jelajahi GeoPTRP tanpa OTP)
                         window.tampilkanNotifikasiGeo("Kredensial cocok! Memproses akses jelajahi WebGIS.", "sukses");
+                        
+                        // Memaksa penutupan modal login lama agar tidak menumpuk di atas peta WebGIS
+                        document.getElementById('modal-geo-login').style.display = 'none';
+                        window.isPetaAktif = true;
+                        
                         eksekusiGrandAccessMasukPeta(emailInput, 'admin');
                     } else {
                         // Jika kedua password di atas tidak ada yang cocok
                         window.tampilkanNotifikasiGeo("Kata sandi (Password) Admin Salah!", "gagal");
                     }
                     return; // Mengunci agar alur akun biasa di bawah tidak ikut tereksekusi
-                }
+                    }
 
             // --- VALIDASI EMAIL & PASSWORD AKUN INSTANSI/MAHASISWA ---
             let emailDitemukan = akunDatabaseLokal.some(acc => acc.email === emailInput);
@@ -4106,14 +4111,34 @@ document.addEventListener("DOMContentLoaded", function() {
         
         let idx = akunDatabaseLokal.findIndex(acc => acc.email === emailTargetPemulihan);
         if(idx !== -1) {
-            akunDatabaseLokal[idx].pass = pass1;
-            localStorage.setItem('geo_accounts', JSON.stringify(akunDatabaseLokal));
+            window.tampilkanNotifikasiGeo("Sinkronisasi perubahan sandi ke server pusat", "info");
             
-            window.tampilkanNotifikasiGeo("Selamat! Kata sandi akun Anda berhasil diperbarui.", "sukses");
-            
-            otpPemulihanSistem = "";
-            emailTargetPemulihan = "";
-            window.pindahKeView('login');
+            // Payload integrasi cloud database
+            const payload = {
+                action: "register", // Menggunakan endpoint register/write pusat untuk override data berdasar eksistensi email
+                email: emailTargetPemulihan,
+                pass: pass1
+            };
+
+            fetch(URL_DATABASE_SHEETS, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(resData => {
+                // Setelah cloud database sukses ter-update, perbarui local storage
+                akunDatabaseLokal[idx].pass = pass1;
+                localStorage.setItem('geo_accounts', JSON.stringify(akunDatabaseLokal));
+                
+                window.tampilkanNotifikasiGeo("Selamat! Kata sandi akun Anda berhasil diperbarui secara terpusat.", "sukses");
+                
+                otpPemulihanSistem = "";
+                emailTargetPemulihan = "";
+                window.pindahKeView('login');
+            })
+            .catch(() => {
+                window.tampilkanNotifikasiGeo("Gagal memperbarui sandi di server. Coba lagi.", "gagal");
+            });
         } else {
             window.tampilkanNotifikasiGeo("Terjadi kegagalan sinkronisasi data internal.", "gagal");
         }
@@ -5435,12 +5460,14 @@ document.addEventListener("DOMContentLoaded", function() {
     // PERBAIKAN MUTLAK: Deteksi Klik Tombol Keluar Sesi Admin Dashboard secara Global
     document.addEventListener('click', function(event) {
         // Melacak target klik elemen dengan ID 'btn-logout-admin'
-        if (event.target && event.target.id === 'btn-logout-admin' || event.target.closest('#btn-logout-admin')) {
+        if (event.target && (event.target.id === 'btn-logout-admin' || event.target.closest('#btn-logout-admin'))) {
             userAktifSistem = { email: "", role: "tamu" };
             
-            // Mengembalikan kondisi tampilan layar awal pendaratan login
+            // Mengembalikan kondisi tampilan layar awal pendaratan login & reset landing page
             const modalLogin = document.getElementById('modal-geo-login');
+            const landingPage = document.getElementById('landing-page');
             if (modalLogin) modalLogin.style.display = 'flex';
+            if (landingPage) landingPage.style.display = 'block';
             
             window.tampilkanNotifikasiGeo("Berhasil keluar dari sesi Administrator.", "info");
             window.pindahKeView('login');
