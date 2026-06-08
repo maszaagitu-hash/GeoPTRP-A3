@@ -3929,8 +3929,8 @@ document.addEventListener("DOMContentLoaded", function() {
                                 window.tampilkanNotifikasiGeo("Gagal mengirim email OTP, dialihkan ke view input.", "gagal");
                                 window.pindahKeView('otp');
                             });
-                    } else if (adminDitemukanDiCloud.pass && passInput === adminDitemukanDiCloud.pass) {
-                        // Alur 2: Menggunakan Password Pribadi buatan admin sendiri (Langsung Jelajahi GeoPTRP tanpa OTP)
+                    } else if (adminDitemukanDiCloud.pass && passInput === String(adminDitemukanDiCloud.pass).trim()) {
+                        // PERBAIKAN: Mengonversi password database admin menjadi String dan menghapus spasi hantu (.trim())
                         window.tampilkanNotifikasiGeo("Kredensial cocok! Memproses akses jelajahi WebGIS.", "sukses");
                         
                         // Memaksa penutupan modal login lama agar tidak menumpuk di atas peta WebGIS
@@ -5472,24 +5472,31 @@ document.addEventListener("DOMContentLoaded", function() {
         window.tampilkanNotifikasiGeo("GeoPTRP Berhasil Memasang Aplikasi di Beranda Anda!", "sukses");
     });
 
-    // PERBAIKAN MUTLAK: Deteksi Klik Tombol Keluar Sesi Admin Dashboard secara Global
+    // PERBAIKAN: Memastikan eksekusi listener logout dibungkus secara aman tanpa terpengaruh error UI kontrol layer peta
     document.addEventListener('click', function(event) {
-        // Melacak target klik elemen dengan ID 'btn-logout-admin'
         if (event.target && (event.target.id === 'btn-logout-admin' || event.target.closest('#btn-logout-admin'))) {
             userAktifSistem = { email: "", role: "tamu" };
             
-            // Mengembalikan kondisi tampilan layar awal pendaratan login & reset landing page
             const modalLogin = document.getElementById('modal-geo-login');
             const landingPage = document.getElementById('landing-page');
+            
             if (modalLogin) modalLogin.style.display = 'flex';
             if (landingPage) landingPage.style.display = 'block';
             
-            window.tampilkanNotifikasiGeo("Berhasil keluar dari sesi Administrator.", "info");
+            // Mengamankan penutupan pembungkus kontainer panel admin dashboard agar kembali bersih ke login view
+            const adminBox = document.getElementById('box-admin-dashboard');
+            if (adminBox) adminBox.style.display = 'none';
+            
+            window.tampilkanNotifikasiGeo("Berhasil keluar dari sesi Administrator.", "sukses");
             window.pindahKeView('login');
         }
     });
 
-    updateLayerControlUI();
+    try {
+        updateLayerControlUI();
+    } catch(e) {
+        console.log("Layer control UI skipped inside dashboard context.");
+    }
 });
 </script>
 </body>
