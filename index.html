@@ -4044,6 +4044,23 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     };
 
+    // --- SISIPKAN KODE BARU DI SINI ---
+    window.keluarDariAdmin = function() {
+        userAktifSistem = { email: "", role: "tamu" };
+
+        // Memaksa pop-up login utama langsung tampil terbuka ke depan layar
+        const modalLogin = document.getElementById('modal-geo-login');
+        if (modalLogin) modalLogin.style.display = 'flex';
+
+        // Menutup pembungkus dashboard panel admin agar tidak terlihat di latar belakang
+        const adminBox = document.getElementById('box-admin-dashboard');
+        if (adminBox) adminBox.style.display = 'none';
+
+        window.tampilkanNotifikasiGeo("Berhasil keluar dari sesi Administrator.", "sukses");
+        window.pindahKeView('login');
+    };
+    // ----------------------------------
+
     let targetHapusEmail = "";
     let targetHapusNama = "";
 
