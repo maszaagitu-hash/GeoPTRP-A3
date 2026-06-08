@@ -3829,7 +3829,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         let detectedRole = emailInput.includes('.admin.undip.ac.id') ? "admin" : "instansi";
 
-        window.tampilkanNotifikasiGeo("Memvalidasi data dengan server...", "info");
+        window.tampilkanNotifikasiGeo("Menyimpan akun ke database", "info");
         
         window.muatDatabaseDariCloudGlobal().then(data => {
             let isExist = data.some(acc => acc.email === emailInput);
@@ -3958,6 +3958,10 @@ document.addEventListener("DOMContentLoaded", function() {
             }
             
             document.getElementById('login-nama').value = userAkun.nama; 
+            
+            // Perbaikan: Tutup paksa pembungkus login sebelum melempar user ke halaman dashboard peta utama
+            document.getElementById('modal-geo-login').style.display = 'none';
+            
             eksekusiGrandAccessMasukPeta(emailInput, userAkun.role);
         })
         .catch(() => {
@@ -4174,6 +4178,9 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById('disclaimer-overlay').style.display = 'flex';
 
         userAktifSistem = { email: email, role: role };
+        
+        // Perbaikan: Pastikan status peta aktif diset true untuk semua role yang berhasil login agar overlay warning device sinkron
+        window.isPetaAktif = true;
 
         const labelText = document.getElementById('txt-role-label');
         if (role === 'tamu') labelText.innerHTML = "Tamu (Umum)";
