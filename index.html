@@ -3814,6 +3814,12 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
 
+        // PERBAIKAN: Memblokir pendaftaran jika panjang karakter kata sandi kurang dari 6
+        if (passInput.length < 6) {
+            window.tampilkanNotifikasiGeo("Pendaftaran Ditolak! Kata sandi minimal harus berukuran 6 karakter.", "gagal");
+            return;
+        }
+
         const allowedDomains = [
             /@students\.undip\.ac\.id$/,
             /@students\.admin\.undip\.ac\.id$/,
@@ -3946,7 +3952,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 return;
             }
 
-            let userAkun = akunDatabaseLokal.find(acc => acc.email === emailInput && acc.pass === passInput);
+            // PERBAIKAN: Mengonversi nilai sandi database (acc.pass) menjadi String dan menghapus spasi hantu (.trim())
+            let userAkun = akunDatabaseLokal.find(acc => acc.email === emailInput && String(acc.pass).trim() === passInput);
             if (!userAkun) {
                 window.tampilkanNotifikasiGeo("Kata sandi (Password) yang Anda masukkan salah!", "gagal");
                 return;
