@@ -5521,17 +5521,14 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     // ==========================================================================
-    // SCRIPT KHUSUS: GEOPTRP ADVANCED VOICE ASSISTANT ENGINE
+    // GEOPTRP ULTIMATE INTERACTIVE VOICE ASSISTANT ENGINE
     // ==========================================================================
     
-    // Fungsi Utama Eksekusi Suara
+    // Fungsi Utama Eksekusi Suara (Termasuk Pembersihan Tag HTML)
     window.bicaraGeoSistem = function(teks) {
         if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel(); // Hentikan suara sebelumnya agar tidak bertumpuk
-            
-            // Bersihkan tag HTML (seperti <h3>, <p>, <i>) jika teks diambil dari database infoDataSpasial
+            window.speechSynthesis.cancel(); // Hentikan suara aktif agar responsif saat diklik cepat
             const teksBersih = teks.replace(/<\/?[^>]+(>|$)/g, "").trim();
-            
             const narator = new SpeechSynthesisUtterance(teksBersih);
             narator.lang = 'id-ID';
             narator.rate = 1.0; 
@@ -5540,145 +5537,165 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     };
 
-    // 1. TRIGGER CURSOR BERGERAK (Sapaan Pertama WebGIS)
+    // 1. OTOMATIS SUARA SAAT WEB PERTAMA KALI DIBUKA (Dipicu Pergerakan Kursor Pertama)
     let sudahMenyapaGeo = false;
     document.addEventListener('mousemove', function() {
         if (!sudahMenyapaGeo) {
             sudahMenyapaGeo = true;
             setTimeout(() => {
-                window.bicaraGeoSistem("Selamat datang di aplikasi WebGIS Geo P T R P. Silahkan gerakkan kursor atau klik tombol untuk memulai.");
+                window.bicaraGeoSistem("Selamat datang di aplikasi WebGIS Geo P T R P Kecamatan Ceper. Silahkan jelajahi ruang dan informasi pertanahan kami.");
             }, 300);
         }
     });
 
-    // 2. PEMBACA DINAMIS UNTUK ATRIBUT OPSI DATA SPASIAL (4 LOGO UTAMA)
-    // Memanfaatkan fungsi selectLogo bawaan Anda agar membaca isi variabel infoDataSpasial secara otomatis
+    // 2. LOGIKA SUARA DINAMIS SAAT BERGANTI TAB MENU UTAMA
+    const fungsiBukaTabLama = window.bukaTab;
+    window.bukaTab = function(namaTab) {
+        fungsiBukaTabLama(namaTab);
+        
+        if (namaTab === 'beranda') {
+            window.bicaraGeoSistem("Beralih ke halaman beranda utama.");
+        } else if (namaTab === 'info') {
+            window.bicaraGeoSistem("Beralih ke halaman informasi pertanahan. Wilayah studi berada di Kecamatan Ceper, menyajikan beberapa informasi spasial beserta statistiknya. Anda juga dapat mengetahui lokasi wilayah studi dengan mengklik peta atau rute yang tersedia.");
+        } else if (namaTab === 'about') {
+            window.bicaraGeoSistem("Beralih ke tentang kami. Menyajikan profil tim studio, visi misi, dan kontak pengembang.");
+        }
+    };
+
+    // 3. LOGIKA SUARA SAAT KLIK INFORMASI DATA SPASIAL & AMBIL TEKS PENJELASANNYA
+    const fungsiHandleMainToggleLama = window.handleMainToggle;
+    window.handleMainToggle = function() {
+        fungsiHandleMainToggleLama();
+        const btnPemicu = document.getElementById('main-toggle-container');
+        if (btnPemicu && btnPemicu.classList.contains('shrunk')) {
+            window.bicaraGeoSistem("Memuat empat data informasi spasial. Silahkan pilih salah satu opsi data di atas.");
+        } else {
+            window.bicaraGeoSistem("Menutup panel informasi data spasial.");
+        }
+    };
+
     const fungsiSelectLogoLama = window.selectLogo;
     window.selectLogo = function(element, tipeData) {
-        // Jalankan fungsi visual aslinya dulu
         fungsiSelectLogoLama(element, tipeData);
-        
-        // Periksa apakah kartu menjadi aktif setelah diklik
         if (element.classList.contains('active')) {
             const narasiDetail = infoDataSpasial[tipeData];
             if (narasiDetail) {
-                window.bicaraGeoSistem("Menampilkan informasi detail. " + narasiDetail);
+                window.bicaraGeoSistem("Membaca informasi. " + narasiDetail);
             }
         } else {
-            window.bicaraGeoSistem("Menutup penjelasan informasi spasial.");
+            window.bicaraGeoSistem("Menutup penjelasan data.");
         }
     };
 
-    // 3. PEMBACA BANNER NOTIFIKASI TOAST (SINKRONISASI SUARA)
+    // 4. DETEKSI SCROLL OTOMATIS MENGGUNAKAN INTERSECTION OBSERVER (UNTUK HALAMAN ABOUT)
+    // Mencari elemen teks target di halaman berdasarkan teksnya jika ID belum terpasang
+    setTimeout(() => {
+        const h3Elements = document.querySelectorAll('#tab-about h3, #tab-about h2, #tab-about div');
+        
+        let targetTim, targetKontak, targetFooter;
+        h3Elements.forEach(el => {
+            const txt = el.innerText.toLowerCase();
+            if (txt.includes('dosen pengampu') && !txt.includes('kontak')) targetTim = el;
+            if (txt.includes('kontak kami')) targetKontak = el;
+            if (txt.includes('hubungi kami') || el.classList.contains('footer') || el.tagName === 'FOOTER') targetFooter = el;
+        });
+
+        const opsiObserver = { root: document.getElementById('landing-page'), threshold: 0.5 };
+        
+        // Observer teks Anggota Tim / Dosen Pengampu
+        if (targetTim) {
+            let suaraTimJalan = false;
+            new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting && !suaraTimJalan && document.getElementById('tab-about').style.display === 'block') {
+                    suaraTimJalan = true;
+                    window.bicaraGeoSistem("Berikut adalah anggota tim kami yang berjumlah delapan anggota. Silahkan klik salah satu anggota untuk informasi lebih lanjut.");
+                }
+            }, opsiObserver).observe(targetTim);
+        }
+
+        // Observer teks Kontak Kami
+        if (targetKontak) {
+            let suaraKontakJalan = false;
+            new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting && !suaraKontakJalan && document.getElementById('tab-about').style.display === 'block') {
+                    suaraKontakJalan = true;
+                    window.bicaraGeoSistem("Dosen pengampu kami berjumlah empat orang. Silahkan klik untuk melihat informasi detail bimbingan.");
+                }
+            }, opsiObserver).observe(targetKontak);
+        }
+
+        // Observer Footer / Hubungi Kami
+        if (targetFooter) {
+            let suaraFooterJalan = false;
+            new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting && !suaraFooterJalan && document.getElementById('tab-about').style.display === 'block') {
+                    suaraFooterJalan = true;
+                    window.bicaraGeoSistem("Silahkan hubungi kami apabila terdapat pertanyaan lebih lanjut mengenai data spasial ini. Anda juga dapat melihat lokasi basecamp kami pada peta di sebelah kiri, dan wilayah studi pada peta di sebelah kanan.");
+                }
+            }, opsiObserver).observe(targetFooter);
+        }
+    }, 1000);
+
+    // 5. INTERAKSI KLIK BIOGRAFI TIM (MEMBACAKAN NAMA & JOBDESK)
+    const fungsiBukaPopupBioLama = window.bukaPopupBio;
+    window.bukaPopupBio = function(nama, role, nim, ttl, asal, ig, email, jobdesk, imgUrl) {
+        fungsiBukaPopupBioLama(nama, role, nim, ttl, asal, ig, email, jobdesk, imgUrl);
+        window.bicaraGeoSistem("Menampilkan profil, " + nama + ". Jabatan sebagai " + jobdesk);
+    };
+
+    // 6. MODAL VISI MISI & PANDUAN AKSES (HANYA BERSUARA SAAT BUKA)
+    const fungsiBukaModalVisiMisiLama = window.bukaModalVisiMisi;
+    window.bukaModalVisiMisi = function() {
+        fungsiBukaModalVisiMisiLama();
+        window.bicaraGeoSistem("Menampilkan visi dan misi lembaga.");
+    };
+
+    const fungsiBukaLayarPanduanLama = window.bukaLayarPanduan;
+    window.bukaLayarPanduan = function() {
+        fungsiBukaLayarPanduanLama();
+        window.bicaraGeoSistem("Membuka panduan standarisasi akses dan penggunaan aplikasi.");
+    };
+
+    // 7. ALUR AUTENTIKASI: LOGIN, SIGN UP, DAN GRAND ACCESS MASUK PETA
+    const fungsiMasukPetaLama = window.masukPeta;
+    window.masukPeta = function() {
+        fungsiMasukPetaLama();
+        window.bicaraGeoSistem("Silahkan login seperti biasa menggunakan email resmi U N D I P.");
+    };
+
+    const fungsiPindahKeViewLama = window.pindahKeView;
+    window.pindahKeView = function(viewName) {
+        fungsiPindahKeViewLama(viewName);
+        if (viewName === 'signup') {
+            window.bicaraGeoSistem("Halaman pendaftaran pengguna baru. Akses terbagi menjadi admin untuk pengelola data dan instansi untuk pengguna bersertifikat email institusi.");
+        }
+    };
+
+    // Menangkap respon notifikasi sukses daftar dari toast
     const fungsiNotifikasiLama = window.tampilkanNotifikasiGeo;
     window.tampilkanNotifikasiGeo = function(pesan, jenis) {
         fungsiNotifikasiLama(pesan, jenis);
-        window.bicaraGeoSistem(pesan); // Langsung suarakan apapun pesan toast yang muncul
+        if (pesan.includes("Registrasi Berhasil")) {
+            window.bicaraGeoSistem("Selamat! Akun Anda berhasil terdaftar secara terpusat di server cloud. Silahkan login menggunakan data tersebut.");
+        } else {
+            window.bicaraGeoSistem(pesan); // Suarakan otomatis pesan peringatan/error sistem lainnya
+        }
     };
 
-    // 4. PEMETAAN SUARA UNTUK SEMUA TOMBOL INTERAKTIF BERDASARKAN ID & KLIK
-    document.addEventListener('click', function(e) {
-        const t = e.target;
-        
-        // Objek Identifikasi ID Tombol / Fungsi Klik Utama Anda
-        if (t.id === 'main-toggle-container' || t.closest('#main-toggle-container')) {
-            const container = document.getElementById('main-toggle-container');
-            if (container && container.classList.contains('shrunk')) {
-                window.bicaraGeoSistem("Menutup panel informasi data spasial.");
-            } else {
-                window.bicaraGeoSistem("Membuka panel informasi data spasial. Silahkan pilih salah satu opsi data di atas.");
-            }
-            return;
+    // Suara penyambutan saat berhasil masuk ke lembar peta utama setelah disclaimer ditutup
+    const fungsiEksekusiGrandAccessLama = eksekusiGrandAccessMasukPeta;
+    eksekusiGrandAccessMasukPeta = function(email, role) {
+        fungsiEksekusiGrandAccessLama(email, role);
+        // Kita kaitkan suara pada tombol continue di dalam overlay ini
+        const btnContinue = document.getElementById('btn-continue');
+        if (btnContinue) {
+            const fungsiKlikContinueLama = btnContinue.onclick;
+            btnContinue.onclick = function() {
+                if (fungsiKlikContinueLama) fungsiKlikContinueLama();
+                window.bicaraGeoSistem("Selamat datang di peta spasial interaktif Geo P T R P. Selamat menikmati fitur-fitur analisis dan digitasi yang tersedia.");
+            };
         }
-        if (t.id === 'btn-login-info' || t.closest('#btn-login-info')) {
-            window.bicaraGeoSistem("Membuka panduan petunjuk masuk sistem."); return;
-        }
-        if (t.id === 'btn-masuk-peta' || t.closest('[onclick*="masukPeta"]')) {
-            window.bicaraGeoSistem("Membuka jendela login. Silahkan masuk menuju jelajahi Geo P T R P."); return;
-        }
-        if (t.closest('[onclick*="masukSebagaiTamu"]')) {
-            window.bicaraGeoSistem("Masuk sebagai tamu umum. Akses peta dibuka."); return;
-        }
-        if (t.id === 'btn-continue' || t.closest('#btn-continue')) {
-            window.bicaraGeoSistem("Pernyataan dipahami. Membuka visualisasi utama peta spasial."); return;
-        }
-        if (t.id === 'btn-home' || t.closest('#btn-home')) {
-            window.bicaraGeoSistem("Kembali ke beranda utama dan memuat ulang data."); return;
-        }
-        if (t.id === 'btn-zoom-ceper' || t.closest('#btn-zoom-ceper')) {
-            window.bicaraGeoSistem("Mengarahkan fokus kamera peta ke Kecamatan Ceper."); return;
-        }
-        if (t.id === 'btn-toggle-sidebar' || t.closest('#btn-toggle-sidebar')) {
-            window.bicaraGeoSistem("Mengubah ukuran tampilan bilah samping peta."); return;
-        }
-        if (t.id === 'btn-search-coord' || t.closest('#btn-search-coord')) {
-            window.bicaraGeoSistem("Memproses pencarian titik koordinat geografis."); return;
-        }
-        if (t.id === 'btn-clear-search' || t.closest('#btn-clear-search')) {
-            window.bicaraGeoSistem("Membersihkan kolom pencarian dan menghapus pin koordinat."); return;
-        }
-        if (t.id === 'btn-katalog-data' || t.closest('#btn-katalog-data')) {
-            window.bicaraGeoSistem("Membuka jendela katalog data spasial. Silahkan pilih data untuk ditambahkan ke peta."); return;
-        }
-        if (t.id === 'btn-apply-katalog' || t.closest('#btn-apply-katalog')) {
-            window.bicaraGeoSistem("Menerapkan data terpilih dari katalog ke dalam peta."); return;
-        }
-        if (t.id === 'btn-close-katalog' || t.closest('#btn-close-katalog')) {
-            window.bicaraGeoSistem("Menutup jendela katalog data."); return;
-        }
-        if (t.id === 'btn-clear-all' || t.closest('#btn-clear-all')) {
-            window.bicaraGeoSistem("Membersihkan seluruh layer data spasial aktif di atas peta."); return;
-        }
-        if (t.id === 'btn-measure-tools' || t.closest('#btn-measure-tools')) {
-            window.bicaraGeoSistem("Membuka menu alat ukur spasial premium."); return;
-        }
-        if (t.id === 'measure-length' || t.closest('#measure-length')) {
-            window.bicaraGeoSistem("Mengaktifkan mode ukur jarak linier atau garis."); return;
-        }
-        if (t.id === 'measure-area' || t.closest('#measure-area')) {
-            window.bicaraGeoSistem("Mengaktifkan mode ukur luas area atau poligon."); return;
-        }
-        if (t.id === 'clear-measure' || t.closest('#clear-measure')) {
-            window.bicaraGeoSistem("Menghapus seluruh hasil objek pengukuran dari peta."); return;
-        }
-        if (t.id === 'btn-draw-manual' || t.closest('#btn-draw-manual')) {
-            window.bicaraGeoSistem("Mengaktifkan interaksi mode digitasi objek spasial manual."); return;
-        }
-        if (t.closest('[onclick*="downloadFiturBidangTerpilih"]')) {
-            window.bicaraGeoSistem("Memproses unduhan file K M L objek bidang tanah yang dipilih."); return;
-        }
-        if (t.closest('[onclick*="hapusKmlUnggahan"]')) {
-            window.bicaraGeoSistem("Menghapus seluruh berkas K M L atau K M Z unggahan."); return;
-        }
-        if (t.closest('[onclick*="downloadHasilDigitasi"]')) {
-            window.bicaraGeoSistem("Menyimpan dan mengunduh berkas K M L hasil digitasi manual."); return;
-        }
-        if (t.closest('[onclick*="hapusHasilDigitasi"]')) {
-            window.bicaraGeoSistem("Menghapus objek hasil digitasi manual."); return;
-        }
-        if (t.closest('[onclick*="bukaModalVisiMisi"]')) {
-            window.bicaraGeoSistem("Membuka informasi visi dan misi tim studio."); return;
-        }
-        if (t.closest('[onclick*="bukaLayarPanduan"]')) {
-            window.bicaraGeoSistem("Membuka panduan standarisasi penggunaan aplikasi."); return;
-        }
-
-        // Navigasi Tab Menu Utama (Beranda, Grafik Pertanahan, Tentang Studio)
-        if (t.id === 'btn-beranda' || t.closest('#btn-beranda')) {
-            window.bicaraGeoSistem("Beralih ke halaman beranda utama Geo P T R P."); return;
-        }
-        if (t.id === 'btn-info' || t.closest('#btn-info')) {
-            window.bicaraGeoSistem("Beralih ke halaman grafik pertanahan. Memuat data statistik interaktif."); return;
-        }
-        if (t.id === 'btn-about' || t.closest('#btn-about')) {
-            window.bicaraGeoSistem("Beralih ke halaman informasi profil pengembang studio."); return;
-        }
-        
-        // Tombol aksi di dalam Katalog (Tambah Data)
-        if (t.classList.contains('btn-add-layer')) {
-            window.bicaraGeoSistem("Data dimasukkan ke dalam antrean peta."); return;
-        }
-    });
+    };
     // ==========================================================================
 
     try {
