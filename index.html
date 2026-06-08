@@ -3651,13 +3651,13 @@ html, body {
    ========================================================================== */
 document.addEventListener("DOMContentLoaded", function() {
 
-    // Inisialisasi EmailJS (Ganti 'YOUR_PUBLIC_KEY' dengan Public Key Anda dari dashboard EmailJS)
+    // Inisialisasi EmailJS (Public Key Terverifikasi)
     (function() {
         emailjs.init({ publicKey: "0vM8oYIi-LdqEmYW0" });
     })();
 
     // =========================================================================
-    // SYSTEM CUSTOM TOAST NOTIFICATION (PENGGANTI POP-UP SYSTEM KAKU)
+    // SYSTEM CUSTOM TOAST NOTIFICATION
     // =========================================================================
     window.tampilkanNotifikasiGeo = function(pesan, jenis = 'info') {
         const toast = document.getElementById('geo-custom-toast');
@@ -3688,28 +3688,42 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     // =========================================================================
-    // ARSITEKTUR LAYANAN OTENTIKASI & SECURITY ENGINE OTP TIAP JAM
+    // ARSITEKTUR LAYANAN OTENTIKASI & SECURITY ENGINE INTERFACES (CLOUD CENTER)
     // =========================================================================
-   let defaultAccounts = [
-        { nama: 'Dosen Satu', email: 'dosen1@lecturer.undip.ac.id', pass: 'undip123', role: 'instansi' },
-        { nama: 'Mahasiswa Satu', email: 'mhs1@students.undip.ac.id', pass: 'undip123', role: 'instansi' }
-    ];
-    let savedAccounts = JSON.parse(localStorage.getItem('geo_accounts'));
-    let akunDatabaseLokal = savedAccounts ? savedAccounts : defaultAccounts;
+    const URL_DATABASE_SHEETS = "https://script.google.com/macros/s/AKfycbx71Uq24sJsIkA9fNHK-TslcWrNtJnBD7N1osFUqupyYKSeZ2AvHFxHofnK6uLO4lPuDg/exec";
+
+    let akunDatabaseLokal = [];
     let userAktifSistem = { email: "", role: "tamu" };
+
+    // Fungsi otomatis meload data dari cloud database saat WebGIS dibuka
+    window.muatDatabaseDariCloudGlobal = function() {
+        return fetch(URL_DATABASE_SHEETS)
+            .then(res => res.json())
+            .then(data => {
+                akunDatabaseLokal = data;
+                localStorage.setItem('geo_accounts', JSON.stringify(data));
+                return data;
+            })
+            .catch(() => {
+                akunDatabaseLokal = JSON.parse(localStorage.getItem('geo_accounts')) || [
+                    { nama: 'Dosen Satu', email: 'dosen1@lecturer.undip.ac.id', pass: 'undip123', role: 'instansi' }
+                ];
+                return akunDatabaseLokal;
+            });
+    };
+    window.muatDatabaseDariCloudGlobal(); // Initial load
+
     let dataEmailAdminMenungguOtp = "";
     let otpPemulihanSistem = "";
     let emailTargetPemulihan = "";
     let otpPanelKontrolAdmin = "";
-    let fungsiCallbackPascaOtpAdmin = null;
     
-    // Variabel Global Baru untuk KML & Digitasi
     window.isDigitizing = false;
     let userKmlSource = new ol.source.Vector();
     let userKmlLayer = new ol.layer.Vector({ source: userKmlSource, zIndex: 100 });
     let drawKmlInteraction;
     
-    // Poin 8: Fungsi Menetralkan Alat agar tidak bertabrakan
+    // Fungsi Menetralkan Alat agar tidak bertabrakan
     window.nonaktifkanAlatLain = function() {
         if (draw) {
             map.removeInteraction(draw);
@@ -3731,66 +3745,61 @@ document.addEventListener("DOMContentLoaded", function() {
         return String((seed * 123456) % 1000000).padStart(6, '0');
     }
 
-   window.pindahKeView = function(viewName) {
-    // Sembunyikan semua view yang ada
-    const seluruhView = [
-        'box-login-view', 'box-signup-view', 'box-otp-view', 
-        'box-admin-dashboard', 'box-forgot-view', 'box-otp-forgot-view', 
-        'box-new-password-view', 'box-otp-controlpanel-view'
-    ];
-    seluruhView.forEach(id => {
-        const el = document.getElementById(id);
-        if(el) el.style.display = 'none';
-    });
-    
-    // Tampilkan view yang dituju
-    if(viewName === 'login') document.getElementById('box-login-view').style.display = 'block';
-    if(viewName === 'signup') document.getElementById('box-signup-view').style.display = 'block';
-    if(viewName === 'otp') document.getElementById('box-otp-view').style.display = 'block';
-    if(viewName === 'admin') document.getElementById('box-admin-dashboard').style.display = 'block';
-    if(viewName === 'forgot') document.getElementById('box-forgot-view').style.display = 'block';
-    if(viewName === 'otp_forgot') document.getElementById('box-otp-forgot-view').style.display = 'block';
-    if(viewName === 'new_password') document.getElementById('box-new-password-view').style.display = 'block';
-    if(viewName === 'otp_controlpanel') {
-        const elCtrl = document.getElementById('box-otp-controlpanel-view');
-        if(elCtrl) elCtrl.style.display = 'block';
-    }
-    // Reset seluruh input form
-    const inputs = ['login-nama', 'login-email', 'login-pass', 'reg-nama', 'reg-email', 'reg-pass', 'input-otp-code', 'forgot-email', 'input-otp-forgot', 'new-pass-1', 'new-pass-2'];
-    inputs.forEach(id => {
-        const el = document.getElementById(id);
-        if(el) el.value = '';
-    });
-
-    // Menutup peringatan dan panduan bawaan
-    const timeoutArea = document.getElementById('otp-timeout-area');
-    if (timeoutArea) timeoutArea.style.display = 'none';
-    
-    const guideBox = document.getElementById('box-login-guide');
-    const infoBtn = document.getElementById('btn-login-info');
-    if (guideBox) {
-        guideBox.style.display = 'none';
-        if (infoBtn) {
-            infoBtn.className = "fas fa-circle-question login-info-btn";
-            infoBtn.style.color = "#ffffff";
+    window.pindahKeView = function(viewName) {
+        const seluruhView = [
+            'box-login-view', 'box-signup-view', 'box-otp-view', 
+            'box-admin-dashboard', 'box-forgot-view', 'box-otp-forgot-view', 
+            'box-new-password-view', 'box-otp-controlpanel-view'
+        ];
+        seluruhView.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.style.display = 'none';
+        });
+        
+        if(viewName === 'login') document.getElementById('box-login-view').style.display = 'block';
+        if(viewName === 'signup') document.getElementById('box-signup-view').style.display = 'block';
+        if(viewName === 'otp') document.getElementById('box-otp-view').style.display = 'block';
+        if(viewName === 'admin') document.getElementById('box-admin-dashboard').style.display = 'block';
+        if(viewName === 'forgot') document.getElementById('box-forgot-view').style.display = 'block';
+        if(viewName === 'otp_forgot') document.getElementById('box-otp-forgot-view').style.display = 'block';
+        if(viewName === 'new_password') document.getElementById('box-new-password-view').style.display = 'block';
+        if(viewName === 'otp_controlpanel') {
+            const elCtrl = document.getElementById('box-otp-controlpanel-view');
+            if(elCtrl) elCtrl.style.display = 'block';
         }
-    }
-};
+        
+        const inputs = ['login-nama', 'login-email', 'login-pass', 'reg-nama', 'reg-email', 'reg-pass', 'input-otp-code', 'forgot-email', 'input-otp-forgot', 'new-pass-1', 'new-pass-2'];
+        inputs.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.value = '';
+        });
 
-    // --- FUNGSI BARU UNTUK BUKA/TUTUP PANDUAN LOGIN ---
+        const timeoutArea = document.getElementById('otp-timeout-area');
+        if (timeoutArea) timeoutArea.style.display = 'none';
+        
+        const guideBox = document.getElementById('box-login-guide');
+        const infoBtn = document.getElementById('btn-login-info');
+        if (guideBox) {
+            guideBox.style.display = 'none';
+            if (infoBtn) {
+                infoBtn.className = "fas fa-circle-question login-info-btn";
+                infoBtn.style.color = "#ffffff";
+            }
+        }
+    };
+
     window.togglePanduanLogin = function() {
         const guideBox = document.getElementById('box-login-guide');
         const infoBtn = document.getElementById('btn-login-info');
-        
         if (!guideBox) return;
 
         if (guideBox.style.display === 'none' || guideBox.style.display === '') {
             guideBox.style.display = 'block';
-            infoBtn.className = "fas fa-circle-xmark login-info-btn"; // Mengubah ikon jadi silang (X)
-            infoBtn.style.color = "#ff7675"; // Warna merah soft saat terbuka
+            infoBtn.className = "fas fa-circle-xmark login-info-btn";
+            infoBtn.style.color = "#ff7675";
         } else {
             guideBox.style.display = 'none';
-            infoBtn.className = "fas fa-circle-question login-info-btn"; // Mengembalikan jadi ikon (?)
+            infoBtn.className = "fas fa-circle-question login-info-btn";
             infoBtn.style.color = "#ffffff";
         }
     };
@@ -3800,14 +3809,11 @@ document.addEventListener("DOMContentLoaded", function() {
         const emailInput = document.getElementById('reg-email').value.trim().toLowerCase();
         const passInput = document.getElementById('reg-pass').value.trim();
 
-        // UBAH: Mewajibkan nama terisi
         if (namaInput === "" || emailInput === "" || passInput === "") {
             window.tampilkanNotifikasiGeo("Nama, Email, dan Password wajib diisi!", "gagal");
             return;
         }
 
-        // --- SISTEM VALIDASI DAN FILTER DOMAIN EMAIL RESMI UNDIP ---
-        // Membuat daftar regex untuk mencocokkan akhir string email secara presisi
         const allowedDomains = [
             /@students\.undip\.ac\.id$/,
             /@students\.admin\.undip\.ac\.id$/,
@@ -3815,49 +3821,52 @@ document.addEventListener("DOMContentLoaded", function() {
             /@lecturer\.admin\.undip\.ac\.id$/
         ];
 
-        // Memeriksa apakah email yang diinput cocok dengan salah satu domain di atas
         const isEmailValid = allowedDomains.some(regex => regex.test(emailInput));
-
         if (!isEmailValid) {
-            window.tampilkanNotifikasiGeo(
-                "Pendaftaran Ditolak!\nSistem hanya menerima email resmi:\n" +
-                "• @students.undip.ac.id\n" +
-                "• @students.admin.undip.ac.id\n" +
-                "• @lecturer.undip.ac.id\n" +
-                "• @lecturer.admin.undip.ac.id", 
-                "gagal"
-            );
-            return; // Menghentikan proses registrasi
-        }
-
-        // Mendeteksi Role Akun (Admin atau Instansi akademik)
-        let detectedRole = emailInput.includes('.admin.undip.ac.id') ? "admin" : "instansi";
-
-        // Memeriksa apakah email ini sudah pernah terdaftar di database lokal browser
-        let isExist = akunDatabaseLokal.some(acc => acc.email === emailInput);
-        if (isExist) {
-            window.tampilkanNotifikasiGeo("Email ini sudah terdaftar di sistem!", "warning");
+            window.tampilkanNotifikasiGeo("Pendaftaran Ditolak! Gunakan email resmi UNDIP.", "gagal");
             return;
         }
 
-        // Simpan Akun ke Database Lokal (LocalStorage) jika lolos kualifikasi
-        akunDatabaseLokal.push({ nama: namaInput, email: emailInput, pass: passInput, role: detectedRole });
-        localStorage.setItem('geo_accounts', JSON.stringify(akunDatabaseLokal));
+        let detectedRole = emailInput.includes('.admin.undip.ac.id') ? "admin" : "instansi";
 
-        // Menyiapkan parameter notifikasi untuk arsip EmailJS Anda
-        const templateParams = {
-            subject_email: "REGISTRASI USER BARU GEOPTRP",
-            pesan_notifikasi: `Pendaftaran Baru Berhasil Divalidasi:\nNama: ${namaInput}\nEmail: ${emailInput}\nHak Akses: ${detectedRole.toUpperCase()}\nPassword: ${passInput}`
-        };
+        window.tampilkanNotifikasiGeo("Memvalidasi data dengan server...", "info");
+        
+        window.muatDatabaseDariCloudGlobal().then(data => {
+            let isExist = data.some(acc => acc.email === emailInput);
+            if (isExist) {
+                window.tampilkanNotifikasiGeo("Email ini sudah terdaftar di database sistem!", "warning");
+                return;
+            }
 
-        emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
-            .then(() => {
-                window.tampilkanNotifikasiGeo("Registrasi Berhasil!\nSilahkan login kapanpun, akun telah tersimpan di browser.", "sukses");
-                window.pindahKeView('login');
-            }, () => {
-                window.tampilkanNotifikasiGeo("Registrasi lokal berhasil divalidasi, jaringan email arsip terkendala.", "info");
-                window.pindahKeView('login');
+            const payload = {
+                action: "register",
+                nama: namaInput,
+                email: emailInput,
+                pass: passInput,
+                role: detectedRole
+            };
+
+            fetch(URL_DATABASE_SHEETS, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(resData => {
+                if(resData.status === "sukses") {
+                    akunDatabaseLokal.push({ nama: namaInput, email: emailInput, pass: passInput, role: detectedRole });
+                    localStorage.setItem('geo_accounts', JSON.stringify(akunDatabaseLokal));
+
+                    const templateParams = {
+                        subject_email: "REGISTRASI USER BARU GEOPTRP (CLOUD)",
+                        pesan_notifikasi: `User Baru Sukses Terdaftar Otomatis di Database:\nNama: ${namaInput}\nEmail: ${emailInput}\nHak Akses: ${detectedRole.toUpperCase()}`
+                    };
+                    emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams);
+
+                    window.tampilkanNotifikasiGeo("Registrasi Berhasil Terarsip secara Terpusat!", "sukses");
+                    window.pindahKeView('login');
+                }
             });
+        });
     };
 
     window.prosesLoginSistem = function() {
@@ -3870,123 +3879,150 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
 
-        // --- FILTER MUTLAK AKUN ADMINISTRATOR UTAMA ---
-        if(emailInput.includes('.admin.undip.ac.id')) {
-            dataEmailAdminMenungguOtp = emailInput;
-            otpPanelKontrolAdmin = Math.floor(100000 + Math.random() * 900000).toString();
+        window.tampilkanNotifikasiGeo("Menghubungkan ke server database...", "info");
 
-            if(passInput === 'adminGeoPTRP123') {
-                // Alur 1: Menggunakan Password Utama Rahasia (Akses ke Panel Kontrol)
-                window.tipeLoginAdminSesiIni = "kontrol_panel";
-                const templateParams = { 
-                    subject_email: "KODE OTP MASUK PANEL KONTROL ADMIN - GEOPTRP",
-                    pesan_notifikasi: `Halo Administrator,\n\nBerikut adalah Kode OTP acak keamanan Anda untuk mengakses masuk ke dalam Panel Kontrol Data: ${otpPanelKontrolAdmin}\n\nKode ini bersifat rahasia.`
-                };
+        window.muatDatabaseDariCloudGlobal().then(data => { 
+            akunDatabaseLokal = data; 
 
-                window.tampilkanNotifikasiGeo("Memproses pengiriman kode keamanan.", "info");
-                emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
-                    .then(() => {
-                        window.tampilkanNotifikasiGeo("Kode OTP Panel Kontrol telah dikirim ke email admin.", "sukses");
-                        window.pindahKeView('otp'); 
-                    }, () => {
-                        window.tampilkanNotifikasiGeo("Gagal mengirim email OTP, dialihkan ke view input.", "gagal");
-                        window.pindahKeView('otp');
-                    });
-                return;
-            } else {
-                // Alur 2: Menggunakan Akun/Password Biasa yang terdaftar di lokal (Akses ke Visualisasi Peta)
-                let cekAkunLokalAdmin = akunDatabaseLokal.find(acc => acc.email === emailInput && acc.pass === passInput);
-                if (!cekAkunLokalAdmin) {
-                    window.tampilkanNotifikasiGeo("Kredensial Password Lokal Admin Salah!", "gagal");
+            // --- FILTER MUTLAK AKUN ADMINISTRATOR UTAMA ---
+            if(emailInput.includes('.admin.undip.ac.id')) {
+                dataEmailAdminMenungguOtp = emailInput;
+                otpPanelKontrolAdmin = Math.floor(100000 + Math.random() * 900000).toString();
+
+                if(passInput === 'adminGeoPTRP123') {
+                    window.tipeLoginAdminSesiIni = "kontrol_panel";
+                    const templateParams = { 
+                        subject_email: "KODE OTP MASUK PANEL KONTROL ADMIN - GEOPTRP",
+                        pesan_notifikasi: `Halo Administrator,\n\nBerikut adalah Kode OTP acak keamanan Anda untuk mengakses masuk ke dalam Panel Kontrol Data: ${otpPanelKontrolAdmin}\n\nKode ini bersifat rahasia.`
+                    };
+
+                    window.tampilkanNotifikasiGeo("Memproses pengiriman kode keamanan.", "info");
+                    emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
+                        .then(() => {
+                            window.tampilkanNotifikasiGeo("Kode OTP Panel Kontrol telah dikirim ke email admin.", "sukses");
+                            window.pindahKeView('otp'); 
+                        }, () => {
+                            window.tampilkanNotifikasiGeo("Gagal mengirim email OTP, dialihkan ke view input.", "gagal");
+                            window.pindahKeView('otp');
+                        });
+                    return;
+                } else {
+                    let cekAkunLokalAdmin = akunDatabaseLokal.find(acc => acc.email === emailInput && acc.pass === passInput);
+                    if (!cekAkunLokalAdmin) {
+                        window.tampilkanNotifikasiGeo("Kredensial Password Admin Salah!", "gagal");
+                        return;
+                    }
+                    if (cekAkunLokalAdmin.nama.toLowerCase() !== namaInput.toLowerCase()) {
+                        window.tampilkanNotifikasiGeo("Nama tidak cocok dengan akun email admin yang terdaftar!", "gagal");
+                        return;
+                    }
+
+                    window.tipeLoginAdminSesiIni = "masuk_peta";
+                    document.getElementById('login-nama').value = cekAkunLokalAdmin.nama;
+
+                    const templateParams = { 
+                        subject_email: "KODE OTP MASUK PETA (ADMIN) - GEOPTRP",
+                        pesan_notifikasi: `Halo Administrator,\n\nBerikut adalah Kode OTP acak keamanan Anda untuk masuk langsung ke visualisasi peta WebGIS: ${otpPanelKontrolAdmin}`
+                    };
+
+                    window.tampilkanNotifikasiGeo("Memproses pengiriman kode keamanan.", "info");
+                    emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
+                        .then(() => {
+                            window.tampilkanNotifikasiGeo("Kode OTP Jelajahi GeoPTRP telah dikirim ke email admin.", "sukses");
+                            window.pindahKeView('otp'); 
+                        }, () => {
+                            window.tampilkanNotifikasiGeo("Gagal mengirim email OTP, dialihkan ke view input.", "gagal");
+                            window.pindahKeView('otp');
+                        });
                     return;
                 }
-                if (cekAkunLokalAdmin.nama.toLowerCase() !== namaInput.toLowerCase()) {
-                    window.tampilkanNotifikasiGeo("Nama tidak cocok dengan akun email admin yang terdaftar!", "gagal");
-                    return;
-                }
+            }
 
-                window.tipeLoginAdminSesiIni = "masuk_peta";
-                document.getElementById('login-nama').value = cekAkunLokalAdmin.nama;
-
-                const templateParams = { 
-                    subject_email: "KODE OTP MASUK PETA (ADMIN) - GEOPTRP",
-                    pesan_notifikasi: `Halo Administrator,\n\nBerikut adalah Kode OTP acak keamanan Anda untuk masuk langsung ke visualisasi peta WebGIS: ${otpPanelKontrolAdmin}`
-                };
-
-                window.tampilkanNotifikasiGeo("Memproses pengiriman kode keamanan.", "info");
-                emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
-                    .then(() => {
-                        window.tampilkanNotifikasiGeo("Kode OTP Jelajahi GeoPTRP telah dikirim ke email admin.", "sukses");
-                        window.pindahKeView('otp'); 
-                    }, () => {
-                        window.tampilkanNotifikasiGeo("Gagal mengirim email OTP, dialihkan ke view input.", "gagal");
-                        window.pindahKeView('otp');
-                    });
+            // --- VALIDASI EMAIL & PASSWORD AKUN INSTANSI/MAHASISWA ---
+            let emailDitemukan = akunDatabaseLokal.some(acc => acc.email === emailInput);
+            if (!emailDitemukan) {
+                window.tampilkanNotifikasiGeo("Akun belum terdaftar di database cloud! Silahkan daftar akun terlebih dahulu.", "gagal");
                 return;
             }
-        }
 
-        // --- VALIDASI EMAIL & PASSWORD AKUN INSTANSI/MAHASISWA ---
-        // 1. Cek apakah email terdaftar di database
-        let emailDitemukan = akunDatabaseLokal.some(acc => acc.email === emailInput);
-        
-        if (!emailDitemukan) {
-            window.tampilkanNotifikasiGeo("Akun belum terdaftar di sistem! Silahkan daftar akun terlebih dahulu.", "gagal");
-            return;
-        }
+            let userAkun = akunDatabaseLokal.find(acc => acc.email === emailInput && acc.pass === passInput);
+            if (!userAkun) {
+                window.tampilkanNotifikasiGeo("Kata sandi (Password) yang Anda masukkan salah!", "gagal");
+                return;
+            }
 
-        // 2. Jika email ada, cari yang password-nya cocok
-        let userAkun = akunDatabaseLokal.find(acc => acc.email === emailInput && acc.pass === passInput);
-
-        if (!userAkun) {
-            window.tampilkanNotifikasiGeo("Kata sandi (Password) yang Anda masukkan salah!", "gagal");
-            return;
-        }
-
-        // 3. Validasi kesesuaian Nama Pengguna
-        if (userAkun.nama.toLowerCase() !== namaInput.toLowerCase()) {
-            window.tampilkanNotifikasiGeo("Nama pengguna tidak cocok dengan akun email yang terdaftar!", "gagal");
-            return;
-        }
-        
-        // Jika semua lolos, rapikan huruf kapital dan beri akses masuk peta
-        document.getElementById('login-nama').value = userAkun.nama; 
-        eksekusiGrandAccessMasukPeta(emailInput, userAkun.role);
+            if (userAkun.nama.toLowerCase() !== namaInput.toLowerCase()) {
+                window.tampilkanNotifikasiGeo("Nama pengguna tidak cocok dengan akun email yang terdaftar!", "gagal");
+                return;
+            }
+            
+            document.getElementById('login-nama').value = userAkun.nama; 
+            eksekusiGrandAccessMasukPeta(emailInput, userAkun.role);
+        })
+        .catch(() => {
+            window.tampilkanNotifikasiGeo("Gagal menyinkronkan data dengan cloud. Periksa koneksi internet Anda.", "gagal");
+        });
     };
 
     // =========================================================================
-    // FITUR BARU: PANEL MANAJEMEN ADMIN 
+    // FITUR PANEL MANAJEMEN ADMIN 
     // =========================================================================
     function renderTabelAdmin() {
         const tbody = document.querySelector('#tabel-user-admin tbody');
+        if(!tbody) return;
         tbody.innerHTML = ""; 
         
-        const databaseTerbaru = JSON.parse(localStorage.getItem('geo_accounts')) || akunDatabaseLokal;
+        window.tampilkanNotifikasiGeo("Sinkronisasi database cloud...", "info");
         
-        if(databaseTerbaru.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="3" style="padding: 10px; text-align: center; color: #95a5a6;">Belum ada pengguna yang mendaftar</td></tr>`;
-            return;
-        }
+        window.muatDatabaseDariCloudGlobal().then(databaseTerbaru => {
+            if(databaseTerbaru.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="padding: 10px; text-align: center; color: #95a5a6;">Belum ada pengguna di database cloud</td></tr>`;
+                return;
+            }
 
-        databaseTerbaru.forEach((akun) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td style="padding: 10px; border-bottom: 1px solid #eee;">${akun.nama}</td>
-                <td style="padding: 10px; border-bottom: 1px solid #eee;">${akun.email}</td>
-                <td style="padding: 10px; border-bottom: 1px solid #eee;">
-                    <button class="btn-hapus-secure" style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">Hapus</button>
-                </td>
-            `;
-            
-            row.querySelector('.btn-hapus-secure').addEventListener('click', function() {
-                bukaModalHapusAdmin(akun.email, akun.nama);
+            databaseTerbaru.forEach((akun) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="padding: 10px; border-bottom: 1px solid #eee; font-size:12px;">${akun.nama}</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee; font-size:12px; color:#1e3799;">${akun.email}</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee;">
+                        <button class="btn-hapus-secure" style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">Hapus</button>
+                    </td>
+                `;
+                
+                row.querySelector('.btn-hapus-secure').addEventListener('click', function() {
+                    bukaModalHapusAdmin(akun.email, akun.nama);
+                });
+                
+                tbody.appendChild(row);
             });
-            
-            tbody.appendChild(row);
         });
     }
 
-    // Variabel bantuan untuk modal hapus
+    window.konfirmasiHapusDariModal = function() {
+        tutupModalHapusAdmin();
+        window.tampilkanNotifikasiGeo("Menghapus akun dari database pusat...", "info");
+
+        const payload = {
+            action: "delete",
+            email: targetHapusEmail
+        };
+
+        fetch(URL_DATABASE_SHEETS, {
+            method: "POST",
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(resData => {
+            if(resData.status === "terhapus") {
+                window.tampilkanNotifikasiGeo(`Akun ${targetHapusNama} Telah Terhapus Permanen dari Server!`, "sukses");
+                renderTabelAdmin();
+            } else {
+                window.tampilkanNotifikasiGeo("Gagal menghapus data di cloud server.", "gagal");
+            }
+        });
+    };
+
     let targetHapusEmail = "";
     let targetHapusNama = "";
 
@@ -4001,32 +4037,8 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById('modal-konfirmasi-hapus').style.display = 'none';
     };
 
-    window.konfirmasiHapusDariModal = function() {
-        tutupModalHapusAdmin();
-        
-        // Ambil database terbaru dari localStorage
-        let databaseTerbaru = JSON.parse(localStorage.getItem('geo_accounts')) || akunDatabaseLokal;
-        
-        // Lakukan filter untuk membuang akun dengan email target
-        let databaseHasilFilter = databaseTerbaru.filter(akun => akun.email !== targetHapusEmail);
-        
-        // Simpan kembali ke database lokal & localStorage sistem
-        akunDatabaseLokal = databaseHasilFilter;
-        localStorage.setItem('geo_accounts', JSON.stringify(databaseHasilFilter));
-        
-        // Refresh/gambar ulang isi tabel admin agar akun yang dihapus langsung hilang dari layar
-        renderTabelAdmin();
-        
-        // Berikan notifikasi sukses ke layar
-        window.tampilkanNotifikasiGeo(`Akun ${targetHapusNama} berhasil dihapus dari sistem!`, "sukses");
-    };
-
-    window.keluarDariAdmin = function() {
-        window.pindahKeView('login');
-    };
-
     // =========================================================================
-    // FITUR BARU: RESET LUPA PASSWORD VIA OTP
+    // FITUR RESET LUPA PASSWORD VIA OTP
     // =========================================================================
     window.prosesKirimOtpLupaPassword = function() {
         const emailInput = document.getElementById('forgot-email').value.trim().toLowerCase();
@@ -4043,14 +4055,14 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         
         otpPemulihanSistem = Math.floor(100000 + Math.random() * 900000).toString();
-        emailTargetPemulihan = emailInput; // Ini tetap pakai format asli untuk mencari di database lokal
+        emailTargetPemulihan = emailInput;
         
         window.tampilkanNotifikasiGeo("Sedang mengirimkan kode OTP pemulihan.", "info");
         
         const templateParams = {
-        subject_email: "KODE OTP PEMULIHAN PASSWORD - GEOPTRP",
-        pesan_notifikasi: `Halo ${akunCek.nama},\n\nAnda menerima pesan ini karena adanya permintaan reset kata sandi.\nBerikut adalah Kode OTP Pemulihan Anda: ${otpPemulihanSistem}\n\nJangan bagikan kode ini kepada siapa pun.`
-    };
+            subject_email: "KODE OTP PEMULIHAN PASSWORD - GEOPTRP",
+            pesan_notifikasi: `Halo ${akunCek.nama},\n\nAnda menerima pesan ini karena adanya permintaan reset kata sandi.\nBerikut adalah Kode OTP Pemulihan Anda: ${otpPemulihanSistem}\n\nJangan bagikan kode ini kepada siapa pun.`
+        };
 
         emailjs.send('service_hpw7t68', 'template_0pxk215', templateParams)
             .then(() => {
@@ -4061,12 +4073,11 @@ document.addEventListener("DOMContentLoaded", function() {
             });
     };
 
-
     window.verifikasiOtpLupaPassword = function() {
         const inputOtp = document.getElementById('input-otp-forgot').value.trim();
         
         if(inputOtp === "") {
-            window.tampilkanNotifikasiGeo("Permintaan Kode OTP untuk pembaruan kata sandi berhasil!", "warning");
+            window.tampilkanNotifikasiGeo("Masukkan Kode OTP terlebih dahulu!", "warning");
             return;
         }
         
@@ -4106,7 +4117,6 @@ document.addEventListener("DOMContentLoaded", function() {
             
             otpPemulihanSistem = "";
             emailTargetPemulihan = "";
-            
             window.pindahKeView('login');
         } else {
             window.tampilkanNotifikasiGeo("Terjadi kegagalan sinkronisasi data internal.", "gagal");
@@ -4142,7 +4152,6 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById('landing-page').style.display = 'none';
         document.getElementById('disclaimer-overlay').style.display = 'flex';
 
-        // TAMBAHKAN BARIS INI AGAR EMAIL BISA MASUK KE FORM PENGADUAN OTOMATIS
         userAktifSistem = { email: email, role: role };
 
         const labelText = document.getElementById('txt-role-label');
@@ -4161,7 +4170,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 bInstansi.style.display = isOpen ? 'none' : 'block';
                 if(role === 'admin') bAdmin.style.display = isOpen ? 'none' : 'block';
                 
-                // Matikan menu alat ukur jika sedang terbuka
                 document.getElementById('measure-menu').style.display = 'none';
             };
             inisialisasiAlatFileSpasialUser();
@@ -4176,7 +4184,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    // 1. Database Teks Penjelasan Popup Beranda
+    // Database Teks Penjelasan Popup Beranda
     const infoDataSpasial = {
         'admin': `<h3><i class="fas fa-map-location-dot"></i> Batas Administrasi</h3>
                   <p>Menyajikan informasi mengenai batas wilayah pengelolaan dari tingkat kecamatan hingga batas desa di Kecamatan Ceper.</p>`,
@@ -4188,7 +4196,6 @@ document.addEventListener("DOMContentLoaded", function() {
                   <p>Menyediakan estimasi nilai pasar atau nilai indikatif rata-rata tanah sebagai acuan administrasi pertanahan.</p>`
     };
 
-    // 2. Logika Sakelar (Toggle) Tombol Utama - KUNCI WARNA GRADASI BIRU NAVY
     window.handleMainToggle = function() {
         const btnPemicu = document.getElementById('main-toggle-container');
         const toggleTextBox = document.getElementById('main-toggle-text-content');
@@ -4228,7 +4235,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     };
 
-    // 3. Logika Klik Logo Card - DYNAMIC TEXT STRETCH VERSION
     window.selectLogo = function(element, tipeData) {
         const logoCards = document.querySelectorAll('.info-logo-card');
         const displayArea = document.getElementById('info-display-area');
@@ -4256,7 +4262,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     };
 
-    // 4. Konfigurasi Navigasi & Tabulasi Halaman (DIUBAH KE ALUR FORM LOGIN)
     window.masukPeta = function() {
         document.getElementById('modal-geo-login').style.display = 'flex';
         window.pindahKeView('login');
@@ -4290,7 +4295,7 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById('landing-page').scrollTop = 0;
     };
 
-    // 5. Inisialisasi Peta Spasial OpenLayers
+    // Inisialisasi Peta Spasial OpenLayers
     const initialCenter = ol.proj.fromLonLat([110.6750, -7.6750]); 
     const initialZoom = 13.5;
     const url_geoserver = window.location.origin + '/geoserver-proxy/GeoPTRP_A3/wms';
@@ -4393,10 +4398,8 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     }
-
     syncLayerZIndex();
 
-    // 6. Manajemen Sidebar & Pencarian Koordinat
     const sidebar = document.getElementById('sidebar');
     const toggleIcon = document.getElementById('toggle-icon');
     const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
@@ -4431,7 +4434,6 @@ document.addEventListener("DOMContentLoaded", function() {
         };
     }
 
-    // 7. Sistem Katalog Data Spasial Modals
     let tempQueue = [];
     const btnKatalogData = document.getElementById('btn-katalog-data');
     if (btnKatalogData) {
@@ -4475,9 +4477,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 const target = layerMapping.find(l => l.id === id);
                 if(target) target.layer.setVisible(true);
             });
-            
             document.getElementById('modal-katalog').style.display = 'none';
-            
             updateLayerControlUI();
             syncLayerZIndex();
         };
@@ -4490,11 +4490,9 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // 8. Layer Management Antarmuka UI Control
     function updateLayerControlUI() {
         const container = document.getElementById('active-layers-container');
         if (!container) return; 
-        
         container.innerHTML = "";
         
         if(chosenLayers.length === 0) {
@@ -4619,7 +4617,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // =========================================================================
-    // 9. FITUR UKUR PREMIUM: ON-MAP INTERACTION (HOVER EFFECT & ON-MAP DELETE)
+    // FITUR UKUR PREMIUM: ON-MAP INTERACTION
     // =========================================================================
     let draw; 
     window.isMeasuring = false;
@@ -4659,8 +4657,6 @@ document.addEventListener("DOMContentLoaded", function() {
         btnMeasureTools.onclick = () => {
             const m = document.getElementById('measure-menu');
             m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
-            
-            // Matikan pop-up alat tambahan jika sedang terbuka
             document.getElementById('instansi-toolsetbox').style.display = 'none';
             document.getElementById('admin-toolsetbox').style.display = 'none';
         };
@@ -4725,20 +4721,18 @@ document.addEventListener("DOMContentLoaded", function() {
         
         measureSource.getFeatures().forEach(f => f.set('hovered', false));
         let hitMeasureFeature = false;
-        let hitDigitizeFeature = false; // Tambahan untuk mendeteksi kursor area digitasi
+        let hitDigitizeFeature = false;
 
         map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
             if (layer === measureLayer) {
                 feature.set('hovered', true); 
                 hitMeasureFeature = true;
             }
-            // Deteksi jika kursor di atas hasil digitasi yang selesai
             if (layer === userKmlLayer && feature.getId() && feature.getId().toString().startsWith('dig_')) {
                 hitDigitizeFeature = true;
             }
         });
 
-        // Kursor berubah jadi "jari / klik" jika kena alat ukur atau alat digitasi
         if (hitMeasureFeature || hitDigitizeFeature) {
             map.getTargetElement().style.cursor = 'pointer';
             if (draw && hitMeasureFeature) map.removeInteraction(draw); 
@@ -4749,7 +4743,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 map.addInteraction(draw); 
             }
         }
-
         measureLayer.changed(); 
     });
 
@@ -4829,7 +4822,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
     let teksLokasiKlikTerakhir = "";
 
-    // 10. Identifikasi Atribut Objek Spasial (GetFeatureInfo)
+    // =========================================================================
+    // IDENTIFIKASI ATRIBUT OBJEK SPASIAL (GETFEATUREINFO)
+    // =========================================================================
     window.tutupPinKoordinat = function(e) {
         if (e) e.stopPropagation();
         if (typeof pinSource !== 'undefined') pinSource.clear();
@@ -4840,10 +4835,9 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     };
 
-    map.on('singleclick', function(evt) {
-        if (window.isMeasuring === true || window.isDigitizing === true) return;
+    map.on('singleclick', function(evt) {
+        if (window.isMeasuring === true || window.isDigitizing === true) return;
 
-        // 1. Cek jika klik pada area hasil digitasi (Panggil Popup Elegan)
         let digitizeFeatureFound = false;
         map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
             if (layer === userKmlLayer && feature.getId() && feature.getId().toString().startsWith('dig_')) {
@@ -4853,23 +4847,21 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
 
-        // 2. Jika kena bidang digitasi, batalkan pemanggilan atribut bawahnya
         if (digitizeFeatureFound) return;
 
-        highlightSource.clear();
-        
-        if (typeof pinSource !== 'undefined') {
-            pinSource.clear();
-            const klikFeature = new ol.Feature({ geometry: new ol.geom.Point(evt.coordinate) });
-            pinSource.addFeature(klikFeature);
-        }
+        highlightSource.clear();
+        
+        if (typeof pinSource !== 'undefined') {
+            pinSource.clear();
+            const klikFeature = new ol.Feature({ geometry: new ol.geom.Point(evt.coordinate) });
+            pinSource.addFeature(klikFeature);
+        }
 
-        const klik4326 = ol.proj.toLonLat(evt.coordinate);
-        const klikLon = klik4326[0].toFixed(6);
-        const klikLat = klik4326[1].toFixed(6);
+        const klik4326 = ol.proj.toLonLat(evt.coordinate);
+        const klikLon = klik4326[0].toFixed(6);
+        const klikLat = klik4326[1].toFixed(6);
 
-        // 3. Teks lokasi ditambah tombol silang hapus (Poin 2)
-        teksLokasiKlikTerakhir = `<div style="color: #f1c40f; font-size: 11px; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 3px; width: 100%; text-align: center; display: flex; justify-content: center; gap: 10px; align-items: center;">
+        teksLokasiKlikTerakhir = `<div style="color: #f1c40f; font-size: 11px; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 3px; width: 100%; text-align: center; display: flex; justify-content: center; gap: 10px; align-items: center;">
             <span><i class="fas fa-map-marker-alt"></i> : ${klikLat}, ${klikLon}</span>
             <i class="fas fa-times-circle" style="cursor: pointer; color: #e74c3c; font-size: 14px;" onclick="window.tutupPinKoordinat(event)"></i>
         </div>`;
@@ -4879,7 +4871,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
         let promises = chosenLayers.map(id => {
             const item = layerMapping.find(l => l.id === id);
-            // Tambahan Filter: Pastikan layernya punya fitur GetFeatureInfo (Bukan KML Manual)
             if(item && item.layer.getVisible() && typeof item.layer.getSource().getFeatureInfoUrl === 'function') {
                 const url = item.layer.getSource().getFeatureInfoUrl(evt.coordinate, viewRes, viewProj, {'INFO_FORMAT': 'application/json', 'FEATURE_COUNT': '1'});
                 if (url) return fetch(url).then(r => r.ok ? r.json() : null).then(d => ({ item, j: d })).catch(() => null);
@@ -4920,7 +4911,6 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 
-    // 11. Kontrol Basemap Switcher
     const selectBasemap = document.getElementById('select-basemap');
     if (selectBasemap) {
         selectBasemap.onchange = function() {
@@ -4930,7 +4920,6 @@ document.addEventListener("DOMContentLoaded", function() {
         };
     }
 
-    // 12. Alur Overlay & Event Disclaimer Persetujuan Akademik
     const btnContinue = document.getElementById('btn-continue');
     if (btnContinue) {
         btnContinue.onclick = () => {
@@ -4967,49 +4956,46 @@ document.addEventListener("DOMContentLoaded", function() {
         };
     }
 
-    // 13. Deteksi Orientasi HP Dinamis (Mobile Optimization)
     let isOverlayBypassed = false;
-window.isPetaAktif = false; // Flag penanda sedang di dalam peta
+    window.isPetaAktif = false;
 
-function checkDeviceOrientation() {
-    if (isOverlayBypassed && !window.isPetaAktif) return;
-    
-    const isMobileDevice = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-    const isPortrait = window.innerHeight > window.innerWidth;
-    const overlay = document.getElementById('mobile-warning-overlay');
-    const btnOk = document.getElementById('btn-warning-ok');
-    const txtBypass = document.getElementById('warning-bypass-text');
-    
-    if (overlay) {
-        if (!isPortrait) {
-            overlay.style.display = 'none';
-            if (typeof map !== 'undefined' && map.updateSize) {
-                setTimeout(() => { map.updateSize(); }, 100);
-            }
-        } else {
-            if (isMobileDevice || window.innerWidth < 1024) {
-                overlay.style.display = 'flex';
-                
-                if (window.isPetaAktif) {
-                    // KONDISI PETA AKTIF: Kunci mati, tombol OK disembunyikan
-                    if(btnOk) btnOk.style.display = 'none';
-                    if(txtBypass) txtBypass.innerHTML = "<b>PERINGATAN WAJIB:</b><br>Interaksi Peta Spasial membutuhkan layar luas. Posisi layar tegak (Portrait) <b>tidak diizinkan</b>. Silahkan miringkan HP Anda (Landscape).";
-                    isOverlayBypassed = false;
-                } else {
-                    // KONDISI BERANDA: Munculkan peringatan ringan
-                    if (!isOverlayBypassed) {
-                        if(btnOk) btnOk.style.display = 'block';
-                        if(txtBypass) txtBypass.innerHTML = "<b>Rekomendasi Akses HP:</b><br>• Matikan Kunci Orientasi HP & <b>Miringkan menjadi Landscape</b>.<br>• Anda dapat menekan tombol di bawah ini untuk tetap masuk (mode terbatas).";
-                    } else {
-                        overlay.style.display = 'none';
-                    }
+    function checkDeviceOrientation() {
+        if (isOverlayBypassed && !window.isPetaAktif) return;
+        
+        const isMobileDevice = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+        const isPortrait = window.innerHeight > window.innerWidth;
+        const overlay = document.getElementById('mobile-warning-overlay');
+        const btnOk = document.getElementById('btn-warning-ok');
+        const txtBypass = document.getElementById('warning-bypass-text');
+        
+        if (overlay) {
+            if (!isPortrait) {
+                overlay.style.display = 'none';
+                if (typeof map !== 'undefined' && map.updateSize) {
+                    setTimeout(() => { map.updateSize(); }, 100);
                 }
             } else {
-                overlay.style.display = 'none';
+                if (isMobileDevice || window.innerWidth < 1024) {
+                    overlay.style.display = 'flex';
+                    
+                    if (window.isPetaAktif) {
+                        if(btnOk) btnOk.style.display = 'none';
+                        if(txtBypass) txtBypass.innerHTML = "<b>PERINGATAN WAJIB:</b><br>Interaksi Peta Spasial membutuhkan layar luas. Posisi layar tegak (Portrait) <b>tidak diizinkan</b>. Silahkan miringkan HP Anda (Landscape).";
+                        isOverlayBypassed = false;
+                    } else {
+                        if (!isOverlayBypassed) {
+                            if(btnOk) btnOk.style.display = 'block';
+                            if(txtBypass) txtBypass.innerHTML = "<b>Rekomendasi Akses HP:</b><br>• Matikan Kunci Orientasi HP & <b>Miringkan menjadi Landscape</b>.<br>• Anda dapat menekan tombol di bawah ini untuk tetap masuk (mode terbatas).";
+                        } else {
+                            overlay.style.display = 'none';
+                        }
+                    }
+                } else {
+                    overlay.style.display = 'none';
+                }
             }
         }
     }
-}
 
     window.bukaPopupBio = function(nama, role, nim, ttl, asal, ig, email, jobdesk, imgUrl) {
         const modal = document.getElementById('bio-popup-modal');
@@ -5088,7 +5074,7 @@ function checkDeviceOrientation() {
             highlightSource.clear(); 
             
             if (typeof pinSource !== 'undefined') pinSource.clear();
-            teksLokasiKlikTerakhir = ""; 
+            teksLocationsKlikTerakhir = ""; 
         };
     }
 
@@ -5125,7 +5111,7 @@ function checkDeviceOrientation() {
     });
 
     // =========================================================================
-    // ADVANCED DATA INPUT ENGINE: SMART CORE KML & KMZ FILE READER (.KML & .KMZ)
+    // ADVANCED DATA INPUT ENGINE: KML & KMZ FILE READER
     // =========================================================================
     function inisialisasiAlatFileSpasialUser() {
         const fileInput = document.getElementById('upload-kml-file');
@@ -5157,12 +5143,10 @@ function checkDeviceOrientation() {
 
     function renderTextDataSpasialKeMap(textString, filename) {
         try {
-            // extractStyles: true agar warna dari Google Earth Pro terbawa
             const features = new ol.format.KML({ extractStyles: true }).readFeatures(textString, {
                 dataProjection: 'EPSG:4326', featureProjection: map.getView().getProjection().getCode()
             });
             
-            // Buat Layer Baru dan langsung masukkan ke Kontrol Layer paling atas
             let layerId = 'kml_' + new Date().getTime();
             let newVectorLayer = new ol.layer.Vector({ 
                 source: new ol.source.Vector({features: features}), 
@@ -5171,9 +5155,9 @@ function checkDeviceOrientation() {
             
             map.addLayer(newVectorLayer);
             layerMapping.push({ id: layerId, layer: newVectorLayer, title: filename });
-            chosenLayers.unshift(layerId); // Masukkan ke urutan teratas kontrol layer
-            updateLayerControlUI(); // Refresh UI Layer
-            syncLayerZIndex(); // Sinkronisasi urutan
+            chosenLayers.unshift(layerId);
+            updateLayerControlUI();
+            syncLayerZIndex();
             
             if (features.length > 0) {
                 map.getView().fit(newVectorLayer.getSource().getExtent(), { padding: [50, 50, 50, 50], duration: 1000 });
@@ -5185,16 +5169,15 @@ function checkDeviceOrientation() {
     }
 
     window.mulaiDigitasiManualKml = function() {
-        const btn = document.getElementById('btn-draw-manual');
-        if (btn.classList.contains('active')) {
-            window.nonaktifkanAlatLain();
-        } else {
-            window.nonaktifkanAlatLain();
-            window.isDigitizing = true;
-            if(!map.getLayers().getArray().includes(userKmlLayer)) map.addLayer(userKmlLayer);
-            drawKmlInteraction = new ol.interaction.Draw({ source: userKmlSource, type: 'Polygon' });
-            
-            // Otomatis matikan alat sesaat setelah bentuk digambar (sehingga bisa langsung di-klik)
+        const btn = document.getElementById('btn-draw-manual');
+        if (btn.classList.contains('active')) {
+            window.nonaktifkanAlatLain();
+        } else {
+            window.nonaktifkanAlatLain();
+            window.isDigitizing = true;
+            if(!map.getLayers().getArray().includes(userKmlLayer)) map.addLayer(userKmlLayer);
+            drawKmlInteraction = new ol.interaction.Draw({ source: userKmlSource, type: 'Polygon' });
+            
             drawKmlInteraction.on('drawend', function(e) {
                 const feature = e.feature;
                 feature.setId('dig_' + new Date().getTime());
@@ -5204,15 +5187,14 @@ function checkDeviceOrientation() {
                 }, 150);
             });
 
-            map.addInteraction(drawKmlInteraction);
-            btn.classList.add('active');
-            btn.style.background = '#ffeaa7';
-            window.tampilkanNotifikasiGeo("Mode Digitasi Aktif! Klik pada peta untuk mulai menggambar area.", "info");
-        }
-    };
+            map.addInteraction(drawKmlInteraction);
+            btn.classList.add('active');
+            btn.style.background = '#ffeaa7';
+            window.tampilkanNotifikasiGeo("Mode Digitasi Aktif! Klik pada peta untuk mulai menggambar area.", "info");
+        }
+    };
 
     window.downloadFiturBidangTerpilih = function() {
-        // Download Garis Merah (highlightSource) sebagai KML
         const features = highlightSource.getFeatures();
         if (features.length === 0) {
             window.tampilkanNotifikasiGeo("Klik objek bidang tanah di peta terlebih dahulu untuk mendownload poligonnya!", "gagal");
@@ -5231,7 +5213,6 @@ function checkDeviceOrientation() {
         window.tampilkanNotifikasiGeo("Berkas spasial (KML) bidang tanah berhasil diunduh!", "sukses");
     };
 
-// FUNGSI HAPUS KML UNGGAHAN (Poin 2)
     window.hapusKmlUnggahan = function() {
         const kmlLayers = layerMapping.filter(l => l.id.startsWith('kml_'));
         kmlLayers.forEach(item => {
@@ -5239,14 +5220,12 @@ function checkDeviceOrientation() {
             window.removeLayer(item.id);
         });
         
-        // Membersihkan nama file kml di form input
         const fileInput = document.getElementById('upload-kml-file');
         if (fileInput) fileInput.value = "";
         
         window.tampilkanNotifikasiGeo("Semua data KML/KMZ unggahan berhasil dihapus.", "sukses");
     };
 
-    // FUNGSI DOWNLOAD POP-UP DIGITASI (Poin 3)
     window.downloadHasilDigitasi = function() {
         const id = document.getElementById('hidden-digitasi-id').value;
         const feature = userKmlSource.getFeatureById(id);
@@ -5264,7 +5243,6 @@ function checkDeviceOrientation() {
         document.getElementById('modal-save-digitasi').style.display = 'none';
     };
 
-    // FUNGSI HAPUS AREA DIGITASI (Poin 3)
     window.hapusHasilDigitasi = function() {
         const id = document.getElementById('hidden-digitasi-id').value;
         const feature = userKmlSource.getFeatureById(id);
@@ -5275,7 +5253,6 @@ function checkDeviceOrientation() {
         document.getElementById('modal-save-digitasi').style.display = 'none';
     };
 
-    // FUNGSI TOGGLE LIHAT PASSWORD (Poin 5)
     window.togglePassword = function(inputId, iconId) {
         const input = document.getElementById(inputId);
         const icon = document.getElementById(iconId);
@@ -5291,9 +5268,8 @@ function checkDeviceOrientation() {
     };
 
     // =========================================================================
-    // VISUALISASI DIAGRAM GOOGLE CHARTS INTERAKTIF (INFORMASI PERTANAHAN)
+    // VISUALISASI DIAGRAM GOOGLE CHARTS INTERAKTIF
     // =========================================================================
-    // Memuat library Google Charts di awal secara pasif
     if (typeof google !== 'undefined') {
         google.charts.load('current', {'packages':['corechart', 'bar']});
     }
@@ -5301,16 +5277,13 @@ function checkDeviceOrientation() {
     window.drawPertanahanCharts = function() {
         if (typeof google === 'undefined' || !google.visualization) return;
         
-        // Membuat formatter angka otomatis untuk mengubah koma menjadi titik (format Indonesia) tanpa desimal
         var formatterAngka = new google.visualization.NumberFormat({
             groupingSymbol: '.',
             decimalSymbol: ',',
             fractionDigits: 0
         });
 
-        // -------------------------------------------------------------------------
-        // GAMBAR 1: DIAGRAM BATANG TEGAK (COLUMN CHART)
-        // -------------------------------------------------------------------------
+        // Diagram 1: Column Chart
         var dataJumlahVertikal = google.visualization.arrayToDataTable([
             ['Status Hak', 'Jumlah Bidang', { role: 'style' }, { role: 'annotation' }],
             ['Hak Milik', 22843, 'color: #1e3799; stroke-color: #0c2461; stroke-width: 1', '22.843 Bidang'],
@@ -5319,8 +5292,6 @@ function checkDeviceOrientation() {
             ['Hak Guna Bangunan', 94, 'color: #38ada9; stroke-color: #079992; stroke-width: 1', '94'],
             ['Hak Wakaf', 22, 'color: #a29bfe; stroke-color: #786fa6; stroke-width: 1', '22']
         ]);
-        
-        // Terapkan formatter ke kolom 'Jumlah Bidang' (kolom indeks 1)
         formatterAngka.format(dataJumlahVertikal, 1);
 
         var optionsJumlahVertikal = {
@@ -5331,7 +5302,7 @@ function checkDeviceOrientation() {
                 titleTextStyle: { fontSize: 11, color: '#555', fontName: 'Montserrat', italic: false },
                 gridlines: { color: '#f5f5f5' },
                 textStyle: { fontSize: 10, fontName: 'Montserrat' },
-                format: '#,###' // Mengunci format angka sumbu vertikal agar pakai titik dan tanpa desimal
+                format: '#,###'
             },
             hAxis: {
                 textStyle: { fontSize: 11, fontWeight: 'bold', fontName: 'Montserrat', color: '#2c3e50' }
@@ -5351,16 +5322,12 @@ function checkDeviceOrientation() {
             chartJumlah.draw(dataJumlahVertikal, optionsJumlahVertikal);
         }
 
-        // -------------------------------------------------------------------------
-        // GAMBAR 2: PIE CHART
-        // -------------------------------------------------------------------------
+        // Diagram 2: Pie Chart
         var dataProporsi = google.visualization.arrayToDataTable([
             ['Status Registrasi', 'Jumlah Bidang'],
             ['Terdaftar (Sertifikat Hak)', 23708],
             ['Belum Terdaftar (Data Kosong)', 2602]
         ]);
-        
-        // Terapkan formatter ke kolom angka Pie Chart agar saat di-hover angkanya berformat titik
         formatterAngka.format(dataProporsi, 1);
 
         var optionsProporsi = {
@@ -5373,10 +5340,7 @@ function checkDeviceOrientation() {
             },
             pieHole: 0.4, 
             pieSliceTextStyle: { fontSize: 12, fontWeight: '700', fontName: 'Montserrat' },
-            slices: {
-                0: { offset: 0.0 },
-                1: { offset: 0.0 }
-            },
+            slices: { 0: { offset: 0.0 }, 1: { offset: 0.0 } },
             tooltip: { showColorCode: true, text: 'both', trigger: 'focus', textStyle: { fontSize: 11, fontName: 'Montserrat' } }
         };
 
@@ -5386,9 +5350,7 @@ function checkDeviceOrientation() {
             chartPie.draw(dataProporsi, optionsProporsi);
         }
 
-        // -------------------------------------------------------------------------
-        // GAMBAR 3: DIAGRAM MENYAMPING (BAR CHART) - PERSENTASE
-        // -------------------------------------------------------------------------
+        // Diagram 3: Bar Chart Persentase
         var dataHakLuas = google.visualization.arrayToDataTable([
             ['Status Hak', 'Persentase (%)', { role: 'style' }, { role: 'annotation' }],
             ['Hak Milik', 74.08, 'color: #1e3799', '74.08%'],
@@ -5408,7 +5370,7 @@ function checkDeviceOrientation() {
                 gridlines: { color: '#f5f5f5' },
                 minValue: 0,
                 maxValue: 100,
-                format: '#\'%\'' // Menghilangkan desimal desimal pasca angka bulat persen di Sumbu X (contoh: 20%)
+                format: '#\'%\''
             },
             vAxis: {
                 textStyle: { fontSize: 10, fontWeight: 'bold', fontName: 'Montserrat', color: '#2c3e50' }
@@ -5429,61 +5391,45 @@ function checkDeviceOrientation() {
     };
 
     // ==========================================================================
-    // LOGIKA PWA ENGINE: MEMUNCULKAN POP-UP DOWNLOAD APLIKASI SECARA AMAN
+    // LOGIKA PWA ENGINE
     // ==========================================================================
     let deferredPrompt;
     const pwaModal = document.getElementById('pwa-install-modal');
     const btnPwaInstall = document.getElementById('btn-pwa-install');
     const btnPwaCancel = document.getElementById('btn-pwa-cancel');
 
-    // 1. Registrasi Service Worker ke Browser
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js')
             .then(() => console.log("PWA Service Worker Aman Terverifikasi."))
             .catch((err) => console.log("SW Error:", err));
     }
 
-    // 2. Tangkap sinyal bawaan browser jika web ini bisa di-download
     window.addEventListener('beforeinstallprompt', (e) => {
-        // Cegah browser memunculkan bar instalasi bawaannya yang kaku
         e.preventDefault();
-        // Simpan event ke variabel
         deferredPrompt = e;
-        
-        // Cek jika user belum pernah mengklik "Nanti Saja" di sesi ini, munculkan pop-up custom Anda
         if (sessionStorage.getItem('pwa_prompt_dismissed') !== 'true') {
             if (pwaModal) pwaModal.style.display = 'block';
         }
     });
 
-    // 3. Aksi ketika tombol "Pasang" di-klik
     if (btnPwaInstall) {
         btnPwaInstall.addEventListener('click', async () => {
             if (!deferredPrompt) return;
-            
-            // Munculkan prompt instalasi resmi sistem operasi (Android/Windows/iOS)
             deferredPrompt.prompt();
-            
-            // Tunggu respons pilihan dari pengguna
             const { outcome } = await deferredPrompt.userChoice;
-            console.log(`User response to install prompt: ${outcome}`);
-            
-            // Sembunyikan pop-up custom kembali
+            console.log(`User choice: ${outcome}`);
             if (pwaModal) pwaModal.style.display = 'none';
             deferredPrompt = null;
         });
     }
 
-    // 4. Aksi ketika tombol "Nanti Saja" di-klik
     if (btnPwaCancel) {
         btnPwaCancel.addEventListener('click', () => {
             if (pwaModal) pwaModal.style.display = 'none';
-            // Simpan pilihan di session agar tidak mengganggu terus selama web belum di-reload baru
             sessionStorage.setItem('pwa_prompt_dismissed', 'true');
         });
     }
 
-    // 5. Jika aplikasi sukses terpasang, sembunyikan pop-up permanen
     window.addEventListener('appinstalled', () => {
         if (pwaModal) pwaModal.style.display = 'none';
         deferredPrompt = null;
